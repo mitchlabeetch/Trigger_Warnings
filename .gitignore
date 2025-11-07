@@ -1,2 +1,9 @@
 node_modules/
 dist/
+
+# Environment variables with API keys
+scripts/.env
+
+# DTDD import outputs
+database/dtdd-import-*.sql
+database/dtdd-import-*.json

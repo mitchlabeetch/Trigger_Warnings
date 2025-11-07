@@ -1,0 +1,140 @@
+{
+  "categoryMapping": {
+    "violence": [
+      "blood",
+      "a child is injured",
+      "someone is kidnapped",
+      "someone is punched/beaten-up",
+      "someone is shot",
+      "someone is stabbed",
+      "torture",
+      "physical abuse",
+      "gun violence",
+      "a kid is hurt or dies",
+      "domestic violence"
+    ],
+    "gore": [
+      "gore",
+      "body horror",
+      "graphic violence",
+      "mutilation",
+      "someone loses a limb",
+      "eye trauma",
+      "severed limbs",
+      "decapitation"
+    ],
+    "death": [
+      "a main character dies",
+      "a parent dies",
+      "death",
+      "murder",
+      "suicide",
+      "assisted suicide",
+      "dead bodies",
+      "mass death"
+    ],
+    "animals": [
+      "a dog dies",
+      "a cat dies",
+      "an animal is abused",
+      "an animal dies",
+      "animal cruelty",
+      "a horse dies",
+      "animals are killed",
+      "a pet dies"
+    ],
+    "sexual_content": [
+      "sexual assault",
+      "rape",
+      "sex",
+      "sexual content",
+      "incest",
+      "pedophilia",
+      "sexual abuse of a minor",
+      "sexual slavery",
+      "sex scenes"
+    ],
+    "abuse": [
+      "abuse",
+      "child abuse",
+      "emotional abuse",
+      "gaslighting",
+      "domestic abuse",
+      "elder abuse"
+    ],
+    "substance_abuse": [
+      "drinking",
+      "drug use",
+      "alcoholism",
+      "drug addiction",
+      "someone is drunk",
+      "substance abuse"
+    ],
+    "mental_health": [
+      "mental illness",
+      "depression",
+      "self harm",
+      "eating disorder",
+      "panic attack/anxiety attack",
+      "PTSD",
+      "a character has a mental illness",
+      "suicide attempt"
+    ],
+    "medical": [
+      "medical procedures",
+      "needles/syringes",
+      "surgery",
+      "blood draw",
+      "hospital scenes",
+      "childbirth",
+      "amputation",
+      "dentistry"
+    ],
+    "discrimination": [
+      "racism",
+      "homophobia",
+      "transphobia",
+      "sexism",
+      "antisemitism",
+      "ableism",
+      "hate crime",
+      "racial slurs"
+    ]
+  },
+  "platformMapping": {
+    "netflix": {
+      "type": "tmdb",
+      "note": "Use TMDB ID to search Netflix catalog"
+    },
+    "youtube": {
+      "type": "manual",
+      "note": "Movies on YouTube usually have IMDb info in description"
+    },
+    "primevideo": {
+      "type": "imdb",
+      "note": "Prime Video uses IMDb IDs"
+    },
+    "hulu": {
+      "type": "tmdb",
+      "note": "Use TMDB to find Hulu content"
+    },
+    "disneyplus": {
+      "type": "tmdb",
+      "note": "Disney+ content searchable via TMDB"
+    },
+    "max": {
+      "type": "tmdb",
+      "note": "Max (HBO) content via TMDB"
+    },
+    "peacocktv": {
+      "type": "tmdb",
+      "note": "Peacock content via TMDB"
+    }
+  },
+  "notes": {
+    "timestamps": "DTDD doesn't provide timestamps. We'll create warnings covering entire duration (0 to end).",
+    "confidence": "Use yesSum/(yesSum+noSum) ratio to determine confidence_level",
+    "threshold": "Only import triggers with >70% yes votes and at least 5 total votes",
+    "status": "Import as 'approved' since DTDD data is community-verified"
+  }
+}
