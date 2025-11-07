@@ -175,10 +175,12 @@ interface Profile {
 | Netflix | ✅ Complete | `NetflixProvider` |
 | Prime Video | ✅ Complete | `PrimeVideoProvider` |
 | YouTube | ✅ Complete | `YouTubeProvider` |
-| Hulu | 🚧 Planned | `HuluProvider` |
-| Disney+ | 🚧 Planned | `DisneyPlusProvider` |
-| Max (HBO) | 🚧 Planned | `MaxProvider` |
-| Peacock | 🚧 Planned | `PeacockProvider` |
+| Hulu | ✅ Complete | `HuluProvider` |
+| Disney+ | ✅ Complete | `DisneyPlusProvider` |
+| Max (HBO) | ✅ Complete | `MaxProvider` |
+| Peacock | ✅ Complete | `PeacockProvider` |
+
+**All 7 major streaming platforms now supported!**
 
 ---
 

@@ -2,13 +2,18 @@
   import { onMount } from 'svelte';
   import browser from 'webextension-polyfill';
   import type { Profile } from '@shared/types/Profile.types';
+  import SubmitWarning from './components/SubmitWarning.svelte';
 
   let activeProfile: Profile | null = null;
   let allProfiles: Profile[] = [];
   let loading = true;
+  let showSubmitForm = false;
+  let currentVideoId: string | null = null;
+  let currentTime = 0;
 
   onMount(async () => {
     await loadData();
+    await checkCurrentVideo();
   });
 
   async function loadData() {
@@ -39,6 +44,67 @@
     }
   }
 
+  async function checkCurrentVideo() {
+    try {
+      const tabs = await browser.tabs.query({ active: true, currentWindow: true });
+      if (tabs[0]?.url) {
+        // Try to extract video ID from various streaming platforms
+        const url = tabs[0].url;
+
+        // Netflix: /watch/12345
+        const netflixMatch = url.match(/netflix\.com\/watch\/(\d+)/);
+        if (netflixMatch) {
+          currentVideoId = netflixMatch[1];
+          return;
+        }
+
+        // Prime Video: /detail/<id> or /gp/video/detail/<id>
+        const primeMatch = url.match(/\/detail\/([^/]+)/);
+        if (primeMatch && url.includes('primevideo')) {
+          currentVideoId = primeMatch[1];
+          return;
+        }
+
+        // YouTube: ?v=<id>
+        const youtubeMatch = url.match(/youtube\.com\/watch\?v=([^&]+)/);
+        if (youtubeMatch) {
+          currentVideoId = youtubeMatch[1];
+          return;
+        }
+
+        // Hulu: /watch/<id>
+        const huluMatch = url.match(/hulu\.com\/watch\/([^/]+)/);
+        if (huluMatch) {
+          currentVideoId = huluMatch[1];
+          return;
+        }
+
+        // Disney+: /video/<id>
+        const disneyMatch = url.match(/disneyplus\.com\/video\/([^/]+)/);
+        if (disneyMatch) {
+          currentVideoId = disneyMatch[1];
+          return;
+        }
+
+        // Max: /video/watch/<id>
+        const maxMatch = url.match(/max\.com\/video\/watch\/([^/]+)/);
+        if (maxMatch) {
+          currentVideoId = maxMatch[1];
+          return;
+        }
+
+        // Peacock: /watch/<id>
+        const peacockMatch = url.match(/peacocktv\.com\/watch\/([^/]+)/);
+        if (peacockMatch) {
+          currentVideoId = peacockMatch[1];
+          return;
+        }
+      }
+    } catch (error) {
+      console.error('Error checking current video:', error);
+    }
+  }
+
   async function switchProfile(profileId: string) {
     try {
       const response = await browser.runtime.sendMessage({
@@ -56,6 +122,14 @@
 
   function openOptions() {
     browser.runtime.openOptionsPage();
+  }
+
+  function openSubmitForm() {
+    showSubmitForm = true;
+  }
+
+  function closeSubmitForm() {
+    showSubmitForm = false;
   }
 </script>
 
@@ -110,6 +184,12 @@
 
       <!-- Actions -->
       <section class="popup-section">
+        {#if currentVideoId}
+          <button class="btn btn-secondary" on:click={openSubmitForm}>
+            <span>➕</span>
+            Submit Warning
+          </button>
+        {/if}
         <button class="btn btn-primary" on:click={openOptions}>
           <span>⚙️</span>
           Settings & Customization
@@ -119,12 +199,25 @@
       <!-- Info -->
       <footer class="popup-footer">
         <p class="popup-info">
-          Extension is active and monitoring for trigger warnings on supported platforms.
+          Extension is active and monitoring for trigger warnings on {currentVideoId ? 'this video' : 'supported platforms'}.
         </p>
       </footer>
     </div>
   {:else}
     <div class="popup-error">Failed to load profile data</div>
+  {/if}
+
+  <!-- Submit Warning Modal -->
+  {#if showSubmitForm}
+    <div class="modal-overlay" on:click={closeSubmitForm}>
+      <div class="modal-content" on:click|stopPropagation>
+        <SubmitWarning
+          onClose={closeSubmitForm}
+          videoId={currentVideoId}
+          currentTime={currentTime}
+        />
+      </div>
+    </div>
   {/if}
 </div>
 
@@ -243,6 +336,59 @@
   .btn-primary:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  }
+
+  .btn-secondary {
+    background: white;
+    color: #667eea;
+    border: 2px solid #667eea;
+  }
+
+  .btn-secondary:hover {
+    background: #f8f9ff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+  }
+
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.2s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .modal-content {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow: auto;
+    animation: slideUp 0.3s ease;
+  }
+
+  @keyframes slideUp {
+    from {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
   }
 
   .popup-footer {

@@ -6,22 +6,20 @@ import type { IStreamingProvider } from '@shared/types/Provider.types';
 import { NetflixProvider } from './NetflixProvider';
 import { PrimeVideoProvider } from './PrimeVideoProvider';
 import { YouTubeProvider } from './YouTubeProvider';
-// Import other providers as they are implemented
-// import { HuluProvider } from './HuluProvider';
-// import { DisneyPlusProvider } from './DisneyPlusProvider';
-// import { MaxProvider } from './MaxProvider';
-// import { PeacockProvider } from './PeacockProvider';
+import { HuluProvider } from './HuluProvider';
+import { DisneyPlusProvider } from './DisneyPlusProvider';
+import { MaxProvider } from './MaxProvider';
+import { PeacockProvider } from './PeacockProvider';
 
 export class ProviderFactory {
   private static providers: Array<new () => IStreamingProvider> = [
     NetflixProvider,
     PrimeVideoProvider,
     YouTubeProvider,
-    // Add other providers here
-    // HuluProvider,
-    // DisneyPlusProvider,
-    // MaxProvider,
-    // PeacockProvider,
+    HuluProvider,
+    DisneyPlusProvider,
+    MaxProvider,
+    PeacockProvider,
   ];
 
   /**
