@@ -5,8 +5,6 @@ dist/
 scripts/.env
 
 # Data import outputs
-database/dtdd-import-*.sql
-database/dtdd-import-*.json
 database/imdb-import-*.sql
 database/imdb-import-*.json
 

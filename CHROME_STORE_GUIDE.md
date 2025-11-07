@@ -159,7 +159,7 @@ Create different profiles for different viewing contexts:
 Real-time subtitle analysis with automatic translation support (200+ languages). Works even on content not in our database.
 
 📊 Community Database
-105,000+ pre-seeded warnings from DoesTheDogDie.com and IMDb Parental Guide. Help improve coverage by submitting warnings.
+5,000+ pre-seeded warnings from IMDb Parental Guide. Help improve coverage by submitting warnings with precise timestamps.
 
 🔒 100% Private
 All processing happens locally on your device. No tracking, no viewing history, no personal data collected. Your privacy is guaranteed.

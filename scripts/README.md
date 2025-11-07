@@ -1,331 +1,255 @@
-# DTDD Data Import Scripts
+# Data Import Scripts
 
-This directory contains scripts to import trigger warning data from the "Does the Dog Die" (DTDD) API into our database.
+This directory contains scripts to import trigger warning data into the database.
 
 ## Overview
 
-The DTDD API provides community-sourced trigger warnings for movies and TV shows. We can use this data to seed our database with trigger warnings for popular content.
+We support importing trigger warning data from IMDb Parental Guide (via Kaggle dataset). This provides community-sourced trigger warnings for thousands of movies and TV shows.
 
 ## ⚠️ Important Limitations
 
-1. **No Timestamps**: DTDD only indicates IF a trigger exists, not WHEN it occurs in the content
-2. **No Platform IDs**: DTDD uses TMDB/IMDb IDs, which need to be mapped to platform-specific video IDs
+1. **No Timestamps**: Imported data only indicates IF a trigger exists, not WHEN it occurs
+2. **No Platform IDs**: Data uses IMDb IDs, which need to be mapped to platform-specific video IDs
 3. **General Warnings**: Imported warnings will have placeholder timestamps (0 to end) and need manual refinement
+
+These limitations are solved by:
+- **Real-time subtitle analysis**: Provides exact timestamps through keyword detection
+- **Community submissions**: Users can submit precise timestamps
+- **Translation support**: Works on any language content
 
 ## Prerequisites
 
-1. **DTDD API Key**: Get your API key from https://www.doesthedogdie.com/profile
-2. **Node.js**: The scraper requires Node.js (v14+)
+1. **Node.js**: The import scripts require Node.js (v14+)
+2. **IMDb Dataset**: Download from Kaggle (see below)
 
 ## Files
 
-- `dtdd-scraper.js` - Main scraper script
-- `dtdd-mapping.json` - Category mappings (DTDD topics → our categories)
-- `popular-movies.txt` - Sample list of popular movies to import
+- `imdb-parser.js` - IMDb Parental Guide CSV parser
+- `platform-id-mapper.js` - Helper to map IMDb IDs to platform IDs
+- `quickstart.sh` - Interactive menu for common operations
+- `popular-movies.txt` - Sample list of popular movies
 - `README.md` - This file
 
-## Usage
+## Data Sources
 
-### 1. Search for a Single Movie
+### IMDb Parental Guide (Kaggle)
+
+**Dataset**: https://www.kaggle.com/datasets/barryhaworth/imdb-parental-guide
+
+**What it provides:**
+- 5,000+ titles (movies and TV shows)
+- 5 severity categories: Violence, Gore, Profanity, Alcohol, Frightening
+- Severity ratings: None, Mild, Moderate, Severe, Extreme
+
+**Usage:**
 
 ```bash
-node scripts/dtdd-scraper.js \
-  --api-key YOUR_API_KEY \
-  --search "The Shawshank Redemption" \
-  --output sql
+# Download CSV from Kaggle first
+# Then run:
+node scripts/imdb-parser.js \
+  --csv path/to/imdb-parental-guide.csv \
+  --output sql \
+  --limit 1000
 ```
 
 This will:
-1. Search DTDD for "The Shawshank Redemption"
-2. Fetch all trigger warnings
-3. Map them to our categories
+1. Parse the CSV file
+2. Map severity ratings to confidence scores
+3. Map IMDb categories to our trigger categories
 4. Generate SQL INSERT statements
-5. Save to `database/dtdd-import-TIMESTAMP.sql`
-
-### 2. Search by IMDb ID
-
-```bash
-node scripts/dtdd-scraper.js \
-  --api-key YOUR_API_KEY \
-  --imdb tt0111161 \
-  --output sql
-```
-
-### 3. Batch Import from File
-
-```bash
-node scripts/dtdd-scraper.js \
-  --api-key YOUR_API_KEY \
-  --batch scripts/popular-movies.txt \
-  --output sql \
-  --confidence 0.8 \
-  --min-votes 10
-```
-
-This processes all movies in the file with higher quality thresholds.
-
-### 4. Export as JSON
-
-```bash
-node scripts/dtdd-scraper.js \
-  --api-key YOUR_API_KEY \
-  --search "Inception" \
-  --output json
-```
-
-## Options
-
-| Option | Description | Default |
-|--------|-------------|---------|
-| `--api-key` | Your DTDD API key (required) | - |
-| `--search` | Search by movie/show title | - |
-| `--imdb` | Search by IMDb ID (e.g., tt0111161) | - |
-| `--batch` | Process list from file (one title per line) | - |
-| `--output` | Output format: `sql` or `json` | `sql` |
-| `--confidence` | Minimum confidence (0.0-1.0) | 0.7 |
-| `--min-votes` | Minimum total votes required | 5 |
+5. Save to `database/imdb-import-TIMESTAMP.sql`
 
 ## Category Mapping
 
-The scraper maps DTDD topics to our categories automatically:
+### IMDb → Our Categories
 
-| Our Category | DTDD Topics (examples) |
-|--------------|------------------------|
-| `violence` | "blood", "someone is shot", "torture", etc. |
-| `gore` | "gore", "body horror", "graphic violence" |
-| `death` | "a main character dies", "suicide", "murder" |
-| `animals` | "a dog dies", "animal cruelty", "a pet dies" |
-| `sexual_content` | "sexual assault", "rape", "sex scenes" |
-| `abuse` | "child abuse", "domestic abuse", "gaslighting" |
-| `substance_abuse` | "drug use", "alcoholism", "drinking" |
-| `mental_health` | "depression", "self harm", "panic attack" |
-| `medical` | "needles", "surgery", "childbirth" |
-| `discrimination` | "racism", "homophobia", "hate crime" |
+The parser maps IMDb's 5 categories to our 28 trigger categories:
 
-See `dtdd-mapping.json` for the complete mapping.
+```javascript
+{
+  violence: 'violence',        // IMDb Violence → violence
+  gore: 'gore',                // IMDb Gore → gore
+  profanity: 'discrimination', // IMDb Profanity → discrimination
+  alcohol: 'drugs',            // IMDb Alcohol → drugs
+  frightening: 'medical_procedures' // IMDb Frightening → medical_procedures
+}
+```
+
+### Severity → Confidence
+
+IMDb severity ratings are converted to confidence scores (0-100):
+
+| Severity | Confidence | Notes |
+|----------|-----------|-------|
+| None     | 0%        | Skipped (not imported) |
+| Mild     | 25%       | Low confidence |
+| Moderate | 50%       | Medium confidence |
+| Severe   | 75%       | High confidence |
+| Extreme  | 90%       | Very high confidence |
+
+## Quickstart
+
+Use the interactive menu:
+
+```bash
+chmod +x scripts/quickstart.sh
+./scripts/quickstart.sh
+```
+
+**Options:**
+1. Import from IMDb Parental Guide CSV
+2. Process SQL file for platform mapping
+3. Exit
+
+## Platform ID Mapping
+
+After importing, you need to map IMDb IDs to platform-specific video IDs.
+
+### Using the Platform Mapper
+
+```bash
+node scripts/platform-id-mapper.js \
+  --sql-file database/imdb-import-TIMESTAMP.sql \
+  --platform netflix
+```
+
+This will analyze the SQL file and show you:
+- How many entries need mapping
+- Platform-specific instructions
+- Example mappings
+
+### Platform-Specific IDs
+
+| Platform | ID Format | Example | How to Find |
+|----------|-----------|---------|-------------|
+| Netflix | Numeric | `80154610` | URL: netflix.com/watch/80154610 |
+| YouTube | Video ID | `dQw4w9WgXcQ` | URL: youtube.com/watch?v=dQw4w9WgXcQ |
+| Prime Video | ASIN | `B01M63W2LZ` | URL or page source |
+| Hulu | Numeric/slug | `the-matrix` | URL path |
+| Disney+ | GUID | Various formats | URL or API |
+| Max | Slug | `game-of-thrones` | URL path |
+| Peacock | Numeric | Various | URL or API |
 
 ## Output Format
 
 ### SQL Output
 
+Generated SQL files contain INSERT statements:
+
 ```sql
--- The Shawshank Redemption (1994)
 INSERT INTO triggers (
-  video_id,
-  platform,
-  category_key,
-  start_time,
-  end_time,
-  description,
-  confidence_level,
-  status,
-  submitted_by,
-  score,
-  requires_moderation
+  video_id, platform, category_key,
+  start_time, end_time, description,
+  confidence_level, status, submitted_by
 ) VALUES (
-  '278',  -- TMDB ID (placeholder)
-  'unknown',
-  'violence',
-  0,  -- Placeholder start time
-  999999,  -- Placeholder end time
-  'A character is severely beaten',
-  87,  -- Confidence percentage
-  'approved',
-  'dtdd-import',
-  54,  -- Score based on yes/no votes
-  false
+  'tt0133093',           -- IMDb ID (needs platform mapping)
+  'unknown',             -- Platform (needs manual update)
+  'violence',            -- Mapped category
+  0,                     -- Start time (placeholder)
+  999999,                -- End time (placeholder)
+  'Severe violence',     -- Description from IMDb
+  75,                    -- Confidence (75% = "Severe")
+  'approved',            -- Auto-approved (from trusted source)
+  'imdb-import'          -- Source identifier
 );
 ```
 
-### JSON Output
+## Post-Processing Workflow
 
-```json
-[
-  {
-    "videoId": "278",
-    "platform": "unknown",
-    "categoryKey": "violence",
-    "startTime": 0,
-    "endTime": 999999,
-    "description": "A character is severely beaten",
-    "confidenceLevel": 87,
-    "status": "approved",
-    "submittedBy": "dtdd-import",
-    "score": 54,
-    "requiresModeration": false,
-    "metadata": {
-      "source": "dtdd",
-      "topicName": "someone is punched/beaten-up",
-      "yesVotes": 57,
-      "noVotes": 3
-    }
-  }
-]
-```
+1. **Import data** using IMDb parser
+2. **Review SQL file** - Check categories and confidence scores
+3. **Map platform IDs** - Convert IMDb IDs to platform-specific IDs
+4. **Add timestamps** - Replace placeholders with actual times (optional)
+5. **Import to database** - Load SQL into Supabase
 
-## Post-Processing Steps
+## Best Practices
 
-After running the scraper, you need to:
+### Quality Control
 
-### 1. Map Video IDs to Platforms
+- **Review imports** before loading to production database
+- **Test with small batches** (limit=100) first
+- **Verify category mappings** make sense for your use case
+- **Add user feedback** mechanism to improve data quality
 
-The scraper uses TMDB/IMDb IDs as placeholders. You need to:
+### Performance
 
-1. **For Netflix**: Use the Netflix video ID from the URL
-   - Example: `https://www.netflix.com/watch/80117401` → `80117401`
+- **Batch imports** in chunks of 1000-5000 entries
+- **Use transactions** when importing to database
+- **Index properly** on video_id and platform for fast queries
 
-2. **For YouTube**: Find the movie on YouTube and extract video ID
-   - Example: `https://www.youtube.com/watch?v=dQw4w9WgXcQ` → `dQw4w9WgXcQ`
+### Maintenance
 
-3. **For Prime Video**: Use the Amazon ASIN
-   - Example: `https://www.primevideo.com/detail/B00ABC123` → `B00ABC123`
-
-4. **For others**: Similar platform-specific ID extraction
-
-### 2. Add Timestamps
-
-DTDD doesn't provide timestamps, so all warnings have placeholders:
-- `start_time: 0`
-- `end_time: 999999`
-
-You need to:
-1. Watch the content (or use existing resources)
-2. Note when triggers actually occur
-3. Update the timestamps in the SQL/database
-
-### 3. Review Categories
-
-While the mapping is comprehensive, some topics might map to multiple categories. Review and adjust as needed.
-
-### 4. Import to Database
-
-Once you've processed the data:
-
-```bash
-# Connect to Supabase SQL editor or psql
-psql -h your-db-host -U postgres -d postgres < database/dtdd-import-TIMESTAMP.sql
-```
-
-Or use the Supabase dashboard SQL editor.
-
-## Example Workflow
-
-```bash
-# 1. Export API key
-export DTDD_API_KEY="your-api-key-here"
-
-# 2. Test with a single movie
-node scripts/dtdd-scraper.js \
-  --api-key $DTDD_API_KEY \
-  --search "The Matrix" \
-  --output sql
-
-# 3. Review the output
-cat database/dtdd-import-*.sql
-
-# 4. If it looks good, batch process popular movies
-node scripts/dtdd-scraper.js \
-  --api-key $DTDD_API_KEY \
-  --batch scripts/popular-movies.txt \
-  --output sql \
-  --confidence 0.75 \
-  --min-votes 8
-
-# 5. Post-process the SQL file
-# - Replace TMDB IDs with platform video IDs
-# - Add real timestamps where known
-# - Review categories
-
-# 6. Import to Supabase
-# Use Supabase SQL editor to run the import file
-```
-
-## Quality Thresholds
-
-Recommended settings for different use cases:
-
-### High Confidence (Production)
-```bash
---confidence 0.8 \
---min-votes 10
-```
-
-### Moderate (Initial Seed)
-```bash
---confidence 0.7 \
---min-votes 5
-```
-
-### Comprehensive (Include More)
-```bash
---confidence 0.6 \
---min-votes 3
-```
+- **Regular updates** - Re-import periodically for new content
+- **Community feedback** - Let users correct/improve warnings
+- **Timestamp refinement** - Encourage community timestamp submissions
 
 ## Troubleshooting
 
-### Error: HTTP 401
-- Your API key is invalid or expired
-- Get a new key from https://www.doesthedogdie.com/profile
+### "File not found" error
 
-### Error: HTTP 429
-- Rate limited by DTDD
-- The script includes 1-second delays between requests
-- For large batches, run in smaller chunks
+```bash
+# Verify file path
+ls -la path/to/file.csv
 
-### No triggers found
-- The movie/show might not be in DTDD database
-- Try searching by IMDb ID instead of title
-- Lower the confidence threshold
-
-### Wrong category mappings
-- Edit `dtdd-mapping.json` to adjust mappings
-- Add new DTDD topics to the appropriate category arrays
-
-## Extending the Scraper
-
-### Add New Category Mappings
-
-Edit `dtdd-mapping.json`:
-
-```json
-{
-  "categoryMapping": {
-    "your_category": [
-      "dtdd topic 1",
-      "dtdd topic 2"
-    ]
-  }
-}
+# Use absolute path
+node scripts/imdb-parser.js --csv /full/path/to/file.csv
 ```
 
-### Custom Processing
+### No output generated
 
-The scraper is modular. You can import and extend it:
+```bash
+# Check if CSV is valid
+head -5 path/to/file.csv
 
-```javascript
-const DTDDScraper = require('./dtdd-scraper');
-
-const scraper = new DTDDScraper('your-api-key');
-
-// Custom processing
-const results = await scraper.search('Movie Name');
-const mediaData = await scraper.getMedia(results[0].id);
-const processed = scraper.processTriggers(mediaData);
-
-// Your custom logic here
+# Try with verbose logging
+node scripts/imdb-parser.js --csv file.csv --output sql --limit 10
 ```
 
-## Next Steps
+### Invalid IMDb IDs
 
-1. **Get API Key**: Sign up at https://www.doesthedogdie.com
-2. **Test Script**: Run with a single movie
-3. **Review Output**: Check SQL/JSON output
-4. **Batch Import**: Process popular movies list
-5. **Post-Process**: Add platform IDs and timestamps
-6. **Import**: Load into Supabase database
+The platform mapper helps identify which IDs need manual mapping:
+
+```bash
+node scripts/platform-id-mapper.js --sql-file database/imdb-import-*.sql --platform netflix
+```
+
+## Data Privacy
+
+**What we import:**
+- IMDb ID
+- Category/severity information
+- Public parental guide descriptions
+
+**What we DON'T import:**
+- User viewing history
+- Personal information
+- Video content
+
+All imported data is publicly available parental guidance information.
+
+## Contributing
+
+Help improve the import scripts:
+
+1. **Better category mappings** - Submit PRs to improve IMDb → TW category mapping
+2. **New data sources** - Add parsers for other public datasets
+3. **Automation** - Scripts to auto-map platform IDs
+4. **Quality improvements** - Better confidence scoring algorithms
+
+## Future Enhancements
+
+- [ ] Automated platform ID mapping via TMDB/IMDb APIs
+- [ ] Multi-language support for IMDb descriptions
+- [ ] Timestamp estimation from subtitle analysis
+- [ ] Automatic deduplication of similar warnings
+- [ ] Machine learning for category prediction
 
 ## Support
 
-For DTDD API issues: https://www.doesthedogdie.com/help
-For scraper issues: Check the main project repository
+- **Documentation**: See main README.md
+- **Issues**: https://github.com/lightmyfireadmin/triggerwarnings/issues
+- **Dataset Issues**: Report to Kaggle dataset maintainers
+
+---
+
+**Remember**: Imported data provides broad coverage but lacks precision. Real-time subtitle analysis and community submissions provide the exact timestamps users need.
