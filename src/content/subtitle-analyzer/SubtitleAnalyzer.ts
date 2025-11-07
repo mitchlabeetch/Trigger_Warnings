@@ -12,6 +12,7 @@
 
 import type { Warning, TriggerCategory } from '@shared/types/Warning.types';
 import { Logger } from '@shared/utils/logger';
+import { SubtitleTranslator } from './SubtitleTranslator';
 
 const logger = new Logger('SubtitleAnalyzer');
 
@@ -26,9 +27,15 @@ export class SubtitleAnalyzer {
   private detectedTriggers: Map<string, Warning> = new Map();
   private keywordDictionary: TriggerKeyword[] = [];
   private onTriggerDetected: ((warning: Warning) => void) | null = null;
+  private translator: SubtitleTranslator;
+  private needsTranslation: boolean = false;
+  private sourceLanguage: string = 'en';
+  private video: HTMLVideoElement | null = null;
+  private prefetchInterval: number | null = null;
 
   constructor() {
     this.buildKeywordDictionary();
+    this.translator = new SubtitleTranslator();
   }
 
   /**
@@ -133,18 +140,20 @@ export class SubtitleAnalyzer {
   /**
    * Initialize subtitle tracking for a video element
    *
-   * Track Selection Priority:
-   * 1. Currently showing English subtitles (user has English on)
-   * 2. Currently showing subtitles in any language (user has subs on)
-   * 3. Available English subtitle track (will enable in hidden mode)
-   * 4. Any available subtitle track in any language (will enable in hidden mode)
+   * CRITICAL: Analyzer runs INDEPENDENTLY from user's subtitle choice
    *
-   * Note: Keyword matching is currently English-only. Non-English subtitles
-   * will be analyzed but may have reduced detection rates. Future enhancement
-   * could include multilingual keyword dictionaries.
+   * Track Selection Strategy:
+   * 1. ALWAYS prefer English track for analyzer (runs in 'hidden' mode)
+   * 2. If no English track → Use first available language + translation
+   * 3. User can show/hide any subtitles they want without affecting analyzer
+   *
+   * Examples:
+   * - User shows Spanish subtitles → Analyzer uses English track (hidden)
+   * - User shows no subtitles → Analyzer uses English track (hidden)
+   * - Only Spanish available → Analyzer uses Spanish + translates to English
    */
   initialize(video: HTMLVideoElement): void {
-    // Try to get active text track
+    this.video = video;
     const tracks = video.textTracks;
 
     if (tracks.length === 0) {
@@ -152,10 +161,9 @@ export class SubtitleAnalyzer {
       return;
     }
 
-    // Find best available track (prefer English, then any language)
-    let activeTrack: TextTrack | null = null;
+    // Find English track for analyzer (independent of user choice)
     let englishTrack: TextTrack | null = null;
-    let anyTrack: TextTrack | null = null;
+    let fallbackTrack: TextTrack | null = null;
 
     for (let i = 0; i < tracks.length; i++) {
       const track = tracks[i];
@@ -167,42 +175,44 @@ export class SubtitleAnalyzer {
       const language = track.language.toLowerCase();
       const isEnglish = language.startsWith('en'); // Matches 'en', 'en-US', 'en-GB', etc.
 
-      // Priority 1: Currently showing English track
-      if (track.mode === 'showing' && isEnglish) {
-        activeTrack = track;
-        break;
-      }
-
-      // Priority 2: Currently showing track (any language)
-      if (track.mode === 'showing' && !activeTrack) {
-        activeTrack = track;
-      }
-
-      // Priority 3: English track (not showing)
+      // Priority 1: English track for analyzer (always preferred)
       if (isEnglish && !englishTrack) {
         englishTrack = track;
       }
 
-      // Priority 4: Any available track
-      if (!anyTrack) {
-        anyTrack = track;
+      // Priority 2: Any available track as fallback
+      if (!fallbackTrack) {
+        fallbackTrack = track;
       }
     }
 
-    // Use best available track
-    const selectedTrack = activeTrack || englishTrack || anyTrack;
+    // Select track for analyzer
+    const selectedTrack = englishTrack || fallbackTrack;
 
     if (!selectedTrack) {
       logger.debug('No subtitle tracks available');
       return;
     }
 
+    // Determine if we need translation
+    this.sourceLanguage = selectedTrack.language || 'en';
+    this.needsTranslation = !this.sourceLanguage.toLowerCase().startsWith('en');
+
     this.textTrack = selectedTrack;
     this.attachListeners();
 
-    logger.info(
-      `Initialized with track: ${selectedTrack.label || 'Untitled'} (${selectedTrack.language || 'unknown'})`
-    );
+    const trackInfo = `${selectedTrack.label || 'Untitled'} (${this.sourceLanguage})`;
+
+    if (this.needsTranslation) {
+      logger.info(
+        `Initialized with non-English track: ${trackInfo} - Translation enabled`
+      );
+
+      // Start prefetching translations
+      this.startPrefetching();
+    } else {
+      logger.info(`Initialized with English track: ${trackInfo}`);
+    }
   }
 
   /**
@@ -221,15 +231,47 @@ export class SubtitleAnalyzer {
   }
 
   /**
+   * Start prefetching translations ahead of playback
+   */
+  private startPrefetching(): void {
+    if (!this.needsTranslation || !this.video || !this.textTrack) {
+      return;
+    }
+
+    // Prefetch every 5 seconds
+    this.prefetchInterval = window.setInterval(() => {
+      if (!this.video || !this.textTrack || !this.textTrack.cues) {
+        return;
+      }
+
+      const cues = Array.from(this.textTrack.cues) as VTTCue[];
+      const currentTime = this.video.currentTime;
+
+      // Prefetch translations 30 seconds ahead
+      this.translator.prefetchTranslations(cues, this.sourceLanguage, currentTime, 30);
+    }, 5000);
+  }
+
+  /**
    * Analyze current subtitle cues for trigger keywords
    */
-  private analyzeCues(): void {
+  private async analyzeCues(): Promise<void> {
     if (!this.textTrack || !this.textTrack.activeCues) return;
 
     const cues = Array.from(this.textTrack.activeCues) as VTTCue[];
 
     for (const cue of cues) {
-      this.analyzeText(cue.text, cue.startTime, cue.endTime);
+      let textToAnalyze = cue.text;
+
+      // Translate if needed
+      if (this.needsTranslation) {
+        textToAnalyze = await this.translator.translateText(
+          cue.text,
+          this.sourceLanguage
+        );
+      }
+
+      this.analyzeText(textToAnalyze, cue.startTime, cue.endTime);
     }
   }
 
@@ -304,8 +346,30 @@ export class SubtitleAnalyzer {
    * Dispose of analyzer
    */
   dispose(): void {
+    // Clear prefetch interval
+    if (this.prefetchInterval) {
+      clearInterval(this.prefetchInterval);
+      this.prefetchInterval = null;
+    }
+
     this.textTrack = null;
+    this.video = null;
     this.detectedTriggers.clear();
     this.onTriggerDetected = null;
+  }
+
+  /**
+   * Get translation statistics
+   */
+  getTranslationStats(): {
+    enabled: boolean;
+    language: string;
+    cacheStats: ReturnType<SubtitleTranslator['getCacheStats']>;
+  } {
+    return {
+      enabled: this.needsTranslation,
+      language: this.sourceLanguage,
+      cacheStats: this.translator.getCacheStats(),
+    };
   }
 }
