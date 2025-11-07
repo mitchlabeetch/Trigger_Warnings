@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - Trigger Warnings Extension</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f7fafc;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: white;
+            min-height: 100vh;
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .last-updated {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            color: #764ba2;
+            margin-top: 40px;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+        }
+
+        h3 {
+            color: #555;
+            margin-top: 25px;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+
+        p {
+            margin-bottom: 15px;
+            color: #555;
+        }
+
+        ul {
+            margin-left: 25px;
+            margin-bottom: 15px;
+        }
+
+        li {
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        .highlight {
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .contact {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← Back to Home</a>
+
+        <h1>Privacy Policy</h1>
+        <p class="last-updated">Last Updated: November 7, 2024</p>
+
+        <div class="highlight">
+            <strong>TL;DR:</strong> We don't collect, store, or transmit any personal data. Everything happens locally on your device. Your viewing history and preferences stay private.
+        </div>
+
+        <h2>1. Introduction</h2>
+        <p>
+            Trigger Warnings ("we", "our", or "the extension") is committed to protecting your privacy.
+            This Privacy Policy explains how we handle information in relation to your use of our browser extension.
+        </p>
+
+        <h2>2. Information We Do NOT Collect</h2>
+        <p>We do not collect, store, or transmit:</p>
+        <ul>
+            <li>Personal identification information</li>
+            <li>Email addresses or account credentials</li>
+            <li>Viewing history or watch patterns</li>
+            <li>Video content or screenshots</li>
+            <li>IP addresses or location data</li>
+            <li>Browser fingerprints or tracking identifiers</li>
+            <li>Usage analytics or telemetry</li>
+        </ul>
+
+        <h2>3. Local Data Storage</h2>
+        <p>The extension stores data locally on your device using browser storage APIs:</p>
+
+        <h3>3.1 User Preferences</h3>
+        <ul>
+            <li><strong>Profile settings:</strong> Your custom profiles, category preferences, and display settings</li>
+            <li><strong>Storage location:</strong> Browser's local storage (chrome.storage.local)</li>
+            <li><strong>Access:</strong> Only accessible by the extension on your device</li>
+            <li><strong>Deletion:</strong> Can be cleared through extension settings or browser data clearing</li>
+        </ul>
+
+        <h3>3.2 Translation Cache</h3>
+        <ul>
+            <li><strong>Purpose:</strong> Cache translated subtitle text to reduce API calls</li>
+            <li><strong>Data stored:</strong> Subtitle text and translations (no video content)</li>
+            <li><strong>Retention:</strong> Automatically expires after 7 days</li>
+            <li><strong>Storage location:</strong> Browser's localStorage</li>
+        </ul>
+
+        <h2>4. Network Requests</h2>
+        <p>The extension makes limited network requests for functionality:</p>
+
+        <h3>4.1 Warning Database Queries</h3>
+        <ul>
+            <li><strong>Data sent:</strong> Video platform ID only (e.g., "tt1234567" for IMDb)</li>
+            <li><strong>Purpose:</strong> Retrieve trigger warnings for the current video</li>
+            <li><strong>Service:</strong> Supabase database (self-hosted, no third-party tracking)</li>
+            <li><strong>Privacy:</strong> Video IDs are not linked to your identity or viewing history</li>
+        </ul>
+
+        <h3>4.2 Translation API (Optional)</h3>
+        <ul>
+            <li><strong>Service:</strong> MyMemory Translation API (api.mymemory.translated.net)</li>
+            <li><strong>Data sent:</strong> Subtitle text only (for non-English content)</li>
+            <li><strong>When used:</strong> Only when English subtitles are unavailable</li>
+            <li><strong>Privacy:</strong> MyMemory is GDPR compliant and doesn't track users</li>
+            <li><strong>Opt-out:</strong> Translation features can be disabled in settings</li>
+        </ul>
+
+        <h2>5. Third-Party Services</h2>
+
+        <h3>5.1 Supabase (Database Hosting)</h3>
+        <ul>
+            <li><strong>Purpose:</strong> Stores community-submitted trigger warnings</li>
+            <li><strong>Data transmitted:</strong> Video IDs for queries, warning submissions</li>
+            <li><strong>Privacy:</strong> Self-hosted instance, no cross-service tracking</li>
+            <li><strong>Location:</strong> EU-based servers (GDPR compliant)</li>
+        </ul>
+
+        <h3>5.2 MyMemory Translation API</h3>
+        <ul>
+            <li><strong>Purpose:</strong> Translates non-English subtitles for trigger detection</li>
+            <li><strong>Data transmitted:</strong> Subtitle text only (no video content)</li>
+            <li><strong>Privacy Policy:</strong> <a href="https://mymemory.translated.net/doc/usagelimits.php" target="_blank">MyMemory Privacy</a></li>
+            <li><strong>Free tier:</strong> 10,000 words/day, no account required</li>
+        </ul>
+
+        <h2>6. Permissions Justification</h2>
+        <p>The extension requests the following permissions:</p>
+
+        <h3>6.1 Storage Permission</h3>
+        <ul>
+            <li><strong>Why needed:</strong> Save user preferences, profiles, and translation cache</li>
+            <li><strong>Data stored:</strong> Settings, profiles, cached translations (all local)</li>
+        </ul>
+
+        <h3>6.2 Active Tab Permission</h3>
+        <ul>
+            <li><strong>Why needed:</strong> Detect current video and inject warning banners</li>
+            <li><strong>Access:</strong> Only on supported streaming platforms</li>
+        </ul>
+
+        <h3>6.3 Host Permissions</h3>
+        <ul>
+            <li><strong>Domains:</strong> Netflix, YouTube, Prime Video, Hulu, Disney+, Max, Peacock</li>
+            <li><strong>Why needed:</strong> Access video player to display warnings and analyze subtitles</li>
+            <li><strong>Scope:</strong> Limited to video detection and banner injection</li>
+        </ul>
+
+        <h2>7. Data Processing</h2>
+
+        <h3>7.1 Video Analysis</h3>
+        <ul>
+            <li><strong>Subtitle Analysis:</strong> Processed locally in your browser</li>
+            <li><strong>Photosensitivity Detection:</strong> Frame analysis happens client-side</li>
+            <li><strong>Video Content:</strong> Never uploaded, transmitted, or stored</li>
+        </ul>
+
+        <h3>7.2 User Submissions</h3>
+        <p>When you submit trigger warnings:</p>
+        <ul>
+            <li><strong>Required data:</strong> Video ID, category, timestamp, description</li>
+            <li><strong>Optional data:</strong> Username (can be anonymous)</li>
+            <li><strong>Storage:</strong> Stored in community database for other users</li>
+            <li><strong>Deletion:</strong> Contact us to remove your submissions</li>
+        </ul>
+
+        <h2>8. Children's Privacy</h2>
+        <p>
+            The extension does not knowingly collect information from children under 13.
+            The service is designed to be used by anyone who can install browser extensions,
+            but we do not target children specifically.
+        </p>
+
+        <h2>9. Data Security</h2>
+        <ul>
+            <li>All network requests use HTTPS encryption</li>
+            <li>No authentication tokens or passwords are stored</li>
+            <li>Local data is protected by browser security mechanisms</li>
+            <li>No server-side user accounts or profiles</li>
+        </ul>
+
+        <h2>10. Your Rights</h2>
+        <p>You have the right to:</p>
+        <ul>
+            <li><strong>Access:</strong> Review all locally stored data in extension settings</li>
+            <li><strong>Deletion:</strong> Clear all extension data through settings or browser</li>
+            <li><strong>Portability:</strong> Export your profiles and settings (JSON format)</li>
+            <li><strong>Opt-out:</strong> Disable specific features (e.g., translation, analytics)</li>
+        </ul>
+
+        <h2>11. Changes to Privacy Policy</h2>
+        <p>
+            We may update this Privacy Policy from time to time. Changes will be posted on this page
+            with an updated "Last Updated" date. Continued use of the extension after changes
+            constitutes acceptance of the updated policy.
+        </p>
+
+        <h2>12. Open Source</h2>
+        <p>
+            Trigger Warnings is open source software. You can review our code to verify our
+            privacy claims:
+        </p>
+        <ul>
+            <li><strong>GitHub Repository:</strong> <a href="https://github.com/lightmyfireadmin/triggerwarnings" target="_blank">github.com/lightmyfireadmin/triggerwarnings</a></li>
+            <li><strong>License:</strong> MIT License</li>
+            <li><strong>Transparency:</strong> All data handling is visible in source code</li>
+        </ul>
+
+        <h2>13. Third-Party Links</h2>
+        <p>
+            The extension may contain links to external websites (e.g., GitHub, documentation).
+            We are not responsible for the privacy practices of these external sites.
+        </p>
+
+        <h2>14. International Users</h2>
+        <p>
+            The extension can be used worldwide. Database servers are located in the EU (GDPR compliant).
+            Translation services are provided by MyMemory, which operates globally.
+        </p>
+
+        <h2>15. Do Not Track</h2>
+        <p>
+            The extension does not track users, so Do Not Track (DNT) settings are not applicable.
+            We respect your privacy by default.
+        </p>
+
+        <div class="contact">
+            <h2>16. Contact Us</h2>
+            <p>For privacy-related questions or concerns, please contact us:</p>
+            <ul>
+                <li><strong>Email:</strong> [YOUR_EMAIL@example.com]</li>
+                <li><strong>GitHub Issues:</strong> <a href="https://github.com/lightmyfireadmin/triggerwarnings/issues" target="_blank">github.com/lightmyfireadmin/triggerwarnings/issues</a></li>
+                <li><strong>Response Time:</strong> We aim to respond within 48 hours</li>
+            </ul>
+        </div>
+
+        <div class="highlight" style="margin-top: 40px;">
+            <strong>Summary:</strong> Your privacy is our priority. We don't collect personal data,
+            we don't track your viewing habits, and all processing happens locally on your device.
+            The only network requests are for fetching trigger warnings (video IDs only) and
+            optional subtitle translation.
+        </div>
+    </div>
+</body>
+</html>
