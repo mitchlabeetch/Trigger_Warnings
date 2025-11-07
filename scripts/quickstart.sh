@@ -43,9 +43,10 @@ echo "1) Test with a single movie (recommended first)"
 echo "2) Import popular movies (batch)"
 echo "3) Search by IMDb ID"
 echo "4) Custom search"
-echo "5) Process SQL file for platform mapping"
+echo "5) Import from IMDb Parental Guide (Kaggle)"
+echo "6) Process SQL file for platform mapping"
 echo ""
-read -p "Enter choice (1-5): " choice
+read -p "Enter choice (1-6): " choice
 
 case $choice in
     1)
@@ -129,8 +130,36 @@ case $choice in
 
     5)
         echo ""
+        echo "📊 IMDb Parental Guide Import"
+        echo ""
+        echo "Download the CSV from:"
+        echo "https://www.kaggle.com/datasets/barryhaworth/imdb-parental-guide"
+        echo ""
+        read -p "Enter path to CSV file: " csv_file
+
+        if [ ! -f "$csv_file" ]; then
+            echo "❌ File not found: $csv_file"
+            exit 1
+        fi
+
+        read -p "Limit entries (default: 1000): " limit
+        limit=${limit:-1000}
+
+        echo ""
+        echo "📋 Processing IMDb data..."
+        node scripts/imdb-parser.js \
+            --csv "$csv_file" \
+            --output sql \
+            --limit "$limit"
+
+        echo ""
+        echo "✅ Done! Check the database/ folder for output"
+        ;;
+
+    6)
+        echo ""
         echo "Available SQL files:"
-        ls -1 database/dtdd-import-*.sql 2>/dev/null || echo "   No import files found"
+        ls -1 database/*-import-*.sql 2>/dev/null || echo "   No import files found"
         echo ""
         read -p "Enter SQL file path: " sql_file
 

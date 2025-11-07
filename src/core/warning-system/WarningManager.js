@@ -5,6 +5,8 @@ import { SupabaseClient } from '../api/SupabaseClient';
 import { StorageAdapter } from '../storage/StorageAdapter';
 import { ProfileManager } from '../profiles/ProfileManager';
 import { CACHE_EXPIRATION_MS, VIDEO_CHECK_INTERVAL_MS } from '@shared/constants/defaults';
+import { SubtitleAnalyzer } from '../../content/subtitle-analyzer/SubtitleAnalyzer';
+import { PhotosensitivityDetector } from '../../content/photosensitivity-detector/PhotosensitivityDetector';
 export class WarningManager {
     provider;
     profile;
@@ -17,11 +19,23 @@ export class WarningManager {
     currentVideoId = null;
     // In-memory cache for faster access
     static warningCache = new Map();
+    // Real-time detection systems
+    subtitleAnalyzer = null;
+    photosensitivityDetector = null;
+    enableSubtitleAnalysis = true; // Can be made configurable
+    enablePhotosensitivityDetection = true;
     onWarningCallback = null;
     onWarningEndCallback = null;
     constructor(provider) {
         this.provider = provider;
         this.profile = null; // Will be initialized in initialize()
+        // Initialize analyzers
+        if (this.enableSubtitleAnalysis) {
+            this.subtitleAnalyzer = new SubtitleAnalyzer();
+        }
+        if (this.enablePhotosensitivityDetection) {
+            this.photosensitivityDetector = new PhotosensitivityDetector();
+        }
     }
     /**
      * Initialize the warning manager
@@ -37,6 +51,8 @@ export class WarningManager {
         }
         // Fetch warnings for this media
         await this.fetchWarnings(media.id);
+        // Initialize real-time detection systems
+        this.initializeDetectors();
         // Start monitoring
         this.startMonitoring();
         // Listen for media changes
@@ -48,6 +64,34 @@ export class WarningManager {
             this.profile = await ProfileManager.getActive();
             this.refilterWarnings();
         });
+    }
+    /**
+     * Initialize real-time detection systems
+     */
+    initializeDetectors() {
+        const video = this.provider.getVideoElement();
+        if (!video)
+            return;
+        // Initialize subtitle analyzer
+        if (this.subtitleAnalyzer) {
+            this.subtitleAnalyzer.initialize(video);
+            this.subtitleAnalyzer.onDetection((warning) => {
+                // Add detected warning to our list
+                if (this.profile.enabledCategories.includes(warning.categoryKey)) {
+                    console.log('[TW WarningManager] Subtitle detected trigger:', warning);
+                    this.warnings.push(warning);
+                }
+            });
+        }
+        // Initialize photosensitivity detector
+        if (this.photosensitivityDetector) {
+            this.photosensitivityDetector.initialize(video);
+            this.photosensitivityDetector.onDetection((warning) => {
+                // Always show photosensitivity warnings (critical for health)
+                console.warn('[TW WarningManager] ⚠️ Photosensitivity warning:', warning);
+                this.warnings.push(warning);
+            });
+        }
     }
     /**
      * Fetch warnings for a video
@@ -279,6 +323,13 @@ export class WarningManager {
      */
     dispose() {
         this.stopMonitoring();
+        // Dispose detectors
+        if (this.subtitleAnalyzer) {
+            this.subtitleAnalyzer.dispose();
+        }
+        if (this.photosensitivityDetector) {
+            this.photosensitivityDetector.dispose();
+        }
         this.activeWarnings.clear();
         this.warnings = [];
         this.onWarningCallback = null;

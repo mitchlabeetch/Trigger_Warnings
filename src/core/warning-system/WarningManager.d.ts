@@ -14,6 +14,10 @@ export declare class WarningManager {
     private lastCheckTime;
     private currentVideoId;
     private static warningCache;
+    private subtitleAnalyzer;
+    private photosensitivityDetector;
+    private enableSubtitleAnalysis;
+    private enablePhotosensitivityDetection;
     private onWarningCallback;
     private onWarningEndCallback;
     constructor(provider: IStreamingProvider);
@@ -21,6 +25,10 @@ export declare class WarningManager {
      * Initialize the warning manager
      */
     initialize(): Promise<void>;
+    /**
+     * Initialize real-time detection systems
+     */
+    private initializeDetectors;
     /**
      * Fetch warnings for a video
      */

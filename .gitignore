@@ -4,6 +4,12 @@ dist/
 # Environment variables with API keys
 scripts/.env
 
-# DTDD import outputs
+# Data import outputs
 database/dtdd-import-*.sql
 database/dtdd-import-*.json
+database/imdb-import-*.sql
+database/imdb-import-*.json
+
+# Downloaded datasets
+scripts/*.csv
+scripts/imdb-*.csv
