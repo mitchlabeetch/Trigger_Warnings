@@ -23,10 +23,7 @@ export default defineConfig({
       manifest: generateManifest,
       watchFilePaths: ['package.json', 'src/manifest/manifest.json'],
       browser: target,
-      disableAutoLaunch: false,
-      webExtConfig: {
-        startUrl: ['https://www.netflix.com'],
-      },
+      disableAutoLaunch: true,
     }),
   ],
   resolve: {
@@ -43,12 +40,6 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: true,
-    rollupOptions: {
-      input: {
-        popup: 'src/popup/index.html',
-        options: 'src/options/index.html',
-      },
-    },
   },
   test: {
     globals: true,

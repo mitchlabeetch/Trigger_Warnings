@@ -3,7 +3,7 @@
  */
 
 import type { MediaInfo } from './Provider.types';
-import type { Warning, WarningSubmission, WarningVote } from './Warning.types';
+import type { Warning, WarningSubmission } from './Warning.types';
 import type { Profile, ProfileCreateInput, ProfileUpdateInput } from './Profile.types';
 
 export type MessageType =

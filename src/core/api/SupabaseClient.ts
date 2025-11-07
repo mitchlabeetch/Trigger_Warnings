@@ -4,7 +4,7 @@
 
 import { createClient, type SupabaseClient as Client } from '@supabase/supabase-js';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from '@shared/constants/defaults';
-import type { Warning, WarningSubmission, WarningVote } from '@shared/types/Warning.types';
+import type { Warning, WarningSubmission } from '@shared/types/Warning.types';
 
 export class SupabaseClient {
   private static instance: Client | null = null;

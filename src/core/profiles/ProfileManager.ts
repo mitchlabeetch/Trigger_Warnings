@@ -91,11 +91,13 @@ export class ProfileManager {
     const profiles = await this.getAll();
 
     // If copying from another profile
-    let baseProfile: Partial<Profile> = { ...DEFAULT_PROFILE };
+    let baseSettings = { ...DEFAULT_PROFILE };
     if (input.copyFrom) {
       const sourceProfile = await this.get(input.copyFrom);
       if (sourceProfile) {
-        baseProfile = {
+        baseSettings = {
+          name: input.name,
+          isDefault: input.isDefault ?? false,
           enabledCategories: [...sourceProfile.enabledCategories],
           categoryActions: { ...sourceProfile.categoryActions },
           display: { ...sourceProfile.display },
@@ -109,12 +111,12 @@ export class ProfileManager {
 
     const now = new Date();
     const newProfile: Profile = {
+      ...baseSettings,
       id: this.generateId(),
       name: input.name,
       isDefault: input.isDefault ?? false,
       createdAt: now,
       updatedAt: now,
-      ...baseProfile,
     };
 
     // If this is default, unset other defaults

@@ -2,7 +2,7 @@
  * Warning manager - core logic for warning system
  */
 
-import type { Warning, ActiveWarning, WarningAction } from '@shared/types/Warning.types';
+import type { Warning, ActiveWarning } from '@shared/types/Warning.types';
 import type { Profile } from '@shared/types/Profile.types';
 import type { IStreamingProvider, MediaInfo } from '@shared/types/Provider.types';
 import { SupabaseClient } from '../api/SupabaseClient';
