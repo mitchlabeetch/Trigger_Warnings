@@ -26,9 +26,8 @@ jobs:
         run: npm install
 
       - name: Build extension
-        # Runs vite build directly to bypass the tsc check in "npm run build"
-        # The TARGET_BROWSER=chrome is required by your vite.config.ts
-        run: TARGET_BROWSER=chrome vite build
+        # Use "npx" to execute the locally installed vite package
+        run: TARGET_BROWSER=chrome npx vite build
 
       - name: Make script executable
         run: chmod +x scripts/package-extension.sh
