@@ -39,6 +39,9 @@
             --success: #48bb78;
             --warning: #ed8936;
             --danger: #f56565;
+            --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
         }
 
         body {
@@ -46,35 +49,43 @@
             line-height: 1.6;
             color: var(--text-dark);
             overflow-x: hidden;
+            scroll-behavior: smooth;
         }
 
-        /* Hero Section */
+        /* Animated Background */
+        .animated-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .floating-shape {
+            position: absolute;
+            opacity: 0.05;
+            animation: float-random 20s infinite ease-in-out;
+        }
+
+        @keyframes float-random {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(30px, -30px) rotate(90deg); }
+            50% { transform: translate(-20px, 20px) rotate(180deg); }
+            75% { transform: translate(40px, 10px) rotate(270deg); }
+        }
+
+        /* Hero Section with Animated Warning Banners */
         .hero {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            min-height: 100vh;
+            background: var(--gradient-1);
             color: white;
             padding: 120px 20px 80px;
-            text-align: center;
             position: relative;
             overflow: hidden;
-        }
-
-        .hero-logo {
-            width: 120px;
-            height: 120px;
-            margin: 0 auto 30px;
-            animation: float 3s ease-in-out infinite;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-        }
-
-        .hero-logo img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            filter: drop-shadow(0 4px 12px rgba(0,0,0,0.2));
+            display: flex;
+            align-items: center;
         }
 
         .hero::before {
@@ -84,7 +95,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
             opacity: 0.1;
         }
 
@@ -96,6 +107,58 @@
             z-index: 1;
         }
 
+        .hero-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .hero-text {
+            animation: fadeInLeft 1s ease-out;
+        }
+
+        .hero-logo {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes fadeInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeInRight {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .hero-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 12px rgba(0,0,0,0.2));
+        }
+
         .hero h1 {
             font-size: 3.5rem;
             font-weight: 800;
@@ -105,18 +168,26 @@
         }
 
         .hero-subtitle {
-            font-size: 1.5rem;
-            margin-bottom: 40px;
+            font-size: 1.3rem;
+            margin-bottom: 30px;
             opacity: 0.95;
-            max-width: 700px;
-            margin-left: auto;
-            margin-right: auto;
+            line-height: 1.7;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.3);
         }
 
         .cta-buttons {
             display: flex;
             gap: 20px;
-            justify-content: center;
             flex-wrap: wrap;
         }
 
@@ -155,213 +226,661 @@
             transform: translateY(-2px);
         }
 
-        /* Features Section */
-        .features {
-            padding: 80px 20px;
+        /* Live Warning Banner Demo */
+        .warning-demo {
+            position: relative;
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            animation: fadeInRight 1s ease-out;
+            min-height: 400px;
+        }
+
+        .demo-label {
+            text-align: center;
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .video-mockup {
+            background: #000;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            aspect-ratio: 16/9;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .video-mockup::before {
+            content: '▶';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4rem;
+            color: rgba(255,255,255,0.3);
+            z-index: 0;
+        }
+
+        .warning-banner {
+            position: absolute;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            opacity: 0;
+            animation: bannerSlideIn 0.5s ease-out forwards;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .warning-banner.violence {
+            background: rgba(239, 68, 68, 0.95);
+            color: white;
+            top: 20px;
+            right: 20px;
+        }
+
+        .warning-banner.flashing {
+            background: rgba(234, 179, 8, 0.95);
+            color: white;
+            bottom: 20px;
+            left: 20px;
+        }
+
+        .warning-banner.subtitle {
+            background: rgba(59, 130, 246, 0.95);
+            color: white;
+            top: 20px;
+            left: 20px;
+        }
+
+        @keyframes bannerSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .warning-banner .icon {
+            font-size: 1.2rem;
+            margin-right: 8px;
+        }
+
+        .warning-banner .time {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            margin-left: 8px;
+        }
+
+        /* Feature Sections */
+        .feature-section {
+            padding: 120px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-section:nth-child(even) {
             background: var(--bg-light);
         }
 
-        .section-title {
+        .section-header {
             text-align: center;
-            font-size: 2.5rem;
-            font-weight: 700;
+            margin-bottom: 80px;
+        }
+
+        .section-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            background: var(--gradient-1);
+            color: white;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-size: 3rem;
+            font-weight: 800;
             margin-bottom: 20px;
             color: var(--text-dark);
         }
 
         .section-subtitle {
-            text-align: center;
             font-size: 1.2rem;
             color: var(--text-light);
-            margin-bottom: 60px;
             max-width: 700px;
-            margin-left: auto;
-            margin-right: auto;
+            margin: 0 auto;
         }
 
-        .features-grid {
+        /* Subtitle Detection Animation */
+        .subtitle-demo {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 40px;
-            margin-top: 60px;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
         }
 
-        .feature-card {
+        .subtitle-visual {
             background: white;
+            border-radius: 20px;
             padding: 40px;
-            border-radius: 16px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        }
+
+        .subtitle-text-container {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .subtitle-line {
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 8px;
             transition: all 0.3s ease;
-            border: 2px solid transparent;
+            position: relative;
         }
 
-        .feature-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 12px 24px rgba(0,0,0,0.15);
-            border-color: var(--primary);
+        .subtitle-line.scanning {
+            background: rgba(59, 130, 246, 0.1);
+            animation: scanPulse 2s infinite;
         }
 
-        .feature-icon {
-            font-size: 3rem;
-            margin-bottom: 20px;
+        .subtitle-line.detected {
+            background: rgba(239, 68, 68, 0.1);
+            border-left: 3px solid var(--danger);
         }
 
-        .feature-icon img {
-            width: 64px;
-            height: 64px;
-            object-fit: contain;
+        @keyframes scanPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
 
-        .feature-title {
-            font-size: 1.5rem;
-            font-weight: 700;
+        .keyword {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+            animation: highlightKeyword 0.5s ease-out;
+        }
+
+        @keyframes highlightKeyword {
+            0% {
+                background: rgba(239, 68, 68, 0);
+            }
+            50% {
+                background: rgba(239, 68, 68, 0.4);
+            }
+            100% {
+                background: rgba(239, 68, 68, 0.2);
+            }
+        }
+
+        .detection-arrow {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            font-size: 2rem;
+            color: var(--primary);
+            animation: arrowBounce 1.5s infinite;
+        }
+
+        @keyframes arrowBounce {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(10px); }
+        }
+
+        .warning-output {
+            background: var(--gradient-1);
+            color: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+            animation: warningPulse 2s infinite;
+        }
+
+        @keyframes warningPulse {
+            0%, 100% { box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3); }
+            50% { box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5); }
+        }
+
+        .warning-output .icon {
+            font-size: 2rem;
             margin-bottom: 12px;
-            color: var(--text-dark);
         }
 
-        .feature-description {
-            color: var(--text-light);
-            line-height: 1.7;
+        .warning-output .title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 8px;
         }
 
-        /* How It Works */
-        .how-it-works {
-            padding: 80px 20px;
-            background: white;
+        .warning-output .time {
+            font-size: 0.9rem;
+            opacity: 0.9;
         }
 
-        .steps {
+        /* Voting System Animation */
+        .voting-demo {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 40px;
-            margin-top: 60px;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 60px;
+            align-items: center;
         }
 
-        .step {
+        .voting-visual {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        }
+
+        .warning-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border-left: 4px solid var(--primary);
+            transition: all 0.3s ease;
+        }
+
+        .warning-card:hover {
+            transform: translateX(10px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        }
+
+        .warning-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .warning-category {
+            font-weight: 700;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .timestamp {
+            background: rgba(102, 126, 234, 0.1);
+            color: var(--primary);
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .vote-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .vote-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .vote-btn.confirm {
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        .vote-btn.confirm:hover {
+            background: var(--success);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .vote-btn.wrong {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .vote-btn.wrong:hover {
+            background: var(--danger);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .vote-btn.voted {
+            animation: voteSuccess 0.5s ease-out;
+        }
+
+        @keyframes voteSuccess {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1.05); }
+        }
+
+        .accuracy-meter {
+            margin-top: 24px;
+            padding: 20px;
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            border-radius: 12px;
+            color: white;
             text-align: center;
         }
 
-        .step-number {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        .accuracy-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .accuracy-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        /* Helper Mode Animation */
+        .helper-demo {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .helper-visual {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .helper-banner {
+            background: var(--gradient-2);
             color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .helper-banner::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        .helper-banner .content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .helper-banner .icon {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+        }
+
+        .helper-banner .title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 4px;
+        }
+
+        .helper-banner .time {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .helper-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .helper-btn {
+            flex: 1;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .helper-btn.confirm {
+            background: var(--success);
+            color: white;
+        }
+
+        .helper-btn.wrong {
+            background: var(--danger);
+            color: white;
+        }
+
+        .helper-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+        }
+
+        .helper-btn:active {
+            animation: buttonClick 0.3s ease-out;
+        }
+
+        @keyframes buttonClick {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.95); }
+            100% { transform: scale(1); }
+        }
+
+        .impact-stats {
+            margin-top: 30px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+
+        /* Feature List */
+        .feature-list {
+            list-style: none;
+        }
+
+        .feature-item {
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+        }
+
+        .feature-item:last-child {
+            border-bottom: none;
+        }
+
+        .feature-icon-circle {
+            width: 50px;
+            height: 50px;
+            background: var(--gradient-1);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
             font-size: 1.5rem;
-            font-weight: 700;
-            margin: 0 auto 20px;
         }
 
-        .step-title {
+        .feature-item-content h3 {
             font-size: 1.3rem;
-            font-weight: 600;
-            margin-bottom: 12px;
-        }
-
-        .step-description {
-            color: var(--text-light);
-        }
-
-        /* Platforms */
-        .platforms {
-            padding: 80px 20px;
-            background: var(--bg-light);
-        }
-
-        .platform-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 30px;
-            margin-top: 60px;
-        }
-
-        .platform {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            text-align: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            transition: all 0.3s ease;
-        }
-
-        .platform:hover {
-            transform: scale(1.05);
-            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-        }
-
-        .platform-logo {
-            font-size: 2.5rem;
-            margin-bottom: 12px;
-        }
-
-        .platform-name {
-            font-weight: 600;
+            margin-bottom: 8px;
             color: var(--text-dark);
         }
 
-        /* FAQ */
-        .faq {
-            padding: 80px 20px;
-            background: white;
+        .feature-item-content p {
+            color: var(--text-light);
+            line-height: 1.7;
         }
 
-        .faq-list {
-            max-width: 800px;
-            margin: 60px auto 0;
-        }
-
-        .faq-item {
-            background: var(--bg-light);
-            margin-bottom: 20px;
-            border-radius: 12px;
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-
-        .faq-question {
-            padding: 24px;
-            font-weight: 600;
-            font-size: 1.1rem;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
+        /* Database Section */
+        .database-demo {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 60px;
             align-items: center;
-            user-select: none;
         }
 
-        .faq-question:hover {
-            background: #e2e8f0;
+        .database-visual {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
         }
 
-        .faq-icon {
-            font-size: 1.5rem;
-            transition: transform 0.3s ease;
+        .data-flow {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
 
-        .faq-item.active .faq-icon {
-            transform: rotate(45deg);
+        .data-source {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid var(--primary);
+            animation: dataFlowIn 1s ease-out;
+            animation-fill-mode: both;
         }
 
-        .faq-answer {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-            padding: 0 24px;
+        .data-source:nth-child(1) { animation-delay: 0s; }
+        .data-source:nth-child(2) { animation-delay: 0.2s; }
+        .data-source:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes dataFlowIn {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .data-source .icon {
+            font-size: 2rem;
+            margin-bottom: 12px;
+        }
+
+        .data-source .title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+        }
+
+        .data-source .description {
+            font-size: 0.9rem;
             color: var(--text-light);
         }
 
-        .faq-item.active .faq-answer {
-            max-height: 500px;
-            padding: 0 24px 24px;
+        .data-merge {
+            text-align: center;
+            color: var(--primary);
+            font-size: 2rem;
+            animation: pulseMerge 2s infinite;
         }
 
-        /* Stats */
+        @keyframes pulseMerge {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+
+        .database-result {
+            background: var(--gradient-1);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .database-result .icon {
+            font-size: 3rem;
+            margin-bottom: 16px;
+        }
+
+        .database-result .title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .database-result .count {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        /* Stats Section */
         .stats {
-            padding: 60px 20px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            padding: 80px 20px;
+            background: var(--gradient-1);
             color: white;
         }
 
@@ -372,15 +891,59 @@
             text-align: center;
         }
 
-        .stat-number {
-            font-size: 3rem;
+        .stat-number-large {
+            font-size: 3.5rem;
             font-weight: 800;
             margin-bottom: 8px;
+            animation: countUp 2s ease-out;
         }
 
-        .stat-label {
+        @keyframes countUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .stat-label-large {
             font-size: 1.1rem;
             opacity: 0.9;
+        }
+
+        /* Platforms */
+        .platforms {
+            padding: 80px 20px;
+            background: white;
+        }
+
+        .platform-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 30px;
+            margin-top: 60px;
+        }
+
+        .platform {
+            background: var(--bg-light);
+            padding: 30px;
+            border-radius: 16px;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .platform:hover {
+            transform: translateY(-10px);
+            border-color: var(--primary);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+        }
+
+        .platform-logo {
+            font-size: 3rem;
+            margin-bottom: 16px;
+        }
+
+        .platform-name {
+            font-weight: 700;
+            color: var(--text-dark);
         }
 
         /* Footer */
@@ -410,14 +973,45 @@
             opacity: 1;
         }
 
+        /* Scroll Animations */
+        .fade-in-up {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .fade-in-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
         /* Responsive */
-        @media (max-width: 768px) {
-            .hero h1 {
+        @media (max-width: 1024px) {
+            .hero-content,
+            .subtitle-demo,
+            .voting-demo,
+            .helper-demo,
+            .database-demo {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+
+            .section-title {
                 font-size: 2.5rem;
             }
 
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
             .hero-subtitle {
-                font-size: 1.2rem;
+                font-size: 1.1rem;
             }
 
             .section-title {
@@ -431,75 +1025,57 @@
             .btn {
                 width: 100%;
             }
-        }
 
-        /* Animations */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
+            .warning-demo {
+                min-height: 300px;
             }
-            to {
-                opacity: 1;
-                transform: translateY(0);
+
+            .impact-stats {
+                grid-template-columns: 1fr;
             }
-        }
-
-        .fade-in-up {
-            animation: fadeInUp 0.6s ease-out;
-        }
-
-        /* Badge */
-        .badge {
-            display: inline-block;
-            padding: 6px 12px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 20px;
-            font-size: 0.9rem;
-            margin-bottom: 20px;
-            backdrop-filter: blur(10px);
-        }
-
-        .tag {
-            display: inline-block;
-            padding: 4px 12px;
-            background: var(--primary);
-            color: white;
-            border-radius: 12px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            margin-right: 8px;
-            margin-bottom: 8px;
-        }
-
-        .tag.success {
-            background: var(--success);
-        }
-
-        .tag.warning {
-            background: var(--warning);
-        }
-
-        .tag.danger {
-            background: var(--danger);
         }
     </style>
 </head>
 <body>
-    <!-- Hero Section -->
+    <!-- Hero Section with Live Warning Demo -->
     <section class="hero">
         <div class="container">
-            <div class="hero-logo">
-                <img src="images/hero-logo.png" alt="Trigger Warnings Logo">
-            </div>
-            <div class="badge">⚡ Real-Time Detection • 100% Private • Community-Powered</div>
-            <h1 class="fade-in-up">Watch with Confidence</h1>
-            <p class="hero-subtitle fade-in-up">
-                Get advance warnings for sensitive content while streaming. Powered by community data and intelligent real-time detection.
-            </p>
-            <div class="cta-buttons fade-in-up">
-                <a href="#" class="btn btn-primary">Install for Chrome</a>
-                <a href="#features" class="btn btn-secondary">Learn More</a>
+            <div class="hero-content">
+                <div class="hero-text">
+                    <div class="hero-logo">
+                        <img src="images/hero-logo.png" alt="Trigger Warnings Logo">
+                    </div>
+                    <div class="badge">⚡ Real-Time Detection • 100% Private • Community-Powered</div>
+                    <h1>Watch Anything, Safely</h1>
+                    <p class="hero-subtitle">
+                        TriggerWarnings protects you from sensitive content with intelligent real-time detection.
+                        Get advance warnings before triggers appear, powered by community data and invisible subtitle scanning.
+                    </p>
+                    <div class="cta-buttons">
+                        <a href="#" class="btn btn-primary">Install for Chrome</a>
+                        <a href="#features" class="btn btn-secondary">See How It Works</a>
+                    </div>
+                </div>
+
+                <div class="warning-demo">
+                    <div class="demo-label">Live Protection Demo</div>
+                    <div class="video-mockup">
+                        <div class="warning-banner violence" style="animation-delay: 0.5s;">
+                            <span class="icon">⚔️</span>
+                            <span>Violence Warning</span>
+                            <span class="time">in 5s</span>
+                        </div>
+                        <div class="warning-banner flashing" style="animation-delay: 1.5s;">
+                            <span class="icon">💡</span>
+                            <span>Flashing Lights</span>
+                            <span class="time">in 8s</span>
+                        </div>
+                        <div class="warning-banner subtitle" style="animation-delay: 2.5s;">
+                            <span class="icon">📝</span>
+                            <span>Detected in Subtitles</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -509,160 +1085,340 @@
         <div class="container">
             <div class="stats-grid">
                 <div>
-                    <div class="stat-number">5K+</div>
-                    <div class="stat-label">Database Entries</div>
+                    <div class="stat-number-large">5K+</div>
+                    <div class="stat-label-large">Database Entries</div>
                 </div>
                 <div>
-                    <div class="stat-number">28</div>
-                    <div class="stat-label">Trigger Categories</div>
+                    <div class="stat-number-large">28</div>
+                    <div class="stat-label-large">Trigger Categories</div>
                 </div>
                 <div>
-                    <div class="stat-number">7</div>
-                    <div class="stat-label">Platforms Supported</div>
+                    <div class="stat-number-large">7</div>
+                    <div class="stat-label-large">Platforms Supported</div>
                 </div>
                 <div>
-                    <div class="stat-number">100%</div>
-                    <div class="stat-label">Privacy Protected</div>
+                    <div class="stat-number-large">100%</div>
+                    <div class="stat-label-large">Privacy Protected</div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Features -->
-    <section class="features" id="features">
+    <!-- Subtitle Detection Feature -->
+    <section class="feature-section" id="features">
         <div class="container">
-            <h2 class="section-title">Comprehensive Protection</h2>
-            <p class="section-subtitle">
-                Multiple layers of detection ensure you're protected, whether you're watching popular movies or brand new releases.
-            </p>
+            <div class="section-header fade-in-up">
+                <div class="section-badge">🔍 Intelligent Detection</div>
+                <h2 class="section-title">Invisible Subtitle Scanning</h2>
+                <p class="section-subtitle">
+                    Our advanced algorithm reads subtitles in real-time, detecting triggers before they appear on screen.
+                    Works on ANY content with captions - no database entry needed.
+                </p>
+            </div>
 
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <img src="images/features/database.png" alt="Database icon">
+            <div class="subtitle-demo fade-in-up">
+                <div class="subtitle-visual">
+                    <div class="subtitle-text-container">
+                        <div class="subtitle-line">
+                            The investigation continues as detectives search for clues.
+                        </div>
+                        <div class="subtitle-line scanning">
+                            There was <span class="keyword">blood</span> everywhere at the scene.
+                        </div>
+                        <div class="subtitle-line">
+                            The forensics team documented everything carefully.
+                        </div>
                     </div>
-                    <h3 class="feature-title">Community Database</h3>
-                    <p class="feature-description">
-                        Access 5,000+ movies and shows with trigger warnings sourced from IMDb Parental Guide. Community submissions add more coverage every day. Submit your own warnings to help others!
-                    </p>
-                    <div style="margin-top: 16px;">
-                        <span class="tag success">Growing Daily</span>
-                        <span class="tag">No Setup</span>
+
+                    <div class="detection-arrow">
+                        <span>→</span>
+                        <span>Keyword Detected!</span>
+                        <span>→</span>
+                    </div>
+
+                    <div class="warning-output">
+                        <div class="icon">🩸</div>
+                        <div class="title">Blood Warning</div>
+                        <div class="time">Appearing in 5 seconds</div>
                     </div>
                 </div>
 
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <img src="images/features/real-time.png" alt="Real-time detection icon">
-                    </div>
-                    <h3 class="feature-title">Subtitle Analysis</h3>
-                    <p class="feature-description">
-                        Real-time subtitle scanning detects trigger keywords as you watch. Works on ANY content with captions - no database entry needed. 120+ keywords across all categories.
-                    </p>
-                    <div style="margin-top: 16px;">
-                        <span class="tag success">Real-Time</span>
-                        <span class="tag warning">Requires Captions</span>
-                    </div>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <img src="images/features/real-time.png" alt="Real-time detection icon">
-                    </div>
-                    <h3 class="feature-title">Photosensitivity Detection</h3>
-                    <p class="feature-description">
-                        Algorithmic flash detection protects users with photosensitive epilepsy. WCAG 2.1 compliant. Detects rapid flashing (>3 flashes/second) automatically.
-                    </p>
-                    <div style="margin-top: 16px;">
-                        <span class="tag danger">Critical</span>
-                        <span class="tag success">Always On</span>
-                    </div>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <img src="images/features/profiles.png" alt="Profiles icon">
-                    </div>
-                    <h3 class="feature-title">Customizable Profiles</h3>
-                    <p class="feature-description">
-                        Create multiple profiles for different situations. Choose which categories you want warnings for, adjust timing, position, and appearance.
-                    </p>
-                    <div style="margin-top: 16px;">
-                        <span class="tag">Multi-Profile</span>
-                        <span class="tag">Per-Category</span>
-                    </div>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <img src="images/features/privacy.png" alt="Privacy icon">
-                    </div>
-                    <h3 class="feature-title">100% Private</h3>
-                    <p class="feature-description">
-                        All processing happens locally in your browser. No tracking, no viewing history collection, no personal data sent to servers. Your privacy is guaranteed.
-                    </p>
-                    <div style="margin-top: 16px;">
-                        <span class="tag success">No Tracking</span>
-                        <span class="tag success">Local Only</span>
-                    </div>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <img src="images/features/community.png" alt="Community icon">
-                    </div>
-                    <h3 class="feature-title">Community-Powered</h3>
-                    <p class="feature-description">
-                        Submit warnings for content you watch. Vote on accuracy. Help build a comprehensive database that benefits everyone.
-                    </p>
-                    <div style="margin-top: 16px;">
-                        <span class="tag">Voting System</span>
-                        <span class="tag">Open Data</span>
-                    </div>
+                <div>
+                    <ul class="feature-list">
+                        <li class="feature-item">
+                            <div class="feature-icon-circle">⚡</div>
+                            <div class="feature-item-content">
+                                <h3>Real-Time Scanning</h3>
+                                <p>Analyzes 120+ trigger keywords across all 28 categories as subtitles appear, with zero delay to your viewing experience.</p>
+                            </div>
+                        </li>
+                        <li class="feature-item">
+                            <div class="feature-icon-circle">🎯</div>
+                            <div class="feature-item-content">
+                                <h3>Context-Aware</h3>
+                                <p>Smart detection considers context and severity, filtering out false positives while catching real triggers.</p>
+                            </div>
+                        </li>
+                        <li class="feature-item">
+                            <div class="feature-icon-circle">🌐</div>
+                            <div class="feature-item-content">
+                                <h3>Works Everywhere</h3>
+                                <p>Functions on ANY content with subtitles or captions enabled, even brand new releases not yet in our database.</p>
+                            </div>
+                        </li>
+                        <li class="feature-item">
+                            <div class="feature-icon-circle">🔒</div>
+                            <div class="feature-item-content">
+                                <h3>100% Private</h3>
+                                <p>All subtitle analysis happens locally in your browser. No subtitle text ever leaves your device.</p>
+                            </div>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- How It Works -->
-    <section class="how-it-works">
+    <!-- Community Database -->
+    <section class="feature-section">
         <div class="container">
-            <h2 class="section-title">How It Works</h2>
-            <p class="section-subtitle">
-                Get started in seconds. No account required, no configuration needed.
-            </p>
+            <div class="section-header fade-in-up">
+                <div class="section-badge">🗄️ Multi-Source Database</div>
+                <h2 class="section-title">Comprehensive Protection Layer</h2>
+                <p class="section-subtitle">
+                    Our database combines multiple high-quality sources to ensure you're protected, even without subtitles enabled.
+                </p>
+            </div>
 
-            <div class="steps">
-                <div class="step">
-                    <div class="step-number">1</div>
-                    <h3 class="step-title">Install Extension</h3>
-                    <p class="step-description">
-                        Add the extension to Chrome with one click. No signup or configuration required.
-                    </p>
+            <div class="database-demo fade-in-up">
+                <div class="database-visual">
+                    <div class="data-flow">
+                        <div class="data-source">
+                            <div class="icon">📚</div>
+                            <div class="title">IMDb Parental Guide</div>
+                            <div class="description">5,000+ titles with severity ratings from trusted community database</div>
+                        </div>
+
+                        <div class="data-source">
+                            <div class="icon">👥</div>
+                            <div class="title">User Submissions</div>
+                            <div class="description">Community-verified warnings with precise timestamps and descriptions</div>
+                        </div>
+
+                        <div class="data-source">
+                            <div class="icon">📝</div>
+                            <div class="title">Real-Time Subtitle Scanning</div>
+                            <div class="description">120+ keywords detected instantly across all 28 categories</div>
+                        </div>
+                    </div>
+
+                    <div class="data-merge">⬇</div>
+
+                    <div class="database-result">
+                        <div class="icon">🛡️</div>
+                        <div class="title">Complete Protection</div>
+                        <div class="count">Multi-layered detection ensures you're always warned</div>
+                    </div>
                 </div>
 
-                <div class="step">
-                    <div class="step-number">2</div>
-                    <h3 class="step-title">Choose Categories</h3>
-                    <p class="step-description">
-                        Select which trigger categories you want to be warned about. Create multiple profiles if needed.
-                    </p>
+                <div>
+                    <ul class="feature-list">
+                        <li class="feature-item">
+                            <div class="feature-icon-circle">🎬</div>
+                            <div class="feature-item-content">
+                                <h3>Database First</h3>
+                                <p>Queries our comprehensive database of 5,000+ movies and shows for known triggers with exact timestamps.</p>
+                            </div>
+                        </li>
+                        <li class="feature-item">
+                            <div class="feature-icon-circle">🔄</div>
+                            <div class="feature-item-content">
+                                <h3>Fallback Detection</h3>
+                                <p>If content isn't in database, subtitle analysis automatically kicks in as a secondary protection layer.</p>
+                            </div>
+                        </li>
+                        <li class="feature-item">
+                            <div class="feature-icon-circle">📈</div>
+                            <div class="feature-item-content">
+                                <h3>Always Growing</h3>
+                                <p>Database expands daily with community contributions, improving coverage for everyone.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Voting System -->
+    <section class="feature-section">
+        <div class="container">
+            <div class="section-header fade-in-up">
+                <div class="section-badge">✅ Community Voting</div>
+                <h2 class="section-title">Vote for Accuracy</h2>
+                <p class="section-subtitle">
+                    Help improve warning accuracy by voting on warnings you see. Your feedback trains the system and helps thousands of other users.
+                </p>
+            </div>
+
+            <div class="voting-demo fade-in-up">
+                <div class="voting-visual">
+                    <div class="warning-card">
+                        <div class="warning-header">
+                            <div class="warning-category">
+                                <span>⚔️</span>
+                                <span>Violence</span>
+                            </div>
+                            <div class="timestamp">12:45</div>
+                        </div>
+                        <p style="color: var(--text-light); font-size: 0.9rem; margin-bottom: 8px;">
+                            Fight scene with moderate intensity
+                        </p>
+                        <div class="vote-buttons" id="vote-demo-1">
+                            <button class="vote-btn confirm" onclick="handleVote(this, 'confirm')">
+                                <span>✓</span>
+                                <span>Accurate</span>
+                            </button>
+                            <button class="vote-btn wrong" onclick="handleVote(this, 'wrong')">
+                                <span>✕</span>
+                                <span>Wrong</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="warning-card">
+                        <div class="warning-header">
+                            <div class="warning-category">
+                                <span>🩸</span>
+                                <span>Blood</span>
+                            </div>
+                            <div class="timestamp">23:12</div>
+                        </div>
+                        <p style="color: var(--text-light); font-size: 0.9rem; margin-bottom: 8px;">
+                            Minor bleeding from injury
+                        </p>
+                        <div class="vote-buttons">
+                            <button class="vote-btn confirm" onclick="handleVote(this, 'confirm')">
+                                <span>✓</span>
+                                <span>Accurate</span>
+                            </button>
+                            <button class="vote-btn wrong" onclick="handleVote(this, 'wrong')">
+                                <span>✕</span>
+                                <span>Wrong</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="accuracy-meter">
+                        <div class="accuracy-number">94%</div>
+                        <div class="accuracy-label">Community Verified Accuracy</div>
+                    </div>
                 </div>
 
-                <div class="step">
-                    <div class="step-number">3</div>
-                    <h3 class="step-title">Watch Content</h3>
-                    <p class="step-description">
-                        Navigate to any supported platform and start watching. Warnings appear automatically.
-                    </p>
+                <div>
+                    <ul class="feature-list">
+                        <li class="feature-item">
+                            <div class="feature-icon-circle">👍</div>
+                            <div class="feature-item-content">
+                                <h3>Simple Feedback</h3>
+                                <p>See a warning? Just click "Accurate" or "Wrong" to help improve the system for everyone.</p>
+                            </div>
+                        </li>
+                        <li class="feature-item">
+                            <div class="feature-icon-circle">🎯</div>
+                            <div class="feature-item-content">
+                                <h3>Quality Control</h3>
+                                <p>Warnings with high community approval get auto-verified. Low-rated warnings get reviewed or removed.</p>
+                            </div>
+                        </li>
+                        <li class="feature-item">
+                            <div class="feature-icon-circle">🌟</div>
+                            <div class="feature-item-content">
+                                <h3>Collective Intelligence</h3>
+                                <p>Your votes combine with thousands of others to create the most accurate trigger warning database available.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Helper Mode -->
+    <section class="feature-section">
+        <div class="container">
+            <div class="section-header fade-in-up">
+                <div class="section-badge">🤝 Helper Mode</div>
+                <h2 class="section-title">Give Back While You Watch</h2>
+                <p class="section-subtitle">
+                    Enable Helper Mode to see confirm/wrong buttons on every warning. Verify accuracy in real-time and help build the most reliable database.
+                </p>
+            </div>
+
+            <div class="helper-demo fade-in-up">
+                <div>
+                    <ul class="feature-list">
+                        <li class="feature-item">
+                            <div class="feature-icon-circle">⚡</div>
+                            <div class="feature-item-content">
+                                <h3>Instant Feedback</h3>
+                                <p>Every warning banner shows confirm/wrong buttons in Helper Mode. Vote with one click without interrupting your viewing.</p>
+                            </div>
+                        </li>
+                        <li class="feature-item">
+                            <div class="feature-icon-circle">🎁</div>
+                            <div class="feature-item-content">
+                                <h3>Contribute Effortlessly</h3>
+                                <p>No extra work required. Just watch normally and tap buttons when you see warnings. Every vote helps!</p>
+                            </div>
+                        </li>
+                        <li class="feature-item">
+                            <div class="feature-icon-circle">📊</div>
+                            <div class="feature-item-content">
+                                <h3>Track Your Impact</h3>
+                                <p>See how many warnings you've verified and how your contributions improve accuracy for the community.</p>
+                            </div>
+                        </li>
+                        <li class="feature-item">
+                            <div class="feature-icon-circle">🏆</div>
+                            <div class="feature-item-content">
+                                <h3>Quality Rewards</h3>
+                                <p>High-quality voters gain reputation, making their votes count more toward warning verification.</p>
+                            </div>
+                        </li>
+                    </ul>
                 </div>
 
-                <div class="step">
-                    <div class="step-number">4</div>
-                    <h3 class="step-title">Stay Informed</h3>
-                    <p class="step-description">
-                        Get advance warnings with customizable lead time. Skip, mute, or prepare as needed.
-                    </p>
+                <div class="helper-visual">
+                    <div class="helper-banner">
+                        <div class="content">
+                            <div class="icon">⚔️</div>
+                            <div class="title">Violence Warning</div>
+                            <div class="time">Appearing in 5 seconds</div>
+                        </div>
+                    </div>
+
+                    <div class="helper-actions">
+                        <button class="helper-btn confirm" onclick="helperVote(this, 'confirm')">
+                            <span style="font-size: 1.5rem;">✓</span>
+                            <span>Correct</span>
+                        </button>
+                        <button class="helper-btn wrong" onclick="helperVote(this, 'wrong')">
+                            <span style="font-size: 1.5rem;">✕</span>
+                            <span>Wrong</span>
+                        </button>
+                    </div>
+
+                    <div class="impact-stats">
+                        <div class="stat-card">
+                            <div class="stat-number">247</div>
+                            <div class="stat-label">Warnings Verified</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">98%</div>
+                            <div class="stat-label">Agreement Rate</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -671,10 +1427,12 @@
     <!-- Platforms -->
     <section class="platforms">
         <div class="container">
-            <h2 class="section-title">Supported Platforms</h2>
-            <p class="section-subtitle">
-                Works seamlessly with all major streaming services
-            </p>
+            <div class="section-header fade-in-up">
+                <h2 class="section-title">Works Everywhere You Watch</h2>
+                <p class="section-subtitle">
+                    Seamless integration with all major streaming platforms
+                </p>
+            </div>
 
             <div class="platform-grid">
                 <div class="platform">
@@ -709,242 +1467,43 @@
         </div>
     </section>
 
-    <!-- FAQ -->
-    <section class="faq" id="faq">
-        <div class="container">
-            <h2 class="section-title">Frequently Asked Questions</h2>
-
-            <div class="faq-list">
-                <div class="faq-item">
-                    <div class="faq-question" onclick="toggleFaq(this)">
-                        <span>What trigger categories are supported?</span>
-                        <span class="faq-icon">+</span>
-                    </div>
-                    <div class="faq-answer">
-                        <p>We support 28 trigger categories including: Violence, Gore, Blood, Sexual Assault, Sex/Nudity, Self-Harm, Suicide, Substance Abuse (Drugs/Alcohol), Murder, Torture, Domestic Violence, Child Abuse, Animal Cruelty, Vomit, Medical Procedures, Eating Disorders, Flashing Lights, Spiders/Snakes, Swear Words, Racial Violence, LGBTQ+ Phobia, Natural Disasters, Religious Trauma, Jump Scares, Cannibalism, Dead Bodies/Body Horror, Children Screaming, and Detonations/Bombs.</p>
-                    </div>
-                </div>
-
-                <div class="faq-item">
-                    <div class="faq-question" onclick="toggleFaq(this)">
-                        <span>How does real-time subtitle analysis work?</span>
-                        <span class="faq-icon">+</span>
-                    </div>
-                    <div class="faq-answer">
-                        <p>When you enable subtitles/captions, our extension reads the text in real-time and scans for 120+ trigger keywords. When a match is found, you get a warning 5 seconds before that moment in the video. This works on ANY content, even if it's not in our database. All processing happens locally in your browser - no data is sent to servers.</p>
-                    </div>
-                </div>
-
-                <div class="faq-item">
-                    <div class="faq-question" onclick="toggleFaq(this)">
-                        <span>Is my viewing data collected or tracked?</span>
-                        <span class="faq-icon">+</span>
-                    </div>
-                    <div class="faq-answer">
-                        <p><strong>Absolutely not.</strong> We take privacy seriously. All detection happens locally in your browser. We don't collect viewing history, personal information, or track what you watch. The extension only queries our database for trigger warnings based on video IDs, and all real-time analysis (subtitle scanning, photosensitivity detection) runs entirely on your device. We never see your video content.</p>
-                    </div>
-                </div>
-
-                <div class="faq-item">
-                    <div class="faq-question" onclick="toggleFaq(this)">
-                        <span>What is photosensitivity detection?</span>
-                        <span class="faq-icon">+</span>
-                    </div>
-                    <div class="faq-answer">
-                        <p>Photosensitivity detection protects users with photosensitive epilepsy by automatically detecting rapid flashing in video content. Using WCAG 2.1 guidelines, we analyze video frames for luminance changes and alert you before sequences with more than 3 flashes per second. This feature is always active (you can't disable it) because it's critical for health and safety. It uses less than 2% CPU and processes everything locally.</p>
-                    </div>
-                </div>
-
-                <div class="faq-item">
-                    <div class="faq-question" onclick="toggleFaq(this)">
-                        <span>What if a movie/show isn't in your database?</span>
-                        <span class="faq-icon">+</span>
-                    </div>
-                    <div class="faq-answer">
-                        <p>That's the beauty of our multi-layered approach! Even if content isn't in our database:</p>
-                        <ul style="margin-top: 12px; padding-left: 20px;">
-                            <li><strong>Subtitle Analysis</strong> will still detect triggers if you have captions enabled</li>
-                            <li><strong>Photosensitivity Detection</strong> always runs, protecting against rapid flashing</li>
-                            <li><strong>You can submit warnings</strong> while watching to help future viewers</li>
-                        </ul>
-                        <p style="margin-top: 12px;">This means the extension provides value even for brand new releases!</p>
-                    </div>
-                </div>
-
-                <div class="faq-item">
-                    <div class="faq-question" onclick="toggleFaq(this)">
-                        <span>Can I customize which warnings I see?</span>
-                        <span class="faq-icon">+</span>
-                    </div>
-                    <div class="faq-answer">
-                        <p>Yes! You have complete control:</p>
-                        <ul style="margin-top: 12px; padding-left: 20px;">
-                            <li><strong>Category Selection:</strong> Choose which of the 28 categories you want warnings for</li>
-                            <li><strong>Multiple Profiles:</strong> Create different profiles for different situations (e.g., "Alone" vs "With Family")</li>
-                            <li><strong>Lead Time:</strong> Adjust how early you get warnings (5-60 seconds)</li>
-                            <li><strong>Banner Position:</strong> Choose where warnings appear (4 corners)</li>
-                            <li><strong>Spoiler-Free Mode:</strong> Hide exact timestamps to avoid spoilers</li>
-                            <li><strong>Visual Settings:</strong> Customize font size, transparency, and duration</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="faq-item">
-                    <div class="faq-question" onclick="toggleFaq(this)">
-                        <span>How accurate are the warnings?</span>
-                        <span class="faq-icon">+</span>
-                    </div>
-                    <div class="faq-answer">
-                        <p>Accuracy varies by detection method:</p>
-                        <ul style="margin-top: 12px; padding-left: 20px;">
-                            <li><strong>Database (DTDD):</strong> ~85% accurate - community-verified with voting</li>
-                            <li><strong>Database (IMDb):</strong> ~75% accurate - community-sourced</li>
-                            <li><strong>Subtitle Analysis:</strong> 70-90% - depends on keyword clarity</li>
-                            <li><strong>Photosensitivity:</strong> ~95% - algorithmic detection is very reliable</li>
-                        </ul>
-                        <p style="margin-top: 12px;">You can vote on warnings to help improve accuracy, and we use confidence scores to filter low-quality submissions.</p>
-                    </div>
-                </div>
-
-                <div class="faq-item">
-                    <div class="faq-question" onclick="toggleFaq(this)">
-                        <span>Does this slow down my streaming?</span>
-                        <span class="faq-icon">+</span>
-                    </div>
-                    <div class="faq-answer">
-                        <p>No! Performance impact is minimal:</p>
-                        <ul style="margin-top: 12px; padding-left: 20px;">
-                            <li><strong>CPU Usage:</strong> Less than 3% total (subtitle analysis <1%, photosensitivity <2%)</li>
-                            <li><strong>Memory:</strong> Less than 10MB</li>
-                            <li><strong>Network:</strong> Only initial database query (~50KB), then everything is local</li>
-                            <li><strong>Video Quality:</strong> No impact - we don't touch the video stream</li>
-                        </ul>
-                        <p style="margin-top: 12px;">Most users won't notice any performance difference.</p>
-                    </div>
-                </div>
-
-                <div class="faq-item">
-                    <div class="faq-question" onclick="toggleFaq(this)">
-                        <span>Can I contribute warnings?</span>
-                        <span class="faq-icon">+</span>
-                    </div>
-                    <div class="faq-answer">
-                        <p>Absolutely! Community contributions are essential. You can:</p>
-                        <ul style="margin-top: 12px; padding-left: 20px;">
-                            <li><strong>Submit New Warnings:</strong> Click the popup icon while watching and add timestamps for triggers</li>
-                            <li><strong>Vote on Accuracy:</strong> Use Helper Mode buttons (Confirm ✓ / Wrong ✕) on existing warnings</li>
-                            <li><strong>Add Descriptions:</strong> Provide context without spoilers</li>
-                            <li><strong>Auto-Moderation:</strong> Warnings with high votes get auto-approved</li>
-                        </ul>
-                        <p style="margin-top: 12px;">Your contributions help thousands of other users!</p>
-                    </div>
-                </div>
-
-                <div class="faq-item">
-                    <div class="faq-question" onclick="toggleFaq(this)">
-                        <span>Why doesn't it work with [specific platform]?</span>
-                        <span class="faq-icon">+</span>
-                    </div>
-                    <div class="faq-answer">
-                        <p>We currently support 7 major platforms: Netflix, YouTube, Prime Video, Hulu, Disney+, Max (HBO), and Peacock. If your platform isn't supported:</p>
-                        <ul style="margin-top: 12px; padding-left: 20px;">
-                            <li>Each platform requires custom integration to detect video players and extract IDs</li>
-                            <li>We prioritize platforms based on user demand</li>
-                            <li>Submit a feature request on our GitHub to vote for new platforms</li>
-                        </ul>
-                        <p style="margin-top: 12px;">We're continuously adding support for more platforms!</p>
-                    </div>
-                </div>
-
-                <div class="faq-item">
-                    <div class="faq-question" onclick="toggleFaq(this)">
-                        <span>What browsers are supported?</span>
-                        <span class="faq-icon">+</span>
-                    </div>
-                    <div class="faq-answer">
-                        <p>Currently, we support:</p>
-                        <ul style="margin-top: 12px; padding-left: 20px;">
-                            <li><strong>Chrome:</strong> ✅ Full support (recommended)</li>
-                            <li><strong>Edge:</strong> ✅ Full support (Chromium-based)</li>
-                            <li><strong>Brave:</strong> ✅ Full support (Chromium-based)</li>
-                            <li><strong>Firefox:</strong> 🔄 Coming soon</li>
-                            <li><strong>Safari:</strong> 🔄 Planned</li>
-                        </ul>
-                        <p style="margin-top: 12px;">Any Chromium-based browser should work with the Chrome version.</p>
-                    </div>
-                </div>
-
-                <div class="faq-item">
-                    <div class="faq-question" onclick="toggleFaq(this)">
-                        <span>Is this extension free?</span>
-                        <span class="faq-icon">+</span>
-                    </div>
-                    <div class="faq-answer">
-                        <p><strong>Yes, completely free!</strong> This is an open-source project designed to make streaming safer for everyone. There are no premium features, no paywalls, and no subscriptions. We'll never charge for core functionality.</p>
-                        <p style="margin-top: 12px;">If you find it useful, you can support development by:</p>
-                        <ul style="margin-top: 8px; padding-left: 20px;">
-                            <li>Contributing warnings to the database</li>
-                            <li>Voting on warning accuracy</li>
-                            <li>Sharing with friends who might benefit</li>
-                            <li>Contributing code on GitHub (it's open source!)</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="faq-item">
-                    <div class="faq-question" onclick="toggleFaq(this)">
-                        <span>What data sources power the warnings?</span>
-                        <span class="faq-icon">+</span>
-                    </div>
-                    <div class="faq-answer">
-                        <p>We use multiple high-quality sources:</p>
-                        <ul style="margin-top: 12px; padding-left: 20px;">
-                            <li><strong>IMDb Parental Guide:</strong> 5,000+ titles with severity ratings from Kaggle dataset</li>
-                            <li><strong>User Submissions:</strong> Community-contributed warnings with timestamps and voting</li>
-                            <li><strong>Real-Time Subtitle Analysis:</strong> Detects 120+ trigger keywords across all categories (works on ANY content)</li>
-                            <li><strong>Photosensitivity Detection:</strong> WCAG 2.1 compliant flash detection for epilepsy protection</li>
-                        </ul>
-                        <p style="margin-top: 12px;">The combination of database entries and real-time detection means we work on virtually all streaming content, even brand new releases!</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
             <div class="footer-links">
                 <a href="https://github.com/lightmyfireadmin/triggerwarnings" class="footer-link">GitHub</a>
                 <a href="#" class="footer-link">Documentation</a>
-                <a href="#" class="footer-link">Privacy Policy</a>
-                <a href="#" class="footer-link">Report Issue</a>
+                <a href="privacy.html" class="footer-link">Privacy Policy</a>
+                <a href="https://github.com/lightmyfireadmin/triggerwarnings/issues" class="footer-link">Report Issue</a>
                 <a href="#" class="footer-link">Contribute</a>
             </div>
             <p style="opacity: 0.7; margin-top: 20px;">
-                Open source project • Made with ❤️ for safer streaming
+                Open source project • Made for safer streaming
             </p>
             <p style="opacity: 0.5; font-size: 0.9rem; margin-top: 12px;">
-                © 2025 Trigger Warnings Extension • All rights reserved
+                © 2025 Trigger Warnings Extension
             </p>
         </div>
     </footer>
 
     <script>
-        function toggleFaq(element) {
-            const faqItem = element.parentElement;
-            const wasActive = faqItem.classList.contains('active');
+        // Scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
 
-            // Close all FAQ items
-            document.querySelectorAll('.faq-item').forEach(item => {
-                item.classList.remove('active');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
             });
+        }, observerOptions);
 
-            // Open clicked item if it wasn't already active
-            if (!wasActive) {
-                faqItem.classList.add('active');
-            }
-        }
+        document.querySelectorAll('.fade-in-up').forEach(el => {
+            observer.observe(el);
+        });
 
         // Smooth scroll for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -960,26 +1519,99 @@
             });
         });
 
-        // Add fade-in animation on scroll
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -100px 0px'
-        };
+        // Voting animation
+        function handleVote(button, type) {
+            const container = button.parentElement;
+            const buttons = container.querySelectorAll('.vote-btn');
 
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
-                }
+            buttons.forEach(btn => {
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
             });
-        }, observerOptions);
 
-        document.querySelectorAll('.feature-card, .step, .platform').forEach(el => {
-            el.style.opacity = '0';
-            el.style.transform = 'translateY(30px)';
-            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-            observer.observe(el);
+            button.style.opacity = '1';
+            button.classList.add('voted');
+
+            if (type === 'confirm') {
+                button.style.background = 'var(--success)';
+                button.style.color = 'white';
+            } else {
+                button.style.background = 'var(--danger)';
+                button.style.color = 'white';
+            }
+
+            setTimeout(() => {
+                buttons.forEach(btn => {
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                    btn.style.background = 'white';
+                    btn.classList.remove('voted');
+                });
+                button.style.color = type === 'confirm' ? 'var(--success)' : 'var(--danger)';
+            }, 2000);
+        }
+
+        // Helper mode vote animation
+        function helperVote(button, type) {
+            button.style.transform = 'scale(0.9)';
+
+            setTimeout(() => {
+                button.style.transform = 'scale(1)';
+
+                // Increment stats
+                const statCards = document.querySelectorAll('.stat-card');
+                if (statCards[0]) {
+                    const currentValue = parseInt(statCards[0].querySelector('.stat-number').textContent);
+                    statCards[0].querySelector('.stat-number').textContent = currentValue + 1;
+                }
+            }, 150);
+        }
+
+        // Animate warning banners in hero
+        function animateHeroBanners() {
+            const banners = document.querySelectorAll('.warning-banner');
+
+            setInterval(() => {
+                banners.forEach((banner, index) => {
+                    setTimeout(() => {
+                        banner.style.animation = 'none';
+                        setTimeout(() => {
+                            banner.style.animation = `bannerSlideIn 0.5s ease-out forwards ${index * 1}s`;
+                        }, 50);
+                    }, index * 1000);
+                });
+            }, 10000);
+        }
+
+        // Animate subtitle scanning
+        function animateSubtitleScanning() {
+            const lines = document.querySelectorAll('.subtitle-line');
+            let currentIndex = 1;
+
+            setInterval(() => {
+                lines.forEach(line => line.classList.remove('scanning'));
+                lines[currentIndex].classList.add('scanning');
+                currentIndex = (currentIndex + 1) % lines.length;
+            }, 3000);
+        }
+
+        // Initialize animations
+        window.addEventListener('load', () => {
+            animateHeroBanners();
+
+            const subtitleSection = document.querySelector('.subtitle-demo');
+            if (subtitleSection) {
+                const subtitleObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            animateSubtitleScanning();
+                            subtitleObserver.disconnect();
+                        }
+                    });
+                }, { threshold: 0.5 });
+
+                subtitleObserver.observe(subtitleSection);
+            }
         });
     </script>
 </body>
