@@ -3,6 +3,7 @@
  */
 
 import type { IStreamingProvider } from '@shared/types/Provider.types';
+import { isSupportedPlatform, PLATFORM_DOMAINS } from '@shared/utils/platformDetection';
 import { NetflixProvider } from './NetflixProvider';
 import { PrimeVideoProvider } from './PrimeVideoProvider';
 import { YouTubeProvider } from './YouTubeProvider';
