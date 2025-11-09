@@ -4,20 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trigger Warnings - Watch with Confidence</title>
-    <meta name="description" content="Community-powered trigger warnings for streaming content. Real-time detection, photosensitivity protection, and customizable alerts for safer viewing.">
+    <meta name="description" content="Community-powered trigger warnings for streaming content. Real-time subtitle detection, photosensitivity protection, and customizable alerts for safer viewing across all major platforms.">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://lightmyfireadmin.github.io/triggerwarnings/">
     <meta property="og:title" content="Trigger Warnings - Watch with Confidence">
-    <meta property="og:description" content="Get advance warnings for sensitive content while streaming. 27 categories, 7 platforms, real-time detection. 100% private.">
+    <meta property="og:description" content="Get advance warnings for sensitive content while streaming. 28 trigger categories, 7 streaming platforms, real-time subtitle detection. 100% private.">
     <meta property="og:image" content="https://lightmyfireadmin.github.io/triggerwarnings/images/social-preview.png">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://lightmyfireadmin.github.io/triggerwarnings/">
     <meta property="twitter:title" content="Trigger Warnings - Watch with Confidence">
-    <meta property="twitter:description" content="Get advance warnings for sensitive content while streaming. 27 categories, 7 platforms, real-time detection. 100% private.">
+    <meta property="twitter:description" content="Get advance warnings for sensitive content while streaming. 28 trigger categories, 7 streaming platforms, real-time subtitle detection. 100% private.">
     <meta property="twitter:image" content="https://lightmyfireadmin.github.io/triggerwarnings/images/twitter-card.png">
 
     <style>
@@ -231,11 +231,10 @@
             position: relative;
             background: rgba(0,0,0,0.3);
             border-radius: 20px;
-            padding: 30px;
+            padding: 40px;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255,255,255,0.2);
             animation: fadeInRight 1s ease-out;
-            min-height: 400px;
         }
 
         .demo-label {
@@ -248,58 +247,170 @@
         }
 
         .video-mockup {
-            background: #000;
-            border-radius: 12px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 16px;
             position: relative;
             overflow: hidden;
             aspect-ratio: 16/9;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+            min-height: 450px;
         }
 
-        .video-mockup::before {
-            content: '▶';
+        /* Simulated video content */
+        .video-content {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            background: linear-gradient(135deg, #2d3561 0%, #1e2749 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .video-scene {
+            width: 80%;
+            height: 60%;
+            background: linear-gradient(45deg, #0f3460, #16213e, #1a1a2e);
+            border-radius: 12px;
+            position: relative;
+            animation: sceneGlow 4s ease-in-out infinite;
+            box-shadow: 0 0 40px rgba(102, 126, 234, 0.3);
+        }
+
+        @keyframes sceneGlow {
+            0%, 100% {
+                box-shadow: 0 0 40px rgba(102, 126, 234, 0.3);
+                transform: scale(1);
+            }
+            50% {
+                box-shadow: 0 0 60px rgba(102, 126, 234, 0.5);
+                transform: scale(1.02);
+            }
+        }
+
+        .video-scene::before {
+            content: '🎬';
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             font-size: 4rem;
-            color: rgba(255,255,255,0.3);
-            z-index: 0;
+            opacity: 0.3;
+            animation: float 3s ease-in-out infinite;
         }
 
+        /* Video controls */
+        .video-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 16px 20px;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            z-index: 5;
+        }
+
+        .progress-bar-container {
+            background: rgba(255,255,255,0.2);
+            height: 4px;
+            border-radius: 2px;
+            margin-bottom: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            background: var(--primary);
+            border-radius: 2px;
+            width: 0%;
+            animation: playProgress 15s linear infinite;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+        }
+
+        @keyframes playProgress {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+
+        .progress-cursor {
+            position: absolute;
+            top: -6px;
+            left: 0%;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            animation: cursorProgress 15s linear infinite;
+            cursor: pointer;
+        }
+
+        @keyframes cursorProgress {
+            0% { left: 0%; }
+            100% { left: calc(100% - 16px); }
+        }
+
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.8);
+        }
+
+        .play-icon {
+            opacity: 0.6;
+        }
+
+        /* Warning banners - less aggressive opacity, no overlap */
         .warning-banner {
             position: absolute;
-            padding: 12px 20px;
+            padding: 10px 16px;
             border-radius: 8px;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             font-weight: 600;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
             opacity: 0;
             animation: bannerSlideIn 0.5s ease-out forwards;
             z-index: 10;
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.15);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            max-width: 240px;
         }
 
         .warning-banner.violence {
-            background: rgba(239, 68, 68, 0.95);
+            background: rgba(239, 68, 68, 0.85);
             color: white;
-            top: 20px;
-            right: 20px;
+            top: 16px;
+            right: 16px;
         }
 
         .warning-banner.flashing {
-            background: rgba(234, 179, 8, 0.95);
+            background: rgba(234, 179, 8, 0.85);
             color: white;
-            bottom: 20px;
-            left: 20px;
+            bottom: 80px;
+            left: 16px;
         }
 
         .warning-banner.subtitle {
-            background: rgba(59, 130, 246, 0.95);
+            background: rgba(59, 130, 246, 0.85);
             color: white;
-            top: 20px;
-            left: 20px;
+            top: 16px;
+            left: 16px;
+        }
+
+        .warning-banner.blood {
+            background: rgba(220, 38, 38, 0.85);
+            color: white;
+            top: 70px;
+            right: 16px;
         }
 
         @keyframes bannerSlideIn {
@@ -308,20 +419,127 @@
                 transform: translateY(-10px);
             }
             to {
-                opacity: 1;
+                opacity: 0.9;
                 transform: translateY(0);
             }
         }
 
         .warning-banner .icon {
-            font-size: 1.2rem;
-            margin-right: 8px;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .warning-banner .content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .warning-banner .label {
+            font-size: 0.85rem;
+            font-weight: 600;
         }
 
         .warning-banner .time {
-            font-size: 0.85rem;
-            opacity: 0.9;
-            margin-left: 8px;
+            font-size: 0.7rem;
+            opacity: 0.8;
+        }
+
+        .warning-upvote {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 12px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .warning-upvote:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.05);
+        }
+
+        .warning-upvote .count {
+            font-weight: 700;
+        }
+
+        /* Scroll incentive */
+        .scroll-incentive {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            text-align: center;
+            animation: bounceInfinite 2s ease-in-out infinite;
+        }
+
+        .scroll-arrow {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .scroll-arrow:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(5px);
+        }
+
+        .scroll-text {
+            font-size: 0.75rem;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        @keyframes bounceInfinite {
+            0%, 100% {
+                transform: translateX(-50%) translateY(0);
+            }
+            50% {
+                transform: translateX(-50%) translateY(-10px);
+            }
+        }
+
+        /* Section dividers with scroll incentive */
+        .section-divider {
+            text-align: center;
+            padding: 40px 20px;
+            position: relative;
+        }
+
+        .section-divider .scroll-hint {
+            display: inline-block;
+            padding: 12px 24px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 30px;
+            color: var(--primary);
+            font-size: 0.9rem;
+            font-weight: 600;
+            animation: pulseGlow 2s ease-in-out infinite;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 20px 10px rgba(102, 126, 234, 0);
+            }
         }
 
         /* Feature Sections */
@@ -895,12 +1113,21 @@
             font-size: 3.5rem;
             font-weight: 800;
             margin-bottom: 8px;
-            animation: countUp 2s ease-out;
         }
 
-        @keyframes countUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        .stat-number-large.counting {
+            animation: countUpFade 0.8s ease-out;
+        }
+
+        @keyframes countUpFade {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
         }
 
         .stat-label-large {
@@ -1027,11 +1254,42 @@
             }
 
             .warning-demo {
-                min-height: 300px;
+                padding: 20px;
+            }
+
+            .video-mockup {
+                min-height: 350px;
+            }
+
+            .warning-banner {
+                font-size: 0.75rem;
+                padding: 8px 12px;
+                max-width: 200px;
+            }
+
+            .warning-banner .label {
+                font-size: 0.75rem;
+            }
+
+            .warning-banner .time {
+                font-size: 0.65rem;
+            }
+
+            .warning-upvote {
+                padding: 3px 6px;
+                font-size: 0.7rem;
             }
 
             .impact-stats {
                 grid-template-columns: 1fr;
+            }
+
+            .scroll-incentive {
+                bottom: 20px;
+            }
+
+            .scroll-text {
+                font-size: 0.65rem;
             }
         }
     </style>
@@ -1060,23 +1318,82 @@
                 <div class="warning-demo">
                     <div class="demo-label">Live Protection Demo</div>
                     <div class="video-mockup">
+                        <!-- Simulated video content -->
+                        <div class="video-content">
+                            <div class="video-scene"></div>
+                        </div>
+
+                        <!-- Warning banners with upvotes -->
                         <div class="warning-banner violence" style="animation-delay: 0.5s;">
                             <span class="icon">⚔️</span>
-                            <span>Violence Warning</span>
-                            <span class="time">in 5s</span>
+                            <div class="content">
+                                <div class="label">Violence</div>
+                                <div class="time">in 5 seconds</div>
+                            </div>
+                            <div class="warning-upvote">
+                                <span>👍</span>
+                                <span class="count">247</span>
+                            </div>
                         </div>
-                        <div class="warning-banner flashing" style="animation-delay: 1.5s;">
-                            <span class="icon">💡</span>
-                            <span>Flashing Lights</span>
-                            <span class="time">in 8s</span>
+
+                        <div class="warning-banner blood" style="animation-delay: 1.8s;">
+                            <span class="icon">🩸</span>
+                            <div class="content">
+                                <div class="label">Blood</div>
+                                <div class="time">in 12 seconds</div>
+                            </div>
+                            <div class="warning-upvote">
+                                <span>👍</span>
+                                <span class="count">183</span>
+                            </div>
                         </div>
-                        <div class="warning-banner subtitle" style="animation-delay: 2.5s;">
+
+                        <div class="warning-banner subtitle" style="animation-delay: 3.2s;">
                             <span class="icon">📝</span>
-                            <span>Detected in Subtitles</span>
+                            <div class="content">
+                                <div class="label">Subtitle Detected</div>
+                                <div class="time">Real-time scan</div>
+                            </div>
+                            <div class="warning-upvote">
+                                <span>⚡</span>
+                                <span class="count">Live</span>
+                            </div>
+                        </div>
+
+                        <div class="warning-banner flashing" style="animation-delay: 4.5s;">
+                            <span class="icon">💡</span>
+                            <div class="content">
+                                <div class="label">Flashing Lights</div>
+                                <div class="time">in 8 seconds</div>
+                            </div>
+                            <div class="warning-upvote">
+                                <span>👍</span>
+                                <span class="count">412</span>
+                            </div>
+                        </div>
+
+                        <!-- Video controls with progress -->
+                        <div class="video-controls">
+                            <div class="progress-bar-container">
+                                <div class="progress-bar"></div>
+                                <div class="progress-cursor"></div>
+                            </div>
+                            <div class="time-display">
+                                <span class="play-icon">▶</span>
+                                <span>12:34 / 1:45:22</span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Scroll incentive -->
+        <div class="scroll-incentive">
+            <div class="scroll-arrow">
+                ↓
+            </div>
+            <div class="scroll-text">Explore Features</div>
         </div>
     </section>
 
@@ -1085,24 +1402,29 @@
         <div class="container">
             <div class="stats-grid">
                 <div>
-                    <div class="stat-number-large">5K+</div>
+                    <div class="stat-number-large" data-target="5000" data-suffix="K+">0</div>
                     <div class="stat-label-large">Database Entries</div>
                 </div>
                 <div>
-                    <div class="stat-number-large">28</div>
-                    <div class="stat-label-large">Trigger Categories</div>
+                    <div class="stat-number-large" data-target="28">0</div>
+                    <div class="stat-label-large">Trigger Warning Categories</div>
                 </div>
                 <div>
-                    <div class="stat-number-large">7</div>
-                    <div class="stat-label-large">Platforms Supported</div>
+                    <div class="stat-number-large" data-target="7">0</div>
+                    <div class="stat-label-large">Streaming Platforms</div>
                 </div>
                 <div>
-                    <div class="stat-number-large">100%</div>
+                    <div class="stat-number-large" data-target="100" data-suffix="%">0</div>
                     <div class="stat-label-large">Privacy Protected</div>
                 </div>
             </div>
         </div>
     </section>
+
+    <!-- Section divider -->
+    <div class="section-divider">
+        <div class="scroll-hint">↓ Discover How It Works ↓</div>
+    </div>
 
     <!-- Subtitle Detection Feature -->
     <section class="feature-section" id="features">
@@ -1250,6 +1572,11 @@
         </div>
     </section>
 
+    <!-- Section divider -->
+    <div class="section-divider">
+        <div class="scroll-hint">↓ Community-Powered Accuracy ↓</div>
+    </div>
+
     <!-- Voting System -->
     <section class="feature-section">
         <div class="container">
@@ -1343,6 +1670,11 @@
             </div>
         </div>
     </section>
+
+    <!-- Section divider -->
+    <div class="section-divider">
+        <div class="scroll-hint">↓ Help Build the Database ↓</div>
+    </div>
 
     <!-- Helper Mode -->
     <section class="feature-section">
@@ -1504,6 +1836,60 @@
         document.querySelectorAll('.fade-in-up').forEach(el => {
             observer.observe(el);
         });
+
+        // Count-up animation for stats
+        function animateCounter(element) {
+            const target = parseInt(element.getAttribute('data-target'));
+            const suffix = element.getAttribute('data-suffix') || '';
+            const duration = 2000; // 2 seconds
+            const steps = 60;
+            const increment = target / steps;
+            let current = 0;
+            let step = 0;
+
+            element.classList.add('counting');
+
+            const timer = setInterval(() => {
+                step++;
+                current = Math.min(current + increment, target);
+
+                if (suffix === 'K+') {
+                    element.textContent = (current / 1000).toFixed(0) + 'K+';
+                } else if (suffix === '%') {
+                    element.textContent = Math.round(current) + '%';
+                } else {
+                    element.textContent = Math.round(current);
+                }
+
+                if (step >= steps) {
+                    clearInterval(timer);
+                    if (suffix === 'K+') {
+                        element.textContent = (target / 1000).toFixed(0) + 'K+';
+                    } else if (suffix === '%') {
+                        element.textContent = target + '%';
+                    } else {
+                        element.textContent = target;
+                    }
+                }
+            }, duration / steps);
+        }
+
+        // Trigger count-up when stats section is visible
+        const statsObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    document.querySelectorAll('.stat-number-large').forEach(stat => {
+                        animateCounter(stat);
+                    });
+                    statsObserver.disconnect();
+                }
+            });
+        }, { threshold: 0.5 });
+
+        const statsSection = document.querySelector('.stats');
+        if (statsSection) {
+            statsObserver.observe(statsSection);
+        }
 
         // Smooth scroll for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
