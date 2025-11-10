@@ -245,7 +245,7 @@ export class SupabaseClient {
    */
   static async submitTrigger(submission: WarningSubmission): Promise<boolean> {
     // Validation
-    if (!submission.videoId || !submission.categoryKey) {
+    if (!submission.videoId || !submission.categoryKey || !submission.platform) {
       console.error('[TW Supabase] submitTrigger: Invalid submission data');
       return false;
     }
@@ -262,6 +262,7 @@ export class SupabaseClient {
 
         const { error } = await client.from('triggers').insert({
           video_id: submission.videoId,
+          platform: submission.platform,
           category_key: submission.categoryKey,
           start_time: submission.startTime,
           end_time: submission.endTime,

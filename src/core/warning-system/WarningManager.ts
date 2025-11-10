@@ -65,15 +65,21 @@ export class WarningManager {
    * Initialize the warning manager
    */
   async initialize(): Promise<void> {
+    console.log('[TW WarningManager] 🚀 Initializing warning manager...');
+
     // Load active profile
     this.profile = await ProfileManager.getActive();
+    console.log(`[TW WarningManager] ✅ Profile loaded: "${this.profile.name}" with ${this.profile.enabledCategories.length} enabled categories`);
+    console.log('[TW WarningManager] Enabled categories:', this.profile.enabledCategories);
 
     // Get current media
     const media = await this.provider.getCurrentMedia();
     if (!media) {
-      console.warn('[TW WarningManager] No media detected');
+      console.warn('[TW WarningManager] ❌ No media detected');
       return;
     }
+
+    console.log(`[TW WarningManager] 🎬 Media detected: ${media.id} - "${media.title || 'Unknown'}"`);
 
     // Fetch warnings for this media
     await this.fetchWarnings(media.id);
@@ -83,6 +89,7 @@ export class WarningManager {
 
     // Start monitoring
     this.startMonitoring();
+    console.log('[TW WarningManager] ✅ Monitoring started');
 
     // Listen for media changes
     this.provider.onMediaChange(async (newMedia) => {
@@ -94,36 +101,50 @@ export class WarningManager {
       this.profile = await ProfileManager.getActive();
       this.refilterWarnings();
     });
+
+    console.log('[TW WarningManager] ✅ Initialization complete');
   }
 
   /**
    * Initialize real-time detection systems
    */
   private initializeDetectors(): void {
+    console.log('[TW WarningManager] 🔍 Initializing real-time detection systems...');
     const video = this.provider.getVideoElement();
-    if (!video) return;
+    if (!video) {
+      console.warn('[TW WarningManager] ❌ No video element found for detectors');
+      return;
+    }
 
     // Initialize subtitle analyzer
     if (this.subtitleAnalyzer) {
+      console.log('[TW WarningManager] 📝 Initializing subtitle analyzer...');
       this.subtitleAnalyzer.initialize(video);
       this.subtitleAnalyzer.onDetection((warning) => {
         // Add detected warning to our list
         if (this.profile.enabledCategories.includes(warning.categoryKey as any)) {
-          console.log('[TW WarningManager] Subtitle detected trigger:', warning);
+          console.log(`[TW WarningManager] 🎯 Subtitle trigger detected and ADDED: ${warning.categoryKey} at ${Math.floor(warning.startTime)}s`);
+          console.log('[TW WarningManager] Full warning details:', warning);
           this.warnings.push(warning);
+          console.log(`[TW WarningManager] Total warnings now: ${this.warnings.length}`);
+        } else {
+          console.log(`[TW WarningManager] ⏭️ Subtitle trigger detected but SKIPPED (not in enabled categories): ${warning.categoryKey}`);
         }
       });
     }
 
     // Initialize photosensitivity detector
     if (this.photosensitivityDetector) {
+      console.log('[TW WarningManager] ⚡ Initializing photosensitivity detector...');
       this.photosensitivityDetector.initialize(video);
       this.photosensitivityDetector.onDetection((warning) => {
         // Always show photosensitivity warnings (critical for health)
-        console.warn('[TW WarningManager] ⚠️ Photosensitivity warning:', warning);
+        console.warn('[TW WarningManager] ⚠️ Photosensitivity warning detected and ADDED:', warning);
         this.warnings.push(warning);
       });
     }
+
+    console.log('[TW WarningManager] ✅ Detection systems initialized');
   }
 
   /**
@@ -162,11 +183,20 @@ export class WarningManager {
     }
 
     // Fetch from backend
-    console.log('[TW WarningManager] Fetching warnings from backend');
+    console.log(`[TW WarningManager] 🌐 Fetching warnings from backend for video: ${videoId}`);
     const allWarnings = await SupabaseClient.getTriggers(videoId);
+    console.log(`[TW WarningManager] 📦 Received ${allWarnings.length} total warnings from backend`);
 
     // Filter by profile
     this.warnings = this.filterWarningsByProfile(allWarnings);
+    console.log(`[TW WarningManager] ✅ Filtered to ${this.warnings.length} warnings based on profile`);
+
+    if (this.warnings.length > 0) {
+      console.log('[TW WarningManager] Warning categories:', this.warnings.map(w => w.categoryKey));
+      console.log('[TW WarningManager] Warning times:', this.warnings.map(w => `${Math.floor(w.startTime)}s-${Math.floor(w.endTime)}s`));
+    } else {
+      console.log('[TW WarningManager] ℹ️ No warnings match the current profile settings');
+    }
 
     // Update both caches
     WarningManager.warningCache.set(videoId, {
@@ -181,8 +211,6 @@ export class WarningManager {
     const newExpiration = cacheExpiration || {};
     newExpiration[videoId] = Date.now() + CACHE_EXPIRATION_MS;
     await StorageAdapter.set('cacheExpiration', newExpiration);
-
-    console.log(`[TW WarningManager] Loaded ${this.warnings.length} warnings`);
   }
 
   /**
@@ -250,6 +278,11 @@ export class WarningManager {
     const currentTime = video.currentTime;
     const leadTime = this.profile.leadTime;
 
+    // Log check every 30 seconds for debugging
+    if (Math.floor(currentTime) % 30 === 0 && Math.floor(currentTime) !== Math.floor(this.lastCheckTime / 1000)) {
+      console.log(`[TW WarningManager] 🔍 Checking warnings at ${Math.floor(currentTime)}s (${this.warnings.length} total warnings, lead time: ${leadTime}s)`);
+    }
+
     for (const warning of this.warnings) {
       // Skip ignored warnings
       if (this.ignoredTriggersThisSession.has(warning.id)) continue;
@@ -261,14 +294,17 @@ export class WarningManager {
 
       if (isActive && !this.activeWarnings.has(warning.id)) {
         // Warning just became active
+        console.log(`[TW WarningManager] 🚨 WARNING ACTIVE: ${warning.categoryKey} at ${Math.floor(currentTime)}s (${warning.startTime}-${warning.endTime})`);
         this.activeWarnings.add(warning.id);
         this.triggerWarning(warning, 0, true);
         this.applyWarningAction(warning, true);
       } else if (isUpcoming && !this.activeWarnings.has(warning.id)) {
         // Upcoming warning
+        console.log(`[TW WarningManager] ⏰ UPCOMING WARNING: ${warning.categoryKey} in ${Math.floor(timeUntilStart)}s`);
         this.triggerWarning(warning, timeUntilStart, false);
       } else if (!isActive && this.activeWarnings.has(warning.id)) {
         // Warning ended
+        console.log(`[TW WarningManager] ✅ WARNING ENDED: ${warning.categoryKey}`);
         this.activeWarnings.delete(warning.id);
         this.triggerWarningEnd(warning.id);
         this.applyWarningAction(warning, false);
@@ -280,7 +316,10 @@ export class WarningManager {
    * Trigger warning callback
    */
   private triggerWarning(warning: Warning, timeUntilStart: number, isActive: boolean): void {
-    if (!this.onWarningCallback) return;
+    if (!this.onWarningCallback) {
+      console.warn('[TW WarningManager] ⚠️ Warning callback not registered! Cannot display warning.');
+      return;
+    }
 
     const action = this.profile.categoryActions[warning.categoryKey] || 'warn';
 
@@ -291,6 +330,7 @@ export class WarningManager {
       action,
     };
 
+    console.log(`[TW WarningManager] 📤 Sending warning to BannerManager: ${warning.categoryKey} (${isActive ? 'ACTIVE' : 'UPCOMING'})`);
     this.onWarningCallback(activeWarning);
   }
 

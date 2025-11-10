@@ -129,8 +129,9 @@ export class SubtitleAnalyzer {
     initialize(video) {
         this.video = video;
         const tracks = video.textTracks;
+        logger.info(`[SubtitleAnalyzer] Initializing with ${tracks.length} text tracks`);
         if (tracks.length === 0) {
-            logger.debug('No subtitle tracks found');
+            logger.info('[SubtitleAnalyzer] ❌ No subtitle tracks found - analysis disabled');
             return;
         }
         // Find English track for analyzer (independent of user choice)
@@ -155,9 +156,10 @@ export class SubtitleAnalyzer {
         // Select track for analyzer
         const selectedTrack = englishTrack || fallbackTrack;
         if (!selectedTrack) {
-            logger.debug('No subtitle tracks available');
+            logger.info('[SubtitleAnalyzer] ❌ No usable subtitle tracks available');
             return;
         }
+        logger.info(`[SubtitleAnalyzer] ✅ Subtitles found - Track: ${selectedTrack.label || 'Untitled'} (${selectedTrack.language || 'unknown'})`);
         // Determine if we need translation
         this.sourceLanguage = selectedTrack.language || 'en';
         this.needsTranslation = !this.sourceLanguage.toLowerCase().startsWith('en');
@@ -232,6 +234,7 @@ export class SubtitleAnalyzer {
                 if (this.detectedTriggers.has(triggerId)) {
                     continue; // Already detected
                 }
+                logger.info(`[SubtitleAnalyzer] 🎯 Trigger detected! Category: ${trigger.category}, Keyword: "${keyword}", Time: ${Math.floor(startTime)}s, Text: "${text.substring(0, 50)}..."`);
                 // Create warning
                 const warning = {
                     id: triggerId,

@@ -2,10 +2,28 @@
   import browser from 'webextension-polyfill';
   import { TRIGGER_CATEGORIES, CATEGORY_KEYS } from '@shared/constants/categories';
   import type { TriggerCategory } from '@shared/types/Warning.types';
+  import { detectPlatformFromUrl, type StreamingPlatform } from '@shared/utils/platform-detector';
+  import { onMount } from 'svelte';
 
   export let onClose: () => void;
   export let videoId: string | null;
   export let currentTime: number;
+
+  let detectedPlatform: StreamingPlatform | null = null;
+
+  onMount(async () => {
+    // Detect platform from current tab URL
+    try {
+      const tabs = await browser.tabs.query({ active: true, currentWindow: true });
+      if (tabs[0]?.url) {
+        const detection = detectPlatformFromUrl(tabs[0].url);
+        detectedPlatform = detection.platform;
+        console.log('[TW SubmitWarning] Detected platform:', detectedPlatform);
+      }
+    } catch (error) {
+      console.error('[TW SubmitWarning] Failed to detect platform:', error);
+    }
+  });
 
   let selectedCategory: TriggerCategory | null = null;
   let startTime = Math.max(0, Math.floor(currentTime - 5));
@@ -147,10 +165,18 @@
 
       const sanitizedDescription = sanitizeDescription(description);
 
+      // Ensure we have a platform
+      if (!detectedPlatform) {
+        error = 'Could not detect streaming platform. Please try again from the video page.';
+        submitting = false;
+        return;
+      }
+
       const response = await browser.runtime.sendMessage({
         type: 'SUBMIT_WARNING',
         submission: {
           videoId,
+          platform: detectedPlatform,
           categoryKey: selectedCategory,
           startTime,
           endTime,

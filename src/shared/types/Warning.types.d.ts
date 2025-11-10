@@ -19,8 +19,10 @@ export interface Warning {
     createdAt: Date;
     updatedAt: Date;
 }
+export type StreamingPlatform = 'netflix' | 'prime_video' | 'youtube' | 'hulu' | 'disney_plus' | 'max' | 'peacock';
 export interface WarningSubmission {
     videoId: string;
+    platform: StreamingPlatform;
     categoryKey: TriggerCategory;
     startTime: number;
     endTime: number;
