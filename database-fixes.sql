@@ -30,16 +30,23 @@ CREATE INDEX IF NOT EXISTS idx_feedback_status ON feedback(status);
 -- Enable RLS on feedback
 ALTER TABLE feedback ENABLE ROW LEVEL SECURITY;
 
--- Feedback policies
-CREATE POLICY IF NOT EXISTS "Users can submit feedback"
+-- Feedback policies (drop if exists, then recreate for idempotency)
+DO $$
+BEGIN
+  DROP POLICY IF EXISTS "Users can submit feedback" ON feedback;
+  DROP POLICY IF EXISTS "Users can read their own feedback" ON feedback;
+  DROP POLICY IF EXISTS "Moderators can read all feedback" ON feedback;
+END $$;
+
+CREATE POLICY "Users can submit feedback"
   ON feedback FOR INSERT
   WITH CHECK (auth.uid() = submitted_by);
 
-CREATE POLICY IF NOT EXISTS "Users can read their own feedback"
+CREATE POLICY "Users can read their own feedback"
   ON feedback FOR SELECT
   USING (auth.uid() = submitted_by);
 
-CREATE POLICY IF NOT EXISTS "Moderators can read all feedback"
+CREATE POLICY "Moderators can read all feedback"
   ON feedback FOR SELECT
   USING (
     EXISTS (

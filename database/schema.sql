@@ -425,6 +425,7 @@ CREATE INDEX idx_feedback_status ON feedback(status);
 ALTER TABLE feedback ENABLE ROW LEVEL SECURITY;
 
 -- Feedback policies
+-- Note: If running this multiple times, you may need to DROP POLICY IF EXISTS first
 CREATE POLICY "Users can submit feedback"
   ON feedback FOR INSERT
   WITH CHECK (auth.uid() = submitted_by);
