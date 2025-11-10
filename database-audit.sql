@@ -299,20 +299,10 @@ materialized_views AS (
     1 as sort_order
   FROM pg_matviews
   WHERE schemaname = 'public'
-)
+),
 
--- COMBINE ALL RESULTS (INCLUDING SUMMARY AS FIRST ROWS)
-SELECT
-  section,
-  object_name,
-  detail_1 as "Column/Name",
-  detail_2 as "Type/Constraint",
-  detail_3 as "Nullable/Action",
-  detail_4 as "Default/Additional",
-  detail_5 as "Info/Definition",
-  sort_order
-FROM (
-  -- Add summary as special section that sorts first
+-- Summary section
+summary AS (
   SELECT
     '0_SUMMARY' as section,
     'Database Overview' as object_name,
@@ -324,24 +314,35 @@ FROM (
     ' | Triggers: ' || (SELECT COUNT(*) FROM information_schema.triggers WHERE trigger_schema = 'public')::text ||
     ' | Enums: ' || (SELECT COUNT(*) FROM pg_type t JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace WHERE n.nspname = 'public' AND t.typtype = 'e')::text as detail_5,
     0 as sort_order
+)
 
-  UNION ALL SELECT * FROM tables_cols
-  UNION ALL SELECT * FROM primary_keys
-  UNION ALL SELECT * FROM foreign_keys
-  UNION ALL SELECT * FROM unique_constraints
-  UNION ALL SELECT * FROM check_constraints
-  UNION ALL SELECT * FROM indexes
-  UNION ALL SELECT * FROM rls_policies
-  UNION ALL SELECT * FROM custom_enums
-  UNION ALL SELECT * FROM functions
-  UNION ALL SELECT * FROM triggers
-  UNION ALL SELECT * FROM table_grants
-  UNION ALL SELECT * FROM sequences
-  UNION ALL SELECT * FROM table_stats
-  UNION ALL SELECT * FROM views
-  UNION ALL SELECT * FROM extensions
-  UNION ALL SELECT * FROM rls_status
-  UNION ALL SELECT * FROM column_stats
-  UNION ALL SELECT * FROM materialized_views
-) combined
+-- COMBINE ALL RESULTS
+SELECT
+  section,
+  object_name,
+  detail_1 as "Column/Name",
+  detail_2 as "Type/Constraint",
+  detail_3 as "Nullable/Action",
+  detail_4 as "Default/Additional",
+  detail_5 as "Info/Definition",
+  sort_order
+FROM summary
+UNION ALL SELECT * FROM tables_cols
+UNION ALL SELECT * FROM primary_keys
+UNION ALL SELECT * FROM foreign_keys
+UNION ALL SELECT * FROM unique_constraints
+UNION ALL SELECT * FROM check_constraints
+UNION ALL SELECT * FROM indexes
+UNION ALL SELECT * FROM rls_policies
+UNION ALL SELECT * FROM custom_enums
+UNION ALL SELECT * FROM functions
+UNION ALL SELECT * FROM triggers
+UNION ALL SELECT * FROM table_grants
+UNION ALL SELECT * FROM sequences
+UNION ALL SELECT * FROM table_stats
+UNION ALL SELECT * FROM views
+UNION ALL SELECT * FROM extensions
+UNION ALL SELECT * FROM rls_status
+UNION ALL SELECT * FROM column_stats
+UNION ALL SELECT * FROM materialized_views
 ORDER BY section, object_name, sort_order;
