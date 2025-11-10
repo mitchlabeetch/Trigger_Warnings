@@ -33,6 +33,13 @@ export interface StorageSchema {
 
   // Last sync timestamp
   lastSync: number;
+
+  // Quick add context (for trigger submission with auto-filled timestamp)
+  quickAddContext: {
+    videoId: string;
+    timestamp: number;
+    savedAt: number;
+  };
 }
 
 export type StorageKey = keyof StorageSchema;

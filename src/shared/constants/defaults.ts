@@ -35,6 +35,8 @@ export const DEFAULT_PROFILE: Omit<Profile, 'id' | 'createdAt' | 'updatedAt'> = 
   soundEnabled: true,
   autoHideTime: DEFAULT_AUTO_HIDE_TIME,
   theme: 'system',
+  defaultProtection: 'none', // 'none' means just show warning banner, no video/audio protection
+  categoryProtections: {},
 };
 
 // Cache expiration time (5 minutes)

@@ -146,6 +146,26 @@ async function handleMessage(
         return { success, data: undefined } as VoidResponse;
       }
 
+      case 'STORE_QUICK_ADD_CONTEXT': {
+        // Store the current video context for quick-add trigger functionality
+        await StorageAdapter.set('quickAddContext', {
+          videoId: message.videoId,
+          timestamp: message.timestamp,
+          savedAt: Date.now(),
+        });
+        console.log('[TW Background] Stored quick add context:', message.videoId, message.timestamp);
+        return { success: true, data: undefined } as VoidResponse;
+      }
+
+      case 'GET_QUICK_ADD_CONTEXT': {
+        const context = await StorageAdapter.get('quickAddContext');
+        // Clear context after retrieval (one-time use)
+        if (context) {
+          await StorageAdapter.remove('quickAddContext');
+        }
+        return { success: true, data: context } as any;
+      }
+
       default:
         return {
           success: false,

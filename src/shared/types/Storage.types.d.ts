@@ -14,6 +14,11 @@ export interface StorageSchema {
     ignoredTriggersForVideo: Record<string, string[]>;
     isFirstRun: boolean;
     lastSync: number;
+    quickAddContext: {
+        videoId: string;
+        timestamp: number;
+        savedAt: number;
+    };
 }
 export type StorageKey = keyof StorageSchema;
 export interface StorageChange<T = unknown> {

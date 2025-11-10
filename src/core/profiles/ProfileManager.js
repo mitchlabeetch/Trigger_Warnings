@@ -89,6 +89,8 @@ export class ProfileManager {
                     soundEnabled: sourceProfile.soundEnabled,
                     autoHideTime: sourceProfile.autoHideTime,
                     theme: sourceProfile.theme,
+                    defaultProtection: sourceProfile.defaultProtection,
+                    categoryProtections: { ...sourceProfile.categoryProtections },
                 };
             }
         }
@@ -144,6 +146,11 @@ export class ProfileManager {
             profile.autoHideTime = updates.autoHideTime;
         if (updates.theme !== undefined)
             profile.theme = updates.theme;
+        if (updates.defaultProtection !== undefined)
+            profile.defaultProtection = updates.defaultProtection;
+        if (updates.categoryProtections !== undefined) {
+            profile.categoryProtections = { ...profile.categoryProtections, ...updates.categoryProtections };
+        }
         profile.updatedAt = new Date();
         await StorageAdapter.set('profiles', profiles);
         // Update cache
@@ -218,6 +225,8 @@ export class ProfileManager {
                 soundEnabled: data.soundEnabled,
                 autoHideTime: data.autoHideTime,
                 theme: data.theme,
+                defaultProtection: data.defaultProtection,
+                categoryProtections: data.categoryProtections,
             });
             return await this.get(profile.id);
         }

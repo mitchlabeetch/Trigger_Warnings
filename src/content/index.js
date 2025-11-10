@@ -6,12 +6,14 @@ import browser from 'webextension-polyfill';
 import { ProviderFactory } from './providers/ProviderFactory';
 import { WarningManager } from '@core/warning-system/WarningManager';
 import { BannerManager } from './banner/BannerManager';
+import { ActiveIndicatorManager } from './indicator/ActiveIndicatorManager';
 import { createLogger } from '@shared/utils/logger';
 const logger = createLogger('Content');
 class TriggerWarningsContent {
     provider = null;
     warningManager = null;
     bannerManager = null;
+    indicatorManager = null;
     initialized = false;
     async initialize() {
         if (this.initialized)
@@ -36,6 +38,9 @@ class TriggerWarningsContent {
             // Initialize banner manager
             this.bannerManager = new BannerManager(this.provider);
             await this.bannerManager.initialize();
+            // Initialize active indicator
+            this.indicatorManager = new ActiveIndicatorManager(this.provider);
+            await this.indicatorManager.initialize();
             // Connect warning manager to banner manager
             this.warningManager.onWarning((warning) => {
                 this.bannerManager?.showWarning(warning);
@@ -65,11 +70,60 @@ class TriggerWarningsContent {
                     logger.error('Failed to vote:', error);
                 }
             });
+            // Set up indicator callbacks
+            this.indicatorManager.onQuickAdd(() => {
+                this.handleQuickAddTrigger();
+            });
             this.initialized = true;
             logger.info('Content script initialized successfully');
         }
         catch (error) {
             logger.error('Initialization error:', error);
+        }
+    }
+    /**
+     * Handle quick add trigger button click
+     * Gets current timestamp and sends message to background to open trigger submission
+     */
+    async handleQuickAddTrigger() {
+        logger.info('Quick add trigger requested');
+        if (!this.provider) {
+            logger.error('No provider available for quick add');
+            return;
+        }
+        try {
+            // Get video element and current time
+            const videoElement = this.provider.getVideoElement();
+            if (!videoElement) {
+                logger.error('No video element found');
+                alert('Unable to detect video player. Please try again.');
+                return;
+            }
+            const currentTime = videoElement.currentTime;
+            // Get current media info
+            const mediaInfo = await this.provider.getCurrentMedia();
+            if (!mediaInfo) {
+                logger.error('No media info found');
+                alert('Unable to detect current video. Please try again.');
+                return;
+            }
+            const videoId = mediaInfo.id;
+            logger.info(`Current timestamp: ${currentTime}s, Video ID: ${videoId}`);
+            // Send message to background to store current timestamp and video info
+            // This will be used when the user opens the popup or trigger submission UI
+            await browser.runtime.sendMessage({
+                type: 'STORE_QUICK_ADD_CONTEXT',
+                videoId,
+                timestamp: currentTime,
+            }).catch(error => {
+                logger.error('Failed to store quick add context:', error);
+            });
+            // For now, alert the user - later this will open a proper submission UI
+            // TODO: Implement proper trigger submission UI in the content script or popup
+            alert(`Quick Add Trigger\n\nCurrent timestamp: ${Math.floor(currentTime)}s\n\nPlease use the extension popup to complete the trigger submission.\n\n(Timestamp has been saved)`);
+        }
+        catch (error) {
+            logger.error('Failed to get current timestamp:', error);
         }
     }
     async handleProfileChange(profileId) {
@@ -97,6 +151,10 @@ class TriggerWarningsContent {
         if (this.bannerManager) {
             this.bannerManager.dispose();
             this.bannerManager = null;
+        }
+        if (this.indicatorManager) {
+            this.indicatorManager.dispose();
+            this.indicatorManager = null;
         }
         if (this.provider) {
             this.provider.dispose();

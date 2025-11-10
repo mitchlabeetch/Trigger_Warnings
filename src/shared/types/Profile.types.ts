@@ -8,6 +8,8 @@ export type BannerPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-
 
 export type Theme = 'light' | 'dark' | 'system';
 
+export type ProtectionType = 'none' | 'blackout' | 'mute' | 'both';
+
 export interface DisplaySettings {
   position: BannerPosition;
   fontSize: number; // px
@@ -36,6 +38,10 @@ export interface Profile {
   soundEnabled: boolean;
   autoHideTime: number; // seconds
   theme: Theme;
+
+  // Protection settings (what happens DURING the trigger)
+  defaultProtection: ProtectionType;
+  categoryProtections: Partial<Record<TriggerCategory, ProtectionType>>; // Per-category overrides
 }
 
 export interface ProfileCreateInput {
@@ -53,4 +59,6 @@ export interface ProfileUpdateInput {
   soundEnabled?: boolean;
   autoHideTime?: number;
   theme?: Theme;
+  defaultProtection?: ProtectionType;
+  categoryProtections?: Partial<Record<TriggerCategory, ProtectionType>>;
 }

@@ -4,7 +4,7 @@
 import type { MediaInfo } from './Provider.types';
 import type { Warning, WarningSubmission } from './Warning.types';
 import type { Profile, ProfileCreateInput, ProfileUpdateInput } from './Profile.types';
-export type MessageType = 'GET_WARNINGS' | 'SUBMIT_WARNING' | 'VOTE_WARNING' | 'GET_ACTIVE_PROFILE' | 'SET_ACTIVE_PROFILE' | 'CREATE_PROFILE' | 'UPDATE_PROFILE' | 'DELETE_PROFILE' | 'GET_ALL_PROFILES' | 'PROFILE_CHANGED' | 'MEDIA_DETECTED' | 'SUBMIT_FEEDBACK';
+export type MessageType = 'GET_WARNINGS' | 'SUBMIT_WARNING' | 'VOTE_WARNING' | 'GET_ACTIVE_PROFILE' | 'SET_ACTIVE_PROFILE' | 'CREATE_PROFILE' | 'UPDATE_PROFILE' | 'DELETE_PROFILE' | 'GET_ALL_PROFILES' | 'PROFILE_CHANGED' | 'MEDIA_DETECTED' | 'SUBMIT_FEEDBACK' | 'STORE_QUICK_ADD_CONTEXT' | 'GET_QUICK_ADD_CONTEXT';
 export interface BaseMessage {
     type: MessageType;
     requestId?: string;
@@ -59,7 +59,15 @@ export interface SubmitFeedbackMessage extends BaseMessage {
     email?: string;
     message: string;
 }
-export type Message = GetWarningsMessage | SubmitWarningMessage | VoteWarningMessage | GetActiveProfileMessage | SetActiveProfileMessage | CreateProfileMessage | UpdateProfileMessage | DeleteProfileMessage | GetAllProfilesMessage | ProfileChangedMessage | MediaDetectedMessage | SubmitFeedbackMessage;
+export interface StoreQuickAddContextMessage extends BaseMessage {
+    type: 'STORE_QUICK_ADD_CONTEXT';
+    videoId: string;
+    timestamp: number;
+}
+export interface GetQuickAddContextMessage extends BaseMessage {
+    type: 'GET_QUICK_ADD_CONTEXT';
+}
+export type Message = GetWarningsMessage | SubmitWarningMessage | VoteWarningMessage | GetActiveProfileMessage | SetActiveProfileMessage | CreateProfileMessage | UpdateProfileMessage | DeleteProfileMessage | GetAllProfilesMessage | ProfileChangedMessage | MediaDetectedMessage | SubmitFeedbackMessage | StoreQuickAddContextMessage | GetQuickAddContextMessage;
 export interface MessageResponse<T = unknown> {
     success: boolean;
     data?: T;

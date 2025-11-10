@@ -4,6 +4,7 @@
 import type { TriggerCategory, WarningAction } from './Warning.types';
 export type BannerPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 export type Theme = 'light' | 'dark' | 'system';
+export type ProtectionType = 'none' | 'blackout' | 'mute' | 'both';
 export interface DisplaySettings {
     position: BannerPosition;
     fontSize: number;
@@ -25,6 +26,8 @@ export interface Profile {
     soundEnabled: boolean;
     autoHideTime: number;
     theme: Theme;
+    defaultProtection: ProtectionType;
+    categoryProtections: Partial<Record<TriggerCategory, ProtectionType>>;
 }
 export interface ProfileCreateInput {
     name: string;
@@ -40,5 +43,7 @@ export interface ProfileUpdateInput {
     soundEnabled?: boolean;
     autoHideTime?: number;
     theme?: Theme;
+    defaultProtection?: ProtectionType;
+    categoryProtections?: Partial<Record<TriggerCategory, ProtectionType>>;
 }
 //# sourceMappingURL=Profile.types.d.ts.map
