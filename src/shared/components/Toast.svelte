@@ -44,10 +44,17 @@
   }
 </script>
 
-<div class="toast toast-{type}" class:visible on:click={closeToast}>
+<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+<div
+  class="toast toast-{type}"
+  class:visible
+  role="status"
+  aria-live="polite"
+  on:click={closeToast}
+>
   <div class="toast-icon">{getIcon()}</div>
   <div class="toast-message">{message}</div>
-  <button class="toast-close" on:click={closeToast} aria-label="Close">×</button>
+  <button class="toast-close" on:click|stopPropagation={closeToast} aria-label="Close">×</button>
 </div>
 
 <style>

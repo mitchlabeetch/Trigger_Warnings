@@ -46,6 +46,7 @@
   }
 </script>
 
+<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 <div class="profile-delete" on:keydown={handleKeydown}>
   <div class="profile-delete-header">
     <h2>Delete Profile</h2>
@@ -70,6 +71,7 @@
         <label for="confirm-text">
           Type <strong>{profile.name}</strong> to confirm
         </label>
+        <!-- svelte-ignore a11y-autofocus -->
         <input
           id="confirm-text"
           type="text"

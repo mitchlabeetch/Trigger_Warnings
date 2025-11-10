@@ -205,8 +205,11 @@
 
 <!-- Thank you message overlay -->
 {#if showThankYou}
+  <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
   <div
     class="tw-thank-you"
+    role="status"
+    aria-live="polite"
     style="{getPositionStyles(position)}"
     on:click={() => showThankYou = false}
   >

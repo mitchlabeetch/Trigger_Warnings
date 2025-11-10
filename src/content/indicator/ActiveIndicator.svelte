@@ -53,8 +53,12 @@
     class="tw-indicator"
     class:expanded={isExpanded}
     class:has-warnings={hasActiveWarnings}
+    role="complementary"
+    aria-label="Trigger Warnings Extension Indicator"
     on:mouseenter={() => isExpanded = true}
     on:mouseleave={() => isExpanded = false}
+    on:focusin={() => isExpanded = true}
+    on:focusout={() => isExpanded = false}
   >
     <div class="tw-indicator-content">
       <!-- Status icon/badge -->

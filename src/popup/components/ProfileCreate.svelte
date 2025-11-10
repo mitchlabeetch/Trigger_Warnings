@@ -63,6 +63,7 @@
   }
 </script>
 
+<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 <div class="profile-create" on:keydown={handleKeydown}>
   <div class="profile-create-header">
     <h2>Create New Profile</h2>
@@ -75,6 +76,7 @@
         Profile Name
         <span class="required">*</span>
       </label>
+      <!-- svelte-ignore a11y-autofocus -->
       <input
         id="profile-name"
         type="text"

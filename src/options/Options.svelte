@@ -257,8 +257,8 @@
 
           <!-- Position -->
           <div class="setting-group">
-            <label class="setting-label">Banner Position</label>
-            <div class="position-grid">
+            <div class="setting-label" role="heading" aria-level="3">Banner Position</div>
+            <div class="position-grid" role="group" aria-label="Banner Position">
               <button
                 class="position-btn"
                 class:active={activeProfile.display.position === 'top-left'}
@@ -296,9 +296,9 @@
 
           <!-- Font Size -->
           <div class="setting-group">
-            <label class="setting-label">
+            <div class="setting-label" role="heading" aria-level="3">
               Font Size: {activeProfile.display.fontSize}px
-            </label>
+            </div>
             <input
               type="range"
               min="12"
@@ -311,9 +311,9 @@
 
           <!-- Transparency -->
           <div class="setting-group">
-            <label class="setting-label">
+            <div class="setting-label" role="heading" aria-level="3">
               Transparency: {activeProfile.display.transparency}%
-            </label>
+            </div>
             <input
               type="range"
               min="0"
@@ -340,9 +340,9 @@
 
           <!-- Lead Time -->
           <div class="setting-group">
-            <label class="setting-label">
+            <div class="setting-label" role="heading" aria-level="3">
               Warning Lead Time: {activeProfile.leadTime} seconds
-            </label>
+            </div>
             <p class="setting-hint">How early before the trigger to show the warning</p>
             <input
               type="range"
@@ -368,8 +368,8 @@
 
           <!-- Theme -->
           <div class="setting-group">
-            <label class="setting-label">Theme</label>
-            <div class="theme-selector">
+            <div class="setting-label" role="heading" aria-level="3">Theme</div>
+            <div class="theme-selector" role="group" aria-label="Theme Selection">
               <button
                 class="theme-btn"
                 class:active={activeProfile.theme === 'light'}
@@ -401,9 +401,9 @@
 
           <!-- Default Protection -->
           <div class="setting-group">
-            <label class="setting-label">Default Protection</label>
+            <div class="setting-label" role="heading" aria-level="3">Default Protection</div>
             <p class="setting-hint">This will apply to all triggers unless you set a category-specific override below</p>
-            <div class="protection-selector">
+            <div class="protection-selector" role="group" aria-label="Default Protection Mode">
               <button
                 class="protection-btn"
                 class:active={activeProfile.defaultProtection === 'none'}

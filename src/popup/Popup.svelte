@@ -202,6 +202,13 @@
     profileToEdit = null;
   }
 
+  // Keyboard handler for modals (ESC to close)
+  function handleModalKeydown(event: KeyboardEvent, closeHandler: () => void) {
+    if (event.key === 'Escape') {
+      closeHandler();
+    }
+  }
+
   async function handleProfileChange() {
     await loadData();
   }
@@ -298,8 +305,17 @@
 
   <!-- Submit Warning Modal -->
   {#if showSubmitForm}
-    <div class="modal-overlay" on:click={closeSubmitForm}>
-      <div class="modal-content" on:click|stopPropagation>
+    <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+    <div
+      class="modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Submit Warning"
+      on:click={closeSubmitForm}
+      on:keydown={(e) => handleModalKeydown(e, closeSubmitForm)}
+    >
+      <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+      <div class="modal-content" role="document" on:click|stopPropagation>
         <SubmitWarning
           onClose={closeSubmitForm}
           videoId={currentVideoId}
@@ -311,8 +327,17 @@
 
   <!-- Create Profile Modal -->
   {#if showCreateProfile}
-    <div class="modal-overlay" on:click={closeCreateProfile}>
-      <div class="modal-content" on:click|stopPropagation>
+    <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+    <div
+      class="modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Create Profile"
+      on:click={closeCreateProfile}
+      on:keydown={(e) => handleModalKeydown(e, closeCreateProfile)}
+    >
+      <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+      <div class="modal-content" role="document" on:click|stopPropagation>
         <ProfileCreate
           onClose={closeCreateProfile}
           onSuccess={handleProfileChange}
@@ -324,8 +349,17 @@
 
   <!-- Rename Profile Modal -->
   {#if showRenameProfile && profileToEdit}
-    <div class="modal-overlay" on:click={closeRenameProfile}>
-      <div class="modal-content" on:click|stopPropagation>
+    <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+    <div
+      class="modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Rename Profile"
+      on:click={closeRenameProfile}
+      on:keydown={(e) => handleModalKeydown(e, closeRenameProfile)}
+    >
+      <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+      <div class="modal-content" role="document" on:click|stopPropagation>
         <ProfileRename
           onClose={closeRenameProfile}
           onSuccess={handleProfileChange}
@@ -338,8 +372,17 @@
 
   <!-- Delete Profile Modal -->
   {#if showDeleteProfile && profileToEdit}
-    <div class="modal-overlay" on:click={closeDeleteProfile}>
-      <div class="modal-content" on:click|stopPropagation>
+    <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+    <div
+      class="modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Delete Profile"
+      on:click={closeDeleteProfile}
+      on:keydown={(e) => handleModalKeydown(e, closeDeleteProfile)}
+    >
+      <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+      <div class="modal-content" role="document" on:click|stopPropagation>
         <ProfileDelete
           onClose={closeDeleteProfile}
           onSuccess={handleProfileChange}

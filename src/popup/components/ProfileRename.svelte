@@ -68,6 +68,7 @@
   }
 </script>
 
+<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 <div class="profile-rename" on:keydown={handleKeydown}>
   <div class="profile-rename-header">
     <h2>Rename Profile</h2>
@@ -80,6 +81,7 @@
         New Profile Name
         <span class="required">*</span>
       </label>
+      <!-- svelte-ignore a11y-autofocus -->
       <input
         id="profile-name"
         type="text"
