@@ -34,7 +34,7 @@
     try {
       const response = await browser.runtime.sendMessage({
         type: 'CREATE_PROFILE',
-        input: {
+        profile: {
           name: profileName.trim(),
           copyFrom: copyFromId || undefined,
         },
