@@ -185,7 +185,7 @@ export class SupabaseClient {
                     status: row.status,
                     score: row.score || 0,
                     confidenceLevel: row.confidence_level || 0,
-                    requiresModeration: row.requires_moderation || false,
+                    requiresModeration: row.status === 'pending', // Derive from status
                     description: row.description,
                     createdAt: new Date(row.created_at),
                     updatedAt: new Date(row.updated_at || row.created_at),
@@ -225,7 +225,6 @@ export class SupabaseClient {
                     status: 'pending',
                     score: 0,
                     confidence_level: submission.confidence || 75,
-                    requires_moderation: true,
                 });
                 if (error) {
                     throw new Error(`Failed to submit trigger: ${error.message}`);
@@ -345,7 +344,7 @@ export class SupabaseClient {
                     status: row.status,
                     score: row.score || 0,
                     confidenceLevel: row.confidence_level || 0,
-                    requiresModeration: row.requires_moderation || false,
+                    requiresModeration: row.status === 'pending', // Derive from status
                     description: row.description,
                     createdAt: new Date(row.created_at),
                     updatedAt: new Date(row.updated_at || row.created_at),
@@ -372,7 +371,6 @@ export class SupabaseClient {
                     .from('triggers')
                     .update({
                     status: 'approved',
-                    requires_moderation: false,
                     updated_at: new Date().toISOString(),
                 })
                     .eq('id', triggerId);
@@ -403,7 +401,6 @@ export class SupabaseClient {
                     .from('triggers')
                     .update({
                     status: 'rejected',
-                    requires_moderation: false,
                     updated_at: new Date().toISOString(),
                 })
                     .eq('id', triggerId);
