@@ -157,7 +157,11 @@ CREATE INDEX IF NOT EXISTS idx_triggers_video_platform_status_times
 -- 7. ADD FUNCTION TO GET VIDEO TRIGGERS (OPTIMIZED)
 -- =====================================================
 
-CREATE OR REPLACE FUNCTION get_video_triggers(
+-- Drop existing function first (return type has changed)
+-- Old version returned fewer columns, new version has full trigger data
+DROP FUNCTION IF EXISTS get_video_triggers(text, streaming_platform);
+
+CREATE FUNCTION get_video_triggers(
   p_video_id TEXT,
   p_platform streaming_platform
 )
