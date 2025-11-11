@@ -51,8 +51,23 @@
       ? activeProfile.enabledCategories.filter((k) => k !== categoryKey)
       : [...activeProfile.enabledCategories, categoryKey as any];
 
-    await updateProfile({
+    // Optimistic UI update - update immediately for instant feedback
+    const previousCategories = activeProfile.enabledCategories;
+    activeProfile = {
+      ...activeProfile,
       enabledCategories: newCategories,
+    };
+
+    // Update in background without waiting
+    updateProfileSilent({
+      enabledCategories: newCategories,
+    }).catch(() => {
+      // Rollback on error
+      activeProfile = activeProfile ? {
+        ...activeProfile,
+        enabledCategories: previousCategories,
+      } : null;
+      toast.error('Failed to update category');
     });
   }
 
@@ -79,6 +94,20 @@
       toast.error('Failed to save settings');
     } finally {
       saving = false;
+    }
+  }
+
+  async function updateProfileSilent(updates: any) {
+    if (!activeProfile) return;
+
+    const response = await browser.runtime.sendMessage({
+      type: 'UPDATE_PROFILE',
+      profileId: activeProfile.id,
+      updates,
+    });
+
+    if (!response.success) {
+      throw new Error('Failed to save settings');
     }
   }
 
