@@ -202,6 +202,13 @@
     profileToEdit = null;
   }
 
+  // Keyboard handler for modals (ESC to close)
+  function handleModalKeydown(event: KeyboardEvent, closeHandler: () => void) {
+    if (event.key === 'Escape') {
+      closeHandler();
+    }
+  }
+
   async function handleProfileChange() {
     await loadData();
   }
@@ -298,8 +305,17 @@
 
   <!-- Submit Warning Modal -->
   {#if showSubmitForm}
-    <div class="modal-overlay" on:click={closeSubmitForm}>
-      <div class="modal-content" on:click|stopPropagation>
+    <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+    <div
+      class="modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Submit Warning"
+      on:click={closeSubmitForm}
+      on:keydown={(e) => handleModalKeydown(e, closeSubmitForm)}
+    >
+      <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+      <div class="modal-content" role="document" on:click|stopPropagation>
         <SubmitWarning
           onClose={closeSubmitForm}
           videoId={currentVideoId}
@@ -311,8 +327,17 @@
 
   <!-- Create Profile Modal -->
   {#if showCreateProfile}
-    <div class="modal-overlay" on:click={closeCreateProfile}>
-      <div class="modal-content" on:click|stopPropagation>
+    <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+    <div
+      class="modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Create Profile"
+      on:click={closeCreateProfile}
+      on:keydown={(e) => handleModalKeydown(e, closeCreateProfile)}
+    >
+      <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+      <div class="modal-content" role="document" on:click|stopPropagation>
         <ProfileCreate
           onClose={closeCreateProfile}
           onSuccess={handleProfileChange}
@@ -324,8 +349,17 @@
 
   <!-- Rename Profile Modal -->
   {#if showRenameProfile && profileToEdit}
-    <div class="modal-overlay" on:click={closeRenameProfile}>
-      <div class="modal-content" on:click|stopPropagation>
+    <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+    <div
+      class="modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Rename Profile"
+      on:click={closeRenameProfile}
+      on:keydown={(e) => handleModalKeydown(e, closeRenameProfile)}
+    >
+      <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+      <div class="modal-content" role="document" on:click|stopPropagation>
         <ProfileRename
           onClose={closeRenameProfile}
           onSuccess={handleProfileChange}
@@ -338,8 +372,17 @@
 
   <!-- Delete Profile Modal -->
   {#if showDeleteProfile && profileToEdit}
-    <div class="modal-overlay" on:click={closeDeleteProfile}>
-      <div class="modal-content" on:click|stopPropagation>
+    <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+    <div
+      class="modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Delete Profile"
+      on:click={closeDeleteProfile}
+      on:keydown={(e) => handleModalKeydown(e, closeDeleteProfile)}
+    >
+      <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+      <div class="modal-content" role="document" on:click|stopPropagation>
         <ProfileDelete
           onClose={closeDeleteProfile}
           onSuccess={handleProfileChange}
@@ -382,15 +425,15 @@
   }
 
   .popup-content {
-    padding: 12px;
+    padding: 10px;
   }
 
   .popup-section {
-    margin-bottom: 16px;
+    margin-bottom: 12px;
   }
 
   .popup-section:last-of-type {
-    margin-bottom: 8px;
+    margin-bottom: 6px;
   }
 
   .section-header {
@@ -413,13 +456,13 @@
     background: white;
     border: 2px solid #667eea;
     border-radius: 6px;
-    width: 28px;
-    height: 28px;
+    width: 24px;
+    height: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    font-size: 16px;
+    font-size: 14px;
     transition: all 0.2s;
     padding: 0;
   }
@@ -433,13 +476,13 @@
     background: white;
     border: 1px solid #d1d5db;
     border-radius: 4px;
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 13px;
     transition: all 0.2s;
     padding: 0;
   }
@@ -454,7 +497,7 @@
     background: white;
     border: 2px solid transparent;
     border-radius: 8px;
-    padding: 12px;
+    padding: 10px;
     cursor: pointer;
     transition: all 0.2s ease;
     width: 100%;
@@ -462,7 +505,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
+    gap: 10px;
   }
 
   .profile-card:not(.active):hover {
@@ -507,17 +550,17 @@
 
   .btn {
     width: 100%;
-    padding: 10px 16px;
+    padding: 8px 12px;
     border: none;
-    border-radius: 8px;
-    font-size: 14px;
+    border-radius: 6px;
+    font-size: 13px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 6px;
   }
 
   .btn-primary {

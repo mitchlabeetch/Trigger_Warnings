@@ -27,7 +27,7 @@ CREATE TYPE streaming_platform AS ENUM (
   'peacock'
 );
 
--- Trigger categories (all 27)
+-- Trigger categories (all 28)
 CREATE TYPE trigger_category AS ENUM (
   'violence',
   'blood',
@@ -389,6 +389,146 @@ FROM user_profiles up
 JOIN auth.users u ON up.id = u.id
 WHERE up.approved_count > 0
 ORDER BY up.approved_count DESC;
+
+-- View for recently approved triggers
+CREATE VIEW recent_approved_triggers AS
+SELECT * FROM triggers
+WHERE status = 'approved'
+ORDER BY created_at DESC
+LIMIT 100;
+
+-- =====================================================
+-- FEEDBACK TABLE
+-- =====================================================
+
+CREATE TABLE feedback (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+
+  -- Feedback content
+  name TEXT,
+  email TEXT,
+  message TEXT NOT NULL,
+
+  -- Tracking
+  submitted_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+
+  -- Status tracking
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'reviewed', 'resolved'))
+);
+
+-- Index for feedback queries
+CREATE INDEX idx_feedback_created_at ON feedback(created_at DESC);
+CREATE INDEX idx_feedback_status ON feedback(status);
+
+-- Enable RLS on feedback
+ALTER TABLE feedback ENABLE ROW LEVEL SECURITY;
+
+-- Feedback policies
+-- Note: If running this multiple times, you may need to DROP POLICY IF EXISTS first
+CREATE POLICY "Users can submit feedback"
+  ON feedback FOR INSERT
+  WITH CHECK (auth.uid() = submitted_by);
+
+CREATE POLICY "Users can read their own feedback"
+  ON feedback FOR SELECT
+  USING (auth.uid() = submitted_by);
+
+CREATE POLICY "Moderators can read all feedback"
+  ON feedback FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM user_profiles
+      WHERE id = auth.uid() AND is_moderator = TRUE
+    )
+  );
+
+-- =====================================================
+-- ADDITIONAL TRIGGERS
+-- =====================================================
+
+-- Increment user submission count when trigger is created
+CREATE OR REPLACE FUNCTION increment_user_submissions()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- Insert user profile if it doesn't exist
+  INSERT INTO user_profiles (id, display_name)
+  VALUES (NEW.submitted_by, 'User ' || substring(NEW.submitted_by::text, 1, 8))
+  ON CONFLICT (id) DO NOTHING;
+
+  -- Increment submissions count
+  UPDATE user_profiles
+  SET submissions_count = submissions_count + 1,
+      updated_at = NOW()
+  WHERE id = NEW.submitted_by;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER increment_submissions_on_trigger_insert
+  AFTER INSERT ON triggers
+  FOR EACH ROW
+  EXECUTE FUNCTION increment_user_submissions();
+
+-- =====================================================
+-- OPTIMIZED FUNCTION FOR VIDEO TRIGGERS
+-- =====================================================
+
+CREATE OR REPLACE FUNCTION get_video_triggers(
+  p_video_id TEXT,
+  p_platform streaming_platform
+)
+RETURNS TABLE (
+  id UUID,
+  video_id TEXT,
+  platform streaming_platform,
+  video_title TEXT,
+  category_key trigger_category,
+  start_time INTEGER,
+  end_time INTEGER,
+  description TEXT,
+  confidence_level INTEGER,
+  status warning_status,
+  score INTEGER,
+  submitted_by UUID,
+  created_at TIMESTAMP WITH TIME ZONE,
+  updated_at TIMESTAMP WITH TIME ZONE,
+  moderated_at TIMESTAMP WITH TIME ZONE,
+  moderated_by UUID,
+  upvotes BIGINT,
+  downvotes BIGINT
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    t.id,
+    t.video_id,
+    t.platform,
+    t.video_title,
+    t.category_key,
+    t.start_time,
+    t.end_time,
+    t.description,
+    t.confidence_level,
+    t.status,
+    t.score,
+    t.submitted_by,
+    t.created_at,
+    t.updated_at,
+    t.moderated_at,
+    t.moderated_by,
+    COUNT(v.id) FILTER (WHERE v.vote_type = 'up') as upvotes,
+    COUNT(v.id) FILTER (WHERE v.vote_type = 'down') as downvotes
+  FROM triggers t
+  LEFT JOIN trigger_votes v ON t.id = v.trigger_id
+  WHERE t.video_id = p_video_id
+    AND t.platform = p_platform
+    AND t.status = 'approved'
+  GROUP BY t.id
+  ORDER BY t.start_time ASC;
+END;
+$$ LANGUAGE plpgsql STABLE;
 
 -- =====================================================
 -- SEED DATA (Optional - for testing)

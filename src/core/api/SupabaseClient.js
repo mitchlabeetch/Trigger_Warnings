@@ -178,6 +178,7 @@ export class SupabaseClient {
                 return (data || []).map((row) => ({
                     id: row.id,
                     videoId: row.video_id,
+                    videoTitle: row.video_title || undefined,
                     categoryKey: row.category_key,
                     startTime: row.start_time,
                     endTime: row.end_time,
@@ -185,10 +186,12 @@ export class SupabaseClient {
                     status: row.status,
                     score: row.score || 0,
                     confidenceLevel: row.confidence_level || 0,
-                    requiresModeration: row.requires_moderation || false,
+                    requiresModeration: row.status === 'pending', // Derive from status
                     description: row.description,
                     createdAt: new Date(row.created_at),
                     updatedAt: new Date(row.updated_at || row.created_at),
+                    moderatedAt: row.moderated_at ? new Date(row.moderated_at) : undefined,
+                    moderatedBy: row.moderated_by || undefined,
                 }));
             }, 'getTriggers');
         }
@@ -203,7 +206,7 @@ export class SupabaseClient {
      */
     static async submitTrigger(submission) {
         // Validation
-        if (!submission.videoId || !submission.categoryKey) {
+        if (!submission.videoId || !submission.categoryKey || !submission.platform) {
             console.error('[TW Supabase] submitTrigger: Invalid submission data');
             return false;
         }
@@ -217,6 +220,7 @@ export class SupabaseClient {
                 const userId = this.getUserId();
                 const { error } = await client.from('triggers').insert({
                     video_id: submission.videoId,
+                    platform: submission.platform,
                     category_key: submission.categoryKey,
                     start_time: submission.startTime,
                     end_time: submission.endTime,
@@ -225,7 +229,6 @@ export class SupabaseClient {
                     status: 'pending',
                     score: 0,
                     confidence_level: submission.confidence || 75,
-                    requires_moderation: true,
                 });
                 if (error) {
                     throw new Error(`Failed to submit trigger: ${error.message}`);
@@ -281,7 +284,7 @@ export class SupabaseClient {
             const client = await this.getInstance();
             const userId = this.getUserId();
             const { data, error } = await client
-                .from('votes')
+                .from('trigger_votes')
                 .select('vote_type')
                 .eq('trigger_id', triggerId)
                 .eq('user_id', userId)
@@ -338,6 +341,7 @@ export class SupabaseClient {
                 return (data || []).map((row) => ({
                     id: row.id,
                     videoId: row.video_id,
+                    videoTitle: row.video_title || undefined,
                     categoryKey: row.category_key,
                     startTime: row.start_time,
                     endTime: row.end_time,
@@ -345,10 +349,12 @@ export class SupabaseClient {
                     status: row.status,
                     score: row.score || 0,
                     confidenceLevel: row.confidence_level || 0,
-                    requiresModeration: row.requires_moderation || false,
+                    requiresModeration: row.status === 'pending', // Derive from status
                     description: row.description,
                     createdAt: new Date(row.created_at),
                     updatedAt: new Date(row.updated_at || row.created_at),
+                    moderatedAt: row.moderated_at ? new Date(row.moderated_at) : undefined,
+                    moderatedBy: row.moderated_by || undefined,
                 }));
             }, 'getPendingWarnings');
         }
@@ -372,7 +378,6 @@ export class SupabaseClient {
                     .from('triggers')
                     .update({
                     status: 'approved',
-                    requires_moderation: false,
                     updated_at: new Date().toISOString(),
                 })
                     .eq('id', triggerId);
@@ -403,7 +408,6 @@ export class SupabaseClient {
                     .from('triggers')
                     .update({
                     status: 'rejected',
-                    requires_moderation: false,
                     updated_at: new Date().toISOString(),
                 })
                     .eq('id', triggerId);

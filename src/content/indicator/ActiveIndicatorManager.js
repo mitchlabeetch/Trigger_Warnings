@@ -10,6 +10,7 @@ export class ActiveIndicatorManager {
     provider;
     container = null;
     indicatorComponent = null;
+    activeWarnings = [];
     onQuickAddCallback = null;
     constructor(provider) {
         this.provider = provider;
@@ -26,9 +27,19 @@ export class ActiveIndicatorManager {
             target: this.container,
             props: {
                 onQuickAdd: () => this.handleQuickAdd(),
+                activeWarnings: this.activeWarnings,
             },
         });
         logger.info('Active indicator initialized');
+    }
+    /**
+     * Update active warnings display
+     */
+    updateActiveWarnings(warnings) {
+        this.activeWarnings = warnings;
+        if (this.indicatorComponent) {
+            this.indicatorComponent.$set({ activeWarnings: warnings });
+        }
     }
     handleQuickAdd() {
         logger.info('Quick add trigger requested');

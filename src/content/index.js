@@ -15,6 +15,7 @@ class TriggerWarningsContent {
     bannerManager = null;
     indicatorManager = null;
     initialized = false;
+    activeWarningsMap = new Map();
     async initialize() {
         if (this.initialized)
             return;
@@ -41,12 +42,18 @@ class TriggerWarningsContent {
             // Initialize active indicator
             this.indicatorManager = new ActiveIndicatorManager(this.provider);
             await this.indicatorManager.initialize();
-            // Connect warning manager to banner manager
+            // Connect warning manager to banner manager and indicator
             this.warningManager.onWarning((warning) => {
                 this.bannerManager?.showWarning(warning);
+                // Update active warnings for indicator
+                this.activeWarningsMap.set(warning.id, warning);
+                this.updateIndicatorWarnings();
             });
             this.warningManager.onWarningEnd((warningId) => {
                 this.bannerManager?.hideWarning(warningId);
+                // Update active warnings for indicator
+                this.activeWarningsMap.delete(warningId);
+                this.updateIndicatorWarnings();
             });
             // Set up banner callbacks
             this.bannerManager.onIgnoreThisTime((warningId) => {
@@ -80,6 +87,13 @@ class TriggerWarningsContent {
         catch (error) {
             logger.error('Initialization error:', error);
         }
+    }
+    /**
+     * Update indicator with current active warnings
+     */
+    updateIndicatorWarnings() {
+        const warnings = Array.from(this.activeWarningsMap.values());
+        this.indicatorManager?.updateActiveWarnings(warnings);
     }
     /**
      * Handle quick add trigger button click

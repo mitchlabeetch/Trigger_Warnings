@@ -20,6 +20,12 @@
   let currentWarning: ActiveWarning | null = null;
   let updateInterval: number | null = null;
 
+  // Thank you message state
+  let showThankYou = false;
+  let thankYouMessage = '';
+  let thankYouTimeout: number | null = null;
+  let votedWarnings = new Set<string>(); // Track which warnings have been voted on
+
   $: {
     if (warnings.length > 0) {
       currentWarning = warnings[0];
@@ -42,6 +48,9 @@
     if (updateInterval) {
       clearInterval(updateInterval);
     }
+    if (thankYouTimeout) {
+      clearTimeout(thankYouTimeout);
+    }
   });
 
   function getCategoryInfo(warning: ActiveWarning) {
@@ -63,8 +72,27 @@
   function handleVote(voteType: 'up' | 'down') {
     if (currentWarning) {
       onVote(currentWarning.id, voteType);
+
+      // Mark this warning as voted
+      votedWarnings.add(currentWarning.id);
+      votedWarnings = votedWarnings; // Trigger reactivity
+
+      // Show thank you message
+      thankYouMessage = voteType === 'up'
+        ? '✓ Thank you! Your confirmation helps keep our community safe.'
+        : '✓ Thank you! Your feedback helps improve accuracy.';
+      showThankYou = true;
+
+      // Auto-hide thank you message after 3 seconds
+      if (thankYouTimeout) clearTimeout(thankYouTimeout);
+      thankYouTimeout = window.setTimeout(() => {
+        showThankYou = false;
+      }, 3000);
     }
   }
+
+  // Check if current warning has been voted on
+  $: hasVoted = currentWarning ? votedWarnings.has(currentWarning.id) : false;
 
   // Get position styles
   function getPositionStyles(pos: BannerPosition): string {
@@ -126,7 +154,7 @@
       <!-- Actions -->
       <div class="tw-banner-actions">
         <!-- Helper Mode buttons (for active warnings) -->
-        {#if currentWarning.isActive}
+        {#if currentWarning.isActive && !hasVoted}
           <button
             class="tw-banner-btn tw-banner-btn-confirm"
             title="Confirm this warning is accurate"
@@ -171,6 +199,22 @@
       >
         ×
       </button>
+    </div>
+  </div>
+{/if}
+
+<!-- Thank you message overlay -->
+{#if showThankYou}
+  <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+  <div
+    class="tw-thank-you"
+    role="status"
+    aria-live="polite"
+    style="{getPositionStyles(position)}"
+    on:click={() => showThankYou = false}
+  >
+    <div class="tw-thank-you-content">
+      {thankYouMessage}
     </div>
   </div>
 {/if}
@@ -384,5 +428,55 @@
   :global(body:-webkit-full-screen) .tw-banner,
   :global(body:-moz-full-screen) .tw-banner {
     top: 60px;
+  }
+
+  /* Thank you message */
+  .tw-thank-you {
+    position: fixed;
+    /* Position is set via inline style to match banner position */
+    max-width: 500px;
+    z-index: 1000000; /* Above banner */
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    animation: tw-thank-you-slide-in 0.3s ease-out;
+    cursor: pointer;
+  }
+
+  @keyframes tw-thank-you-slide-in {
+    from {
+      transform: translateY(-20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .tw-thank-you-content {
+    padding: 16px 20px;
+    background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+    line-height: 1.5;
+  }
+
+  /* Voted state styling */
+  .tw-banner-btn-confirm:disabled,
+  .tw-banner-btn-refute:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  @media (max-width: 768px) {
+    .tw-thank-you {
+      left: 10px;
+      right: 10px;
+      max-width: none;
+    }
   }
 </style>

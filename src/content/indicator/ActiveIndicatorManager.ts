@@ -4,6 +4,7 @@
  */
 
 import type { IStreamingProvider } from '@shared/types/Provider.types';
+import type { ActiveWarning } from '@shared/types/Warning.types';
 import { createContainer, injectContainer } from '@shared/utils/dom';
 import { createLogger } from '@shared/utils/logger';
 import ActiveIndicator from './ActiveIndicator.svelte';
@@ -14,6 +15,7 @@ export class ActiveIndicatorManager {
   private provider: IStreamingProvider;
   private container: HTMLDivElement | null = null;
   private indicatorComponent: ActiveIndicator | null = null;
+  private activeWarnings: ActiveWarning[] = [];
 
   private onQuickAddCallback: (() => void) | null = null;
 
@@ -36,10 +38,21 @@ export class ActiveIndicatorManager {
       target: this.container,
       props: {
         onQuickAdd: () => this.handleQuickAdd(),
+        activeWarnings: this.activeWarnings,
       },
     });
 
     logger.info('Active indicator initialized');
+  }
+
+  /**
+   * Update active warnings display
+   */
+  updateActiveWarnings(warnings: ActiveWarning[]): void {
+    this.activeWarnings = warnings;
+    if (this.indicatorComponent) {
+      this.indicatorComponent.$set({ activeWarnings: warnings });
+    }
   }
 
   private handleQuickAdd(): void {

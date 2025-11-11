@@ -39,6 +39,7 @@ export type WarningStatus = 'pending' | 'approved' | 'rejected';
 export interface Warning {
   id: string;
   videoId: string;
+  videoTitle?: string; // Optional video title from database
   categoryKey: TriggerCategory;
   startTime: number; // seconds
   endTime: number; // seconds
@@ -46,14 +47,26 @@ export interface Warning {
   status: WarningStatus;
   score: number;
   confidenceLevel: number; // 0-100
-  requiresModeration: boolean;
+  requiresModeration: boolean; // Computed field: derived from status === 'pending'
   description?: string;
   createdAt: Date;
   updatedAt: Date;
+  moderatedAt?: Date; // When the warning was moderated
+  moderatedBy?: string; // User ID who moderated
 }
+
+export type StreamingPlatform =
+  | 'netflix'
+  | 'prime_video'
+  | 'youtube'
+  | 'hulu'
+  | 'disney_plus'
+  | 'max'
+  | 'peacock';
 
 export interface WarningSubmission {
   videoId: string;
+  platform: StreamingPlatform;
   categoryKey: TriggerCategory;
   startTime: number;
   endTime: number;

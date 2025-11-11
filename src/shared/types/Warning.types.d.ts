@@ -7,6 +7,7 @@ export type WarningStatus = 'pending' | 'approved' | 'rejected';
 export interface Warning {
     id: string;
     videoId: string;
+    videoTitle?: string;
     categoryKey: TriggerCategory;
     startTime: number;
     endTime: number;
@@ -18,9 +19,13 @@ export interface Warning {
     description?: string;
     createdAt: Date;
     updatedAt: Date;
+    moderatedAt?: Date;
+    moderatedBy?: string;
 }
+export type StreamingPlatform = 'netflix' | 'prime_video' | 'youtube' | 'hulu' | 'disney_plus' | 'max' | 'peacock';
 export interface WarningSubmission {
     videoId: string;
+    platform: StreamingPlatform;
     categoryKey: TriggerCategory;
     startTime: number;
     endTime: number;

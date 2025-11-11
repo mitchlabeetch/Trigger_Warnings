@@ -2,10 +2,32 @@
   import browser from 'webextension-polyfill';
   import { TRIGGER_CATEGORIES, CATEGORY_KEYS } from '@shared/constants/categories';
   import type { TriggerCategory } from '@shared/types/Warning.types';
+  import { detectPlatformFromUrl, type StreamingPlatform } from '@shared/utils/platform-detector';
+  import { onMount } from 'svelte';
 
   export let onClose: () => void;
   export let videoId: string | null;
   export let currentTime: number;
+
+  let detectedPlatform: StreamingPlatform | null = null;
+
+  onMount(async () => {
+    // Detect platform from current tab URL
+    try {
+      const tabs = await browser.tabs.query({ active: true, currentWindow: true });
+      if (tabs[0]?.url) {
+        const detection = detectPlatformFromUrl(tabs[0].url);
+        detectedPlatform = detection.platform;
+        console.log('[TW SubmitWarning] Detected platform:', detectedPlatform);
+      }
+    } catch (error) {
+      console.error('[TW SubmitWarning] Failed to detect platform:', error);
+    }
+  });
+
+  // Multi-step wizard state
+  let currentStep = 1;
+  const totalSteps = 4;
 
   let selectedCategory: TriggerCategory | null = null;
   let startTime = Math.max(0, Math.floor(currentTime - 5));
@@ -84,6 +106,86 @@
     endTime = Math.floor(currentVideoTime);
   }
 
+  // Multi-step navigation
+  function goToNextStep() {
+    const validationError = validateCurrentStep();
+    if (validationError) {
+      error = validationError;
+      return;
+    }
+    error = '';
+    currentStep++;
+  }
+
+  function goToPreviousStep() {
+    error = '';
+    currentStep--;
+  }
+
+  function goToStep(step: number) {
+    if (step < currentStep) {
+      // Allow going back without validation
+      currentStep = step;
+      error = '';
+    } else if (step > currentStep) {
+      // Validate all steps between current and target
+      for (let i = currentStep; i < step; i++) {
+        const tempStep = currentStep;
+        currentStep = i;
+        const validationError = validateCurrentStep();
+        if (validationError) {
+          currentStep = tempStep;
+          error = validationError;
+          return;
+        }
+      }
+      currentStep = step;
+      error = '';
+    }
+  }
+
+  function validateCurrentStep(): string | null {
+    switch (currentStep) {
+      case 1: // Category selection
+        if (!selectedCategory) {
+          return 'Please select a trigger category';
+        }
+        return null;
+
+      case 2: // Time range
+        if (startTime < 0) {
+          return 'Start time cannot be negative';
+        }
+        if (endTime <= startTime) {
+          return 'End time must be after start time';
+        }
+        const duration = endTime - startTime;
+        if (duration < MIN_WARNING_DURATION) {
+          return `Warning must be at least ${MIN_WARNING_DURATION} second(s) long`;
+        }
+        if (duration > MAX_WARNING_DURATION) {
+          return `Warning cannot be longer than ${Math.floor(MAX_WARNING_DURATION / 60)} minutes`;
+        }
+        return null;
+
+      case 3: // Description & confidence
+        if (description.trim().length > MAX_DESCRIPTION_LENGTH) {
+          return `Description must be ${MAX_DESCRIPTION_LENGTH} characters or less`;
+        }
+        if (confidence < 0 || confidence > 100) {
+          return 'Confidence must be between 0 and 100';
+        }
+        return null;
+
+      case 4: // Review
+        // Final validation before submission
+        return validateForm();
+
+      default:
+        return null;
+    }
+  }
+
   function validateForm(): string | null {
     // Check category
     if (!selectedCategory) {
@@ -147,10 +249,18 @@
 
       const sanitizedDescription = sanitizeDescription(description);
 
+      // Ensure we have a platform
+      if (!detectedPlatform) {
+        error = 'Could not detect streaming platform. Please try again from the video page.';
+        submitting = false;
+        return;
+      }
+
       const response = await browser.runtime.sendMessage({
         type: 'SUBMIT_WARNING',
         submission: {
           videoId,
+          platform: detectedPlatform,
           categoryKey: selectedCategory,
           startTime,
           endTime,
@@ -201,155 +311,252 @@
       <p>Thank you for contributing to the community.</p>
     </div>
   {:else}
-    <form on:submit|preventDefault={handleSubmit}>
-      <!-- Video Player Controls -->
-      <div class="player-controls">
-        <div class="player-header">
-          <span class="player-title">🎬 Video Controls</span>
-          <button type="button" class="btn-refresh" on:click={updateCurrentTime} disabled={loadingPlayer}>
-            🔄
-          </button>
-        </div>
-
-        <div class="player-timestamp">
-          Current Time: <strong>{formatTime(currentVideoTime)}</strong> ({Math.floor(currentVideoTime)}s)
-        </div>
-
-        <div class="player-buttons">
-          <button type="button" class="btn-player" on:click={handlePlayPause} disabled={loadingPlayer}>
-            {isPlaying ? '⏸️' : '▶️'}
-            {isPlaying ? 'Pause' : 'Play'}
-          </button>
-          <button type="button" class="btn-player" on:click={() => handleRewind(5)} disabled={loadingPlayer}>
-            ⏪ -5s
-          </button>
-          <button type="button" class="btn-player" on:click={() => handleRewind(10)} disabled={loadingPlayer}>
-            ⏪ -10s
-          </button>
-        </div>
-
-        <div class="capture-buttons">
-          <button type="button" class="btn-capture" on:click={captureStartTime}>
-            📍 Set Start Time
-          </button>
-          <button type="button" class="btn-capture" on:click={captureEndTime}>
-            📍 Set End Time
-          </button>
-        </div>
-
-        <div class="player-hint">
-          Use controls to find exact start/end times for the trigger
-        </div>
-      </div>
-
-      <!-- Category Selection -->
-      <div class="form-group">
-        <label for="category">Trigger Category *</label>
-        <select id="category" bind:value={selectedCategory} required>
-          <option value={null}>Select a category...</option>
-          {#each CATEGORY_KEYS as key}
-            <option value={key}>
-              {TRIGGER_CATEGORIES[key].icon} {TRIGGER_CATEGORIES[key].name}
-            </option>
-          {/each}
-        </select>
-      </div>
-
-      <!-- Time Range -->
-      <div class="form-row">
-        <div class="form-group">
-          <label for="start-time">Start Time (seconds) *</label>
-          <input
-            type="number"
-            id="start-time"
-            bind:value={startTime}
-            min="0"
-            required
-          />
-          <span class="time-display">{formatTime(startTime)}</span>
-        </div>
-
-        <div class="form-group">
-          <label for="end-time">End Time (seconds) *</label>
-          <input
-            type="number"
-            id="end-time"
-            bind:value={endTime}
-            min={startTime + 1}
-            required
-          />
-          <span class="time-display">{formatTime(endTime)}</span>
-        </div>
-      </div>
-
-      <!-- Duration feedback -->
-      <div class="duration-feedback" class:valid={durationValid} class:invalid={!durationValid}>
-        Duration: {warningDuration} seconds
-        {#if !durationValid}
-          {#if warningDuration < MIN_WARNING_DURATION}
-            (too short - minimum {MIN_WARNING_DURATION}s)
-          {:else}
-            (too long - maximum {MAX_WARNING_DURATION}s)
-          {/if}
-        {/if}
-      </div>
-
-      <!-- Description -->
-      <div class="form-group">
-        <div class="label-with-count">
-          <label for="description">Description (optional)</label>
-          <span class="char-count" class:warning={descriptionLength > MAX_DESCRIPTION_LENGTH * 0.9} class:error={!descriptionValid}>
-            {descriptionLength}/{MAX_DESCRIPTION_LENGTH}
+    <!-- Progress Steps -->
+    <div class="wizard-progress">
+      {#each Array(totalSteps) as _, i}
+        <button
+          class="progress-step"
+          class:active={currentStep === i + 1}
+          class:completed={currentStep > i + 1}
+          on:click={() => goToStep(i + 1)}
+          type="button"
+        >
+          <span class="step-number">{i + 1}</span>
+          <span class="step-label">
+            {#if i === 0}Category
+            {:else if i === 1}Time
+            {:else if i === 2}Details
+            {:else}Review{/if}
           </span>
-        </div>
-        <textarea
-          id="description"
-          bind:value={description}
-          placeholder="Brief description of the content..."
-          rows="3"
-          maxlength={MAX_DESCRIPTION_LENGTH + 50}
-        ></textarea>
-        {#if !descriptionValid}
-          <span class="validation-error">Description is too long</span>
-        {/if}
-      </div>
+        </button>
+      {/each}
+    </div>
 
-      <!-- Confidence -->
-      <div class="form-group">
-        <label for="confidence">
-          Confidence: {confidence}%
-        </label>
-        <input
-          type="range"
-          id="confidence"
-          bind:value={confidence}
-          min="0"
-          max="100"
-          step="5"
-        />
-        <div class="confidence-labels">
-          <span>Not sure</span>
-          <span>Very confident</span>
-        </div>
+    <form on:submit|preventDefault={handleSubmit}>
+      <div class="wizard-content">
+        <!-- Step 1: Category Selection -->
+        {#if currentStep === 1}
+          <div class="wizard-step">
+            <h3 class="step-title">Select Trigger Category</h3>
+            <p class="step-description">Choose the category that best describes the trigger warning</p>
+
+            <div class="category-grid">
+              {#each CATEGORY_KEYS as key}
+                <button
+                  type="button"
+                  class="category-option"
+                  class:selected={selectedCategory === key}
+                  on:click={() => selectedCategory = key}
+                >
+                  <span class="category-icon-large">{TRIGGER_CATEGORIES[key].icon}</span>
+                  <span class="category-name">{TRIGGER_CATEGORIES[key].name}</span>
+                </button>
+              {/each}
+            </div>
+          </div>
+        {/if}
+
+        <!-- Step 2: Time Range -->
+        {#if currentStep === 2}
+          <div class="wizard-step">
+            <h3 class="step-title">Set Time Range</h3>
+            <p class="step-description">Specify when the trigger appears in the video</p>
+
+            <!-- Video Player Controls -->
+            <div class="player-controls">
+              <div class="player-header">
+                <span class="player-title">🎬 Video Controls</span>
+                <button type="button" class="btn-refresh" on:click={updateCurrentTime} disabled={loadingPlayer}>
+                  🔄
+                </button>
+              </div>
+
+              <div class="player-timestamp">
+                Current Time: <strong>{formatTime(currentVideoTime)}</strong> ({Math.floor(currentVideoTime)}s)
+              </div>
+
+              <div class="player-buttons">
+                <button type="button" class="btn-player" on:click={handlePlayPause} disabled={loadingPlayer}>
+                  {isPlaying ? '⏸️' : '▶️'}
+                  {isPlaying ? 'Pause' : 'Play'}
+                </button>
+                <button type="button" class="btn-player" on:click={() => handleRewind(5)} disabled={loadingPlayer}>
+                  ⏪ -5s
+                </button>
+                <button type="button" class="btn-player" on:click={() => handleRewind(10)} disabled={loadingPlayer}>
+                  ⏪ -10s
+                </button>
+              </div>
+
+              <div class="capture-buttons">
+                <button type="button" class="btn-capture" on:click={captureStartTime}>
+                  📍 Set Start Time
+                </button>
+                <button type="button" class="btn-capture" on:click={captureEndTime}>
+                  📍 Set End Time
+                </button>
+              </div>
+
+              <div class="player-hint">
+                Use controls to find exact start/end times for the trigger
+              </div>
+            </div>
+
+            <!-- Time Range Inputs -->
+            <div class="form-row">
+              <div class="form-group">
+                <label for="start-time">Start Time (seconds)</label>
+                <input
+                  type="number"
+                  id="start-time"
+                  bind:value={startTime}
+                  min="0"
+                />
+                <span class="time-display">{formatTime(startTime)}</span>
+              </div>
+
+              <div class="form-group">
+                <label for="end-time">End Time (seconds)</label>
+                <input
+                  type="number"
+                  id="end-time"
+                  bind:value={endTime}
+                  min={startTime + 1}
+                />
+                <span class="time-display">{formatTime(endTime)}</span>
+              </div>
+            </div>
+
+            <!-- Duration feedback -->
+            <div class="duration-feedback" class:valid={durationValid} class:invalid={!durationValid}>
+              Duration: {warningDuration} seconds
+              {#if !durationValid}
+                {#if warningDuration < MIN_WARNING_DURATION}
+                  (too short - minimum {MIN_WARNING_DURATION}s)
+                {:else}
+                  (too long - maximum {MAX_WARNING_DURATION}s)
+                {/if}
+              {/if}
+            </div>
+          </div>
+        {/if}
+
+        <!-- Step 3: Description & Confidence -->
+        {#if currentStep === 3}
+          <div class="wizard-step">
+            <h3 class="step-title">Add Details (Optional)</h3>
+            <p class="step-description">Provide additional context and confidence level</p>
+
+            <!-- Description -->
+            <div class="form-group">
+              <div class="label-with-count">
+                <label for="description">Description</label>
+                <span class="char-count" class:warning={descriptionLength > MAX_DESCRIPTION_LENGTH * 0.9} class:error={!descriptionValid}>
+                  {descriptionLength}/{MAX_DESCRIPTION_LENGTH}
+                </span>
+              </div>
+              <textarea
+                id="description"
+                bind:value={description}
+                placeholder="Brief description of the content..."
+                rows="4"
+                maxlength={MAX_DESCRIPTION_LENGTH + 50}
+              ></textarea>
+              {#if !descriptionValid}
+                <span class="validation-error">Description is too long</span>
+              {/if}
+            </div>
+
+            <!-- Confidence -->
+            <div class="form-group">
+              <label for="confidence">
+                Confidence: <strong>{confidence}%</strong>
+              </label>
+              <input
+                type="range"
+                id="confidence"
+                bind:value={confidence}
+                min="0"
+                max="100"
+                step="5"
+              />
+              <div class="confidence-labels">
+                <span>Not sure</span>
+                <span>Very confident</span>
+              </div>
+            </div>
+          </div>
+        {/if}
+
+        <!-- Step 4: Review & Submit -->
+        {#if currentStep === 4}
+          <div class="wizard-step">
+            <h3 class="step-title">Review & Submit</h3>
+            <p class="step-description">Please review your submission</p>
+
+            <div class="review-card">
+              <div class="review-item">
+                <span class="review-label">Category:</span>
+                <span class="review-value">
+                  {#if selectedCategory}
+                    {TRIGGER_CATEGORIES[selectedCategory].icon} {TRIGGER_CATEGORIES[selectedCategory].name}
+                  {/if}
+                </span>
+              </div>
+
+              <div class="review-item">
+                <span class="review-label">Time Range:</span>
+                <span class="review-value">
+                  {formatTime(startTime)} - {formatTime(endTime)} ({warningDuration}s)
+                </span>
+              </div>
+
+              {#if description.trim()}
+                <div class="review-item">
+                  <span class="review-label">Description:</span>
+                  <span class="review-value">{description.trim()}</span>
+                </div>
+              {/if}
+
+              <div class="review-item">
+                <span class="review-label">Confidence:</span>
+                <span class="review-value">{confidence}%</span>
+              </div>
+            </div>
+
+            <p class="form-note">
+              ⓘ Submitted warnings will be reviewed by the community before appearing to others.
+            </p>
+          </div>
+        {/if}
       </div>
 
       {#if error}
         <div class="error-message">{error}</div>
       {/if}
 
-      <!-- Actions -->
-      <div class="form-actions">
-        <button type="button" class="btn-secondary" on:click={onClose} disabled={submitting}>
-          Cancel
-        </button>
-        <button type="submit" class="btn-primary" disabled={submitting}>
-          {submitting ? 'Submitting...' : 'Submit Warning'}
-        </button>
-      </div>
+      <!-- Wizard Navigation -->
+      <div class="wizard-nav">
+        {#if currentStep > 1}
+          <button type="button" class="btn-nav btn-back" on:click={goToPreviousStep} disabled={submitting}>
+            ← Back
+          </button>
+        {:else}
+          <button type="button" class="btn-nav btn-cancel" on:click={onClose} disabled={submitting}>
+            Cancel
+          </button>
+        {/if}
 
-      <p class="form-note">
-        * Submitted warnings will be reviewed by the community before appearing to others.
-      </p>
+        {#if currentStep < totalSteps}
+          <button type="button" class="btn-nav btn-next" on:click={goToNextStep} disabled={submitting}>
+            Next →
+          </button>
+        {:else}
+          <button type="submit" class="btn-nav btn-submit" disabled={submitting}>
+            {submitting ? 'Submitting...' : '✓ Submit Warning'}
+          </button>
+        {/if}
+      </div>
     </form>
   {/if}
 </div>
@@ -699,5 +906,259 @@
     color: #6c757d;
     text-align: center;
     font-style: italic;
+  }
+
+  /* Wizard Progress Steps */
+  .wizard-progress {
+    display: flex;
+    justify-content: space-between;
+    padding: 16px 20px;
+    background: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+    gap: 8px;
+  }
+
+  .progress-step {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px 4px;
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+
+  .progress-step:hover {
+    background: rgba(102, 126, 234, 0.1);
+  }
+
+  .progress-step.active {
+    background: rgba(102, 126, 234, 0.15);
+  }
+
+  .progress-step.completed .step-number {
+    background: #28a745;
+    color: white;
+  }
+
+  .step-number {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #dee2e6;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+
+  .progress-step.active .step-number {
+    background: #667eea;
+    color: white;
+    transform: scale(1.1);
+  }
+
+  .step-label {
+    font-size: 11px;
+    color: #6c757d;
+    font-weight: 500;
+  }
+
+  .progress-step.active .step-label {
+    color: #667eea;
+    font-weight: 600;
+  }
+
+  /* Wizard Content */
+  .wizard-content {
+    padding: 20px;
+    min-height: 300px;
+  }
+
+  .wizard-step {
+    animation: slideIn 0.3s ease;
+  }
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateX(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .step-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #212529;
+    margin: 0 0 8px 0;
+  }
+
+  .step-description {
+    font-size: 13px;
+    color: #6c757d;
+    margin: 0 0 20px 0;
+  }
+
+  /* Category Grid (Step 1) */
+  .category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 10px;
+    max-height: 320px;
+    overflow-y: auto;
+    padding: 4px;
+  }
+
+  .category-option {
+    background: white;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    padding: 12px 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+  }
+
+  .category-option:hover {
+    border-color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+  }
+
+  .category-option.selected {
+    border-color: #667eea;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+  }
+
+  .category-icon-large {
+    font-size: 28px;
+  }
+
+  .category-name {
+    font-size: 11px;
+    font-weight: 600;
+    color: #495057;
+    line-height: 1.2;
+  }
+
+  .category-option.selected .category-name {
+    color: #667eea;
+  }
+
+  /* Review Card (Step 4) */
+  .review-card {
+    background: #f8f9fa;
+    border: 2px solid #dee2e6;
+    border-radius: 10px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .review-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #dee2e6;
+  }
+
+  .review-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .review-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .review-value {
+    font-size: 14px;
+    color: #212529;
+    font-weight: 500;
+  }
+
+  /* Wizard Navigation */
+  .wizard-nav {
+    display: flex;
+    gap: 10px;
+    padding: 16px 20px;
+    background: #f8f9fa;
+    border-top: 2px solid #dee2e6;
+  }
+
+  .btn-nav {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .btn-back,
+  .btn-cancel {
+    background: white;
+    color: #495057;
+    border: 2px solid #dee2e6;
+  }
+
+  .btn-back:hover:not(:disabled),
+  .btn-cancel:hover:not(:disabled) {
+    background: #f8f9fa;
+    border-color: #adb5bd;
+  }
+
+  .btn-next {
+    background: #667eea;
+    color: white;
+  }
+
+  .btn-next:hover:not(:disabled) {
+    background: #5568d3;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  }
+
+  .btn-submit {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+  }
+
+  .btn-submit:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+  }
+
+  .btn-nav:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
   }
 </style>

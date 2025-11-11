@@ -1135,10 +1135,162 @@
             opacity: 0.9;
         }
 
-        /* Platforms */
-        .platforms {
+        /* WIP Disclaimer */
+        .wip-disclaimer {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 20px;
+            text-align: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border-bottom: 3px solid rgba(255,255,255,0.3);
+        }
+
+        .wip-disclaimer strong {
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Browser Compatibility */
+        .browser-compat {
+            padding: 80px 20px;
+            background: var(--bg-light);
+        }
+
+        .browser-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin-top: 60px;
+        }
+
+        .browser-card {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            position: relative;
+        }
+
+        .browser-card.supported {
+            border-color: var(--success);
+        }
+
+        .browser-card.coming-soon {
+            opacity: 0.7;
+        }
+
+        .browser-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.15);
+        }
+
+        .browser-icon {
+            font-size: 4rem;
+            margin-bottom: 16px;
+        }
+
+        .browser-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+
+        .browser-status {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 12px;
+        }
+
+        .browser-status.available {
+            background: var(--success);
+            color: white;
+        }
+
+        .browser-status.soon {
+            background: var(--warning);
+            color: white;
+        }
+
+        /* Trigger Categories Showcase */
+        .categories-showcase {
             padding: 80px 20px;
             background: white;
+        }
+
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 20px;
+            margin-top: 60px;
+        }
+
+        .category-card {
+            background: var(--bg-light);
+            padding: 24px;
+            border-radius: 12px;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            cursor: default;
+        }
+
+        .category-card:hover {
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.15);
+            transform: translateY(-4px);
+        }
+
+        .category-icon {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .category-name {
+            font-weight: 600;
+            color: var(--text-dark);
+            font-size: 0.95rem;
+        }
+
+        /* Platforms with Glassmorphism */
+        .platforms {
+            padding: 80px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .platforms::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            opacity: 0.1;
+        }
+
+        .platforms .section-header {
+            color: white;
+        }
+
+        .platforms .section-title {
+            color: white;
+        }
+
+        .platforms .section-subtitle {
+            color: rgba(255,255,255,0.9);
         }
 
         .platform-grid {
@@ -1146,21 +1298,26 @@
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 30px;
             margin-top: 60px;
+            position: relative;
+            z-index: 1;
         }
 
         .platform {
-            background: var(--bg-light);
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             padding: 30px;
             border-radius: 16px;
             text-align: center;
             transition: all 0.3s ease;
-            border: 2px solid transparent;
+            border: 2px solid rgba(255,255,255,0.2);
         }
 
         .platform:hover {
             transform: translateY(-10px);
-            border-color: var(--primary);
-            box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255,255,255,0.4);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.2);
         }
 
         .platform-logo {
@@ -1170,7 +1327,7 @@
 
         .platform-name {
             font-weight: 700;
-            color: var(--text-dark);
+            color: white;
         }
 
         /* Footer */
@@ -1333,6 +1490,10 @@
 
             .video-scene::before {
                 font-size: 2.5rem;
+                /* Center the video icon properly on mobile */
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
 
             /* Warning banners - better mobile positioning */
@@ -1356,23 +1517,23 @@
             }
 
             .warning-banner.violence {
-                top: 12px;
-                right: 12px;
+                top: 10px;
+                right: 10px;
             }
 
             .warning-banner.blood {
-                top: 60px;
-                right: 12px;
+                top: 70px; /* Increased spacing to prevent overlap */
+                right: 10px;
             }
 
             .warning-banner.subtitle {
-                top: 12px;
-                left: 12px;
+                top: 10px;
+                left: 10px;
             }
 
             .warning-banner.flashing {
                 bottom: 65px;
-                left: 12px;
+                left: 10px;
             }
 
             .warning-upvote {
@@ -1701,6 +1862,11 @@
     </style>
 </head>
 <body>
+    <!-- WIP Disclaimer -->
+    <div class="wip-disclaimer">
+        <strong>⚙️ Work in Progress</strong> • This extension is under active development. Some features may be incomplete or in beta testing.
+    </div>
+
     <!-- Hero Section with Live Warning Demo -->
     <section class="hero">
         <div class="container">
@@ -2162,7 +2328,186 @@
         </div>
     </section>
 
-    <!-- Platforms -->
+    <!-- Section divider -->
+    <div class="section-divider">
+        <div class="scroll-hint">↓ Browser Support & Categories ↓</div>
+    </div>
+
+    <!-- Browser Compatibility -->
+    <section class="browser-compat">
+        <div class="container">
+            <div class="section-header fade-in-up">
+                <div class="section-badge">🌐 Browser Support</div>
+                <h2 class="section-title">Available Now for Chromium Browsers</h2>
+                <p class="section-subtitle">
+                    Currently supporting all Chromium-based browsers. Firefox and Safari support coming soon.
+                </p>
+            </div>
+
+            <div class="browser-grid fade-in-up">
+                <div class="browser-card supported">
+                    <div class="browser-icon">🟢</div>
+                    <div class="browser-name">Google Chrome</div>
+                    <div class="browser-status available">Available Now</div>
+                </div>
+                <div class="browser-card supported">
+                    <div class="browser-icon">🔵</div>
+                    <div class="browser-name">Microsoft Edge</div>
+                    <div class="browser-status available">Available Now</div>
+                </div>
+                <div class="browser-card supported">
+                    <div class="browser-icon">🎭</div>
+                    <div class="browser-name">Opera</div>
+                    <div class="browser-status available">Available Now</div>
+                </div>
+                <div class="browser-card supported">
+                    <div class="browser-icon">🦁</div>
+                    <div class="browser-name">Brave</div>
+                    <div class="browser-status available">Available Now</div>
+                </div>
+                <div class="browser-card coming-soon">
+                    <div class="browser-icon">🦊</div>
+                    <div class="browser-name">Firefox</div>
+                    <div class="browser-status soon">Coming Soon</div>
+                </div>
+                <div class="browser-card coming-soon">
+                    <div class="browser-icon">🧭</div>
+                    <div class="browser-name">Safari</div>
+                    <div class="browser-status soon">Coming Soon</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trigger Categories Showcase -->
+    <section class="categories-showcase">
+        <div class="container">
+            <div class="section-header fade-in-up">
+                <div class="section-badge">🎯 28 Categories</div>
+                <h2 class="section-title">Comprehensive Trigger Coverage</h2>
+                <p class="section-subtitle">
+                    From common triggers to rare phobias, we've got you covered with 28 distinct warning categories.
+                </p>
+            </div>
+
+            <div class="categories-grid fade-in-up">
+                <div class="category-card">
+                    <span class="category-icon">⚔️</span>
+                    <div class="category-name">Violence</div>
+                </div>
+                <div class="category-card">
+                    <span class="category-icon">🩸</span>
+                    <div class="category-name">Blood</div>
+                </div>
+                <div class="category-card">
+                    <span class="category-icon">🔪</span>
+                    <div class="category-name">Gore</div>
+                </div>
+                <div class="category-card">
+                    <span class="category-icon">🔫</span>
+                    <div class="category-icon">Murder</div>
+                </div>
+                <div class="category-card">
+                    <span class="category-icon">💔</span>
+                    <div class="category-name">Suicide</div>
+                </div>
+                <div class="category-card">
+                    <span class="category-icon">🩹</span>
+                    <div class="category-name">Self Harm</div>
+                </div>
+                <div class="category-card">
+                    <span class="category-icon">🚫</span>
+                    <div class="category-name">Sexual Assault</div>
+                </div>
+                <div class="category-card">
+                    <span class="category-icon">❤️</span>
+                    <div class="category-name">Sex</div>
+                </div>
+                <div class="category-card">
+                    <span class="category-icon">😰</span>
+                    <div class="category-name">Torture</div>
+                </div>
+                <div class="category-card">
+                    <span class="category-icon">👶</span>
+                    <div class="category-name">Child Abuse</div>
+                </div>
+                <div class="category-card">
+                    <span class="category-icon">💊</span>
+                    <div class="category-name">Drugs</div>
+                </div>
+                <div class="category-card">
+                    <span class="category-icon">🍷</span>
+                    <div class="category-name">Alcohol</div>
+                </div>
+                <div class="category-card">
+                    <span class="category-icon">🏥</span>
+                    <div class="category-name">Medical</div>
+                </div>
+                <div class="category-card">
+                    <span class="category-icon">🤢</span>
+                    <div class="category-name">Vomit</div>
+                </div>
+                <div class="category-card">
+                    <span class="category-icon">🐕</span>
+                    <div class="category-name">Animal Cruelty</div>
+                </div>
+                <div class="category-card">
+                    <span class="category-icon">🌈</span>
+                    <div class="category-name">LGBTQ+ Phobia</div>
+                </div>
+                <div class="category-card">
+                    <span class="category-icon">✊</span>
+                    <div class="category-name">Racial Violence</div>
+                </div>
+                <div class="category-card">
+                    <span class="category-icon">🏠</span>
+                    <div class="category-name">Domestic Violence</div>
+                </div>
+                <div class="category-card">
+                    <span class="category-icon">💡</span>
+                    <div class="category-name">Flashing Lights</div>
+                </div>
+                <div class="category-card">
+                    <span class="category-icon">💥</span>
+                    <div class="category-name">Explosions</div>
+                </div>
+                <div class="category-card">
+                    <span class="category-icon">🔥</span>
+                    <div class="category-name">Fire</div>
+                </div>
+                <div class="category-card">
+                    <span class="category-icon">😱</span>
+                    <div class="category-name">Jump Scares</div>
+                </div>
+                <div class="category-card">
+                    <span class="category-icon">🐜</span>
+                    <div class="category-name">Insects</div>
+                </div>
+                <div class="category-card">
+                    <span class="category-icon">🕷️</span>
+                    <div class="category-name">Spiders</div>
+                </div>
+                <div class="category-card">
+                    <span class="category-icon">🐍</span>
+                    <div class="category-name">Snakes</div>
+                </div>
+                <div class="category-card">
+                    <span class="category-icon">😨</span>
+                    <div class="category-name">Claustrophobia</div>
+                </div>
+                <div class="category-card">
+                    <span class="category-icon">📏</span>
+                    <div class="category-name">Trypophobia</div>
+                </div>
+                <div class="category-card">
+                    <span class="category-icon">🎭</span>
+                    <div class="category-name">And More...</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Platforms with Glassmorphism -->
     <section class="platforms">
         <div class="container">
             <div class="section-header fade-in-up">
@@ -2172,7 +2517,7 @@
                 </p>
             </div>
 
-            <div class="platform-grid">
+            <div class="platform-grid fade-in-up">
                 <div class="platform">
                     <div class="platform-logo">🔴</div>
                     <div class="platform-name">Netflix</div>
@@ -2209,7 +2554,6 @@
     <footer class="footer">
         <div class="container">
             <div class="footer-links">
-                <a href="https://github.com/lightmyfireadmin/triggerwarnings" class="footer-link">GitHub</a>
                 <a href="#" class="footer-link">Documentation</a>
                 <a href="privacy.html" class="footer-link">Privacy Policy</a>
                 <a href="https://github.com/lightmyfireadmin/triggerwarnings/issues" class="footer-link">Report Issue</a>
