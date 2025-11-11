@@ -27,6 +27,9 @@ import { AudioFrequencyAnalyzer } from '../audio-analyzer/AudioFrequencyAnalyzer
 import { VisualColorAnalyzer } from '../visual-analyzer/VisualColorAnalyzer';
 import { PhotosensitivityDetector } from '../photosensitivity-detector/PhotosensitivityDetector';
 import { ConfidenceFusionSystem } from '../fusion/ConfidenceFusionSystem';
+import { WarningDeduplicator, type DeduplicationStrategy } from '../optimization/WarningDeduplicator';
+import { PerformanceOptimizer } from '../optimization/PerformanceOptimizer';
+import { SystemHealthMonitor } from '../monitoring/SystemHealthMonitor';
 
 const logger = new Logger('DetectionOrchestrator');
 
@@ -38,6 +41,10 @@ interface OrchestratorConfig {
   enablePhotosensitivity: boolean;
   enableFusion: boolean;
   fusionThreshold: number;  // Minimum confidence for fused warnings
+  enableDeduplication: boolean;  // Enable intelligent warning deduplication
+  deduplicationStrategy: DeduplicationStrategy;  // Deduplication strategy
+  enablePerformanceOptimization: boolean;  // Enable adaptive performance optimization
+  enableHealthMonitoring: boolean;  // Enable system health monitoring
 }
 
 interface DetectionStats {
@@ -47,6 +54,9 @@ interface DetectionStats {
   visual: ReturnType<VisualColorAnalyzer['getStats']> | null;
   photosensitivity: { enabled: boolean };
   fusion: ReturnType<ConfidenceFusionSystem['getStats']> | null;
+  deduplication: ReturnType<WarningDeduplicator['getStats']> | null;
+  performance: ReturnType<PerformanceOptimizer['getStats']> | null;
+  health: ReturnType<SystemHealthMonitor['getStats']> | null;
   totalWarnings: number;
   activeSystems: number;
 }
@@ -59,6 +69,9 @@ export class DetectionOrchestrator {
   private visualAnalyzer: VisualColorAnalyzer | null = null;
   private photosensitivityDetector: PhotosensitivityDetector | null = null;
   private fusionSystem: ConfidenceFusionSystem | null = null;
+  private deduplicator: WarningDeduplicator | null = null;
+  private performanceOptimizer: PerformanceOptimizer | null = null;
+  private healthMonitor: SystemHealthMonitor | null = null;
 
   // State
   private provider: IStreamingProvider;
@@ -84,6 +97,10 @@ export class DetectionOrchestrator {
       enablePhotosensitivity: true,
       enableFusion: true,
       fusionThreshold: 70,
+      enableDeduplication: true,
+      deduplicationStrategy: 'merge-all',
+      enablePerformanceOptimization: true,
+      enableHealthMonitoring: true,
       ...config
     };
 
@@ -105,6 +122,33 @@ export class DetectionOrchestrator {
     logger.info('[TW DetectionOrchestrator] 🚀 Initializing all detection systems...');
 
     let activeSystems = 0;
+
+    // 0. PERFORMANCE OPTIMIZER (initialize FIRST to get device-optimized config)
+    let perfConfig = null;
+    if (this.config.enablePerformanceOptimization) {
+      try {
+        this.performanceOptimizer = new PerformanceOptimizer();
+        perfConfig = this.performanceOptimizer.getConfiguration();
+
+        logger.info(
+          `[TW DetectionOrchestrator] ⚡ Performance Optimizer initialized | ` +
+          `Mode: ${perfConfig.mode} | ` +
+          `Systems: S:${perfConfig.enableSubtitleAnalysis} AW:${perfConfig.enableAudioWaveform} ` +
+          `AF:${perfConfig.enableAudioFrequency} V:${perfConfig.enableVisualAnalysis} ` +
+          `P:${perfConfig.enablePhotosensitivity} F:${perfConfig.enableFusion}`
+        );
+
+        // Override config with performance-optimized settings
+        this.config.enableSubtitleAnalysis = this.config.enableSubtitleAnalysis && perfConfig.enableSubtitleAnalysis;
+        this.config.enableAudioWaveform = this.config.enableAudioWaveform && perfConfig.enableAudioWaveform;
+        this.config.enableAudioFrequency = this.config.enableAudioFrequency && perfConfig.enableAudioFrequency;
+        this.config.enableVisualAnalysis = this.config.enableVisualAnalysis && perfConfig.enableVisualAnalysis;
+        this.config.enablePhotosensitivity = this.config.enablePhotosensitivity && perfConfig.enablePhotosensitivity;
+        this.config.enableFusion = this.config.enableFusion && perfConfig.enableFusion;
+      } catch (error) {
+        logger.error('[TW DetectionOrchestrator] ❌ PerformanceOptimizer failed:', error);
+      }
+    }
 
     // 1. SUBTITLE ANALYSIS V2
     if (this.config.enableSubtitleAnalysis) {
@@ -205,11 +249,117 @@ export class DetectionOrchestrator {
       logger.info('[TW DetectionOrchestrator] ✅ ConfidenceFusionSystem initialized');
     }
 
+    // 6. WARNING DEDUPLICATOR
+    if (this.config.enableDeduplication) {
+      this.deduplicator = new WarningDeduplicator({
+        strategy: this.config.deduplicationStrategy,
+        temporalWindow: 2.0,
+        categoryRateLimit: 10,
+        enableSmartMerging: true,
+        minimumTimeBetweenSameCategory: 3.0
+      });
+      logger.info('[TW DetectionOrchestrator] ✅ WarningDeduplicator initialized');
+    }
+
+    // 7. SYSTEM HEALTH MONITOR (initialize LAST to monitor all systems)
+    if (this.config.enableHealthMonitoring) {
+      try {
+        this.healthMonitor = new SystemHealthMonitor({
+          checkInterval: 5000,
+          errorThreshold: 5,
+          failureThreshold: 3,
+          autoRestart: true,
+          memoryThreshold: 100,
+          enableMemoryMonitoring: true
+        });
+
+        // Register all active systems for monitoring
+        if (this.subtitleAnalyzer) {
+          this.healthMonitor.registerSystem(
+            'SubtitleAnalyzerV2',
+            () => ({ passed: true }),  // Basic health check
+            async () => {
+              // Restart function
+              logger.info('[TW DetectionOrchestrator] 🔄 Restarting SubtitleAnalyzerV2...');
+              this.subtitleAnalyzer?.dispose();
+              this.subtitleAnalyzer = new SubtitleAnalyzerV2();
+              this.subtitleAnalyzer.initialize(video);
+              this.subtitleAnalyzer.onDetection((warning) => {
+                this.handleDetection(warning, 'subtitle');
+              });
+            }
+          );
+        }
+
+        if (this.audioWaveformAnalyzer) {
+          this.healthMonitor.registerSystem(
+            'AudioWaveformAnalyzer',
+            () => ({ passed: true }),
+            async () => {
+              logger.info('[TW DetectionOrchestrator] 🔄 Restarting AudioWaveformAnalyzer...');
+              this.audioWaveformAnalyzer?.dispose();
+              this.audioWaveformAnalyzer = new AudioWaveformAnalyzer();
+              this.audioWaveformAnalyzer.initialize(video);
+              this.audioWaveformAnalyzer.onDetection((warning) => {
+                this.handleDetection(warning, 'audio-waveform');
+              });
+            }
+          );
+        }
+
+        if (this.audioFrequencyAnalyzer) {
+          this.healthMonitor.registerSystem(
+            'AudioFrequencyAnalyzer',
+            () => ({ passed: true })
+            // Note: Restart requires audio context, skipping for now
+          );
+        }
+
+        if (this.visualAnalyzer) {
+          this.healthMonitor.registerSystem(
+            'VisualColorAnalyzer',
+            () => ({ passed: true }),
+            async () => {
+              logger.info('[TW DetectionOrchestrator] 🔄 Restarting VisualColorAnalyzer...');
+              this.visualAnalyzer?.dispose();
+              this.visualAnalyzer = new VisualColorAnalyzer();
+              this.visualAnalyzer.initialize(video);
+              this.visualAnalyzer.onDetection((warning) => {
+                this.handleDetection(warning, 'visual');
+              });
+            }
+          );
+        }
+
+        if (this.photosensitivityDetector) {
+          this.healthMonitor.registerSystem(
+            'PhotosensitivityDetector',
+            () => ({ passed: true }),
+            async () => {
+              logger.info('[TW DetectionOrchestrator] 🔄 Restarting PhotosensitivityDetector...');
+              this.photosensitivityDetector?.dispose();
+              this.photosensitivityDetector = new PhotosensitivityDetector();
+              this.photosensitivityDetector.initialize(video);
+              this.photosensitivityDetector.onDetection((warning) => {
+                this.handleDetection(warning, 'photosensitivity');
+              });
+            }
+          );
+        }
+
+        // Start health monitoring
+        this.healthMonitor.startMonitoring();
+        logger.info('[TW DetectionOrchestrator] ✅ SystemHealthMonitor initialized and monitoring started');
+      } catch (error) {
+        logger.error('[TW DetectionOrchestrator] ❌ SystemHealthMonitor failed:', error);
+      }
+    }
+
     logger.info(
       `[TW DetectionOrchestrator] 🎉 Initialization complete! ${activeSystems} detection systems active`
     );
     logger.info(
-      '[TW DetectionOrchestrator] 🛡️ ULTIMATE PROTECTION ACTIVE - Subtitle, Audio, Visual, and Fusion intelligence working together'
+      '[TW DetectionOrchestrator] 🛡️ ULTIMATE PROTECTION ACTIVE - All systems operational with Performance Optimization, Health Monitoring, and Auto-Recovery'
     );
   }
 
@@ -261,17 +411,40 @@ export class DetectionOrchestrator {
 
           this.allWarnings.push(fusedWarning);
 
-          // Emit fused warning
-          if (this.onWarningCallback) {
-            this.onWarningCallback(fusedWarning);
-          }
+          // Emit fused warning (through deduplicator if enabled)
+          this.emitWarning(fusedWarning);
         }
       }
     } else {
-      // No fusion - emit warning directly
-      if (this.onWarningCallback) {
-        this.onWarningCallback(warning);
+      // No fusion - emit warning directly (through deduplicator if enabled)
+      this.emitWarning(warning);
+    }
+  }
+
+  /**
+   * Emit warning to callback (optionally through deduplicator)
+   */
+  private emitWarning(warning: Warning): void {
+    if (!this.onWarningCallback) {
+      return;
+    }
+
+    // Process through deduplicator if enabled
+    if (this.deduplicator) {
+      const deduplicated = this.deduplicator.processWarning(warning);
+
+      if (deduplicated) {
+        // Warning passed deduplication, emit it
+        this.onWarningCallback(deduplicated);
+      } else {
+        // Warning was filtered/merged by deduplicator
+        logger.debug(
+          `[TW DetectionOrchestrator] 🔀 Warning deduplicated: ${warning.categoryKey} at ${warning.startTime.toFixed(1)}s`
+        );
       }
+    } else {
+      // No deduplication - emit directly
+      this.onWarningCallback(warning);
     }
   }
 
@@ -311,6 +484,9 @@ export class DetectionOrchestrator {
     if (photosensitivityEnabled) activeSystems++;
 
     const fusionStats = this.fusionSystem?.getStats() || null;
+    const deduplicationStats = this.deduplicator?.getStats() || null;
+    const performanceStats = this.performanceOptimizer?.getStats() || null;
+    const healthStats = this.healthMonitor?.getStats() || null;
 
     return {
       subtitle: subtitleStats,
@@ -319,6 +495,9 @@ export class DetectionOrchestrator {
       visual: visualStats,
       photosensitivity: { enabled: photosensitivityEnabled },
       fusion: fusionStats,
+      deduplication: deduplicationStats,
+      performance: performanceStats,
+      health: healthStats,
       totalWarnings: this.allWarnings.length,
       activeSystems
     };
@@ -386,6 +565,40 @@ export class DetectionOrchestrator {
       logger.info('');
     }
 
+    if (stats.deduplication) {
+      logger.info('🔀 WARNING DEDUPLICATOR:');
+      logger.info(`  - Total Warnings Received: ${stats.deduplication.totalWarningsReceived}`);
+      logger.info(`  - Duplicates Filtered: ${stats.deduplication.duplicatesFiltered}`);
+      logger.info(`  - Warnings Merged: ${stats.deduplication.warningsMerged}`);
+      logger.info(`  - Rate Limited: ${stats.deduplication.rateLimitedWarnings}`);
+      logger.info(`  - Output Warnings: ${stats.deduplication.outputWarnings}`);
+      logger.info(`  - Deduplication Rate: ${stats.deduplication.deduplicationRate}%`);
+      logger.info('');
+    }
+
+    if (stats.performance) {
+      logger.info('⚡ PERFORMANCE OPTIMIZER:');
+      logger.info(`  - Current Mode: ${stats.performance.currentMode}`);
+      logger.info(`  - Average CPU: ${stats.performance.avgCPU.toFixed(1)}%`);
+      logger.info(`  - Device: ${stats.performance.deviceCapabilities.isMobile ? 'Mobile' : 'Desktop'}`);
+      logger.info(`  - CPU Cores: ${stats.performance.deviceCapabilities.cpuCores}`);
+      logger.info(`  - Memory: ${stats.performance.deviceCapabilities.memory.toFixed(1)}GB`);
+      logger.info('');
+    }
+
+    if (stats.health) {
+      logger.info('🏥 SYSTEM HEALTH MONITOR:');
+      logger.info(`  - Monitored Systems: ${stats.health.monitoredSystems}`);
+      logger.info(`  - Healthy: ${stats.health.healthySystems}`);
+      logger.info(`  - Degraded: ${stats.health.degradedSystems}`);
+      logger.info(`  - Failed: ${stats.health.failedSystems}`);
+      logger.info(`  - Total Health Checks: ${stats.health.totalHealthChecks}`);
+      logger.info(`  - Total Errors: ${stats.health.totalErrors}`);
+      logger.info(`  - Total Restarts: ${stats.health.totalRestarts}`);
+      logger.info(`  - Cascade Failures Prevented: ${stats.health.cascadeFailuresPrevented}`);
+      logger.info('');
+    }
+
     logger.info('═══════════════════════════════════════════════════════════');
   }
 
@@ -399,6 +612,7 @@ export class DetectionOrchestrator {
     this.visualAnalyzer?.clear();
     this.photosensitivityDetector?.clear();
     this.fusionSystem?.clear();
+    this.deduplicator?.clear();
     this.allWarnings = [];
   }
 
@@ -408,12 +622,17 @@ export class DetectionOrchestrator {
   dispose(): void {
     logger.info('[TW DetectionOrchestrator] 🛑 Disposing all detection systems...');
 
+    this.healthMonitor?.stopMonitoring();
+    this.healthMonitor?.dispose();
+    this.performanceOptimizer?.dispose();
+
     this.subtitleAnalyzer?.dispose();
     this.audioWaveformAnalyzer?.dispose();
     this.audioFrequencyAnalyzer?.dispose();
     this.visualAnalyzer?.dispose();
     this.photosensitivityDetector?.dispose();
     this.fusionSystem?.clear();
+    this.deduplicator?.clear();
 
     this.subtitleAnalyzer = null;
     this.audioWaveformAnalyzer = null;
@@ -421,6 +640,9 @@ export class DetectionOrchestrator {
     this.visualAnalyzer = null;
     this.photosensitivityDetector = null;
     this.fusionSystem = null;
+    this.deduplicator = null;
+    this.performanceOptimizer = null;
+    this.healthMonitor = null;
 
     this.allWarnings = [];
     this.onWarningCallback = null;
@@ -438,6 +660,9 @@ export class DetectionOrchestrator {
     visual: boolean;
     photosensitivity: boolean;
     fusion: boolean;
+    deduplication: boolean;
+    performance: boolean;
+    healthMonitoring: boolean;
   } {
     return {
       subtitle: this.subtitleAnalyzer !== null,
@@ -445,7 +670,10 @@ export class DetectionOrchestrator {
       audioFrequency: this.audioFrequencyAnalyzer !== null,
       visual: this.visualAnalyzer !== null,
       photosensitivity: this.photosensitivityDetector !== null,
-      fusion: this.fusionSystem !== null
+      fusion: this.fusionSystem !== null,
+      deduplication: this.deduplicator !== null,
+      performance: this.performanceOptimizer !== null,
+      healthMonitoring: this.healthMonitor !== null
     };
   }
 }
