@@ -125,8 +125,20 @@ export class WarningManager {
 
     // Initialize subtitle analyzer
     if (this.subtitleAnalyzer) {
-      console.log('[TW WarningManager] 📝 Initializing subtitle analyzer...');
+      console.log('[TW WarningManager] 📝 Initializing subtitle analyzer for real-time detection...');
+      console.log('[TW WarningManager] 💡 Subtitle analyzer will monitor video captions/subtitles for trigger keywords');
+      console.log('[TW WarningManager] 💡 This works independently of your subtitle display preferences');
+
       this.subtitleAnalyzer.initialize(video);
+
+      // Log translation stats if available
+      const stats = this.subtitleAnalyzer.getTranslationStats();
+      if (stats.enabled) {
+        console.log(`[TW WarningManager] 🌐 Translation enabled: ${stats.language} → English`);
+        console.log(`[TW WarningManager] 💾 Translation cache: ${stats.cacheStats.cacheSize} entries`);
+        console.log(`[TW WarningManager] 📊 API usage: ${stats.cacheStats.requestsToday}/${stats.cacheStats.dailyLimit} requests today (${stats.cacheStats.remainingRequests} remaining)`);
+      }
+
       this.subtitleAnalyzer.onDetection((warning) => {
         // Add detected warning to our list
         if (this.profile.enabledCategories.includes(warning.categoryKey as any)) {

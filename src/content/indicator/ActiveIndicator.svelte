@@ -254,13 +254,42 @@
     return 0;
   }
 
+  function togglePlayPause() {
+    const video = document.querySelector('video');
+    if (video) {
+      if (video.paused) {
+        video.play();
+      } else {
+        video.pause();
+      }
+    }
+  }
+
+  function rewindVideo(seconds: number) {
+    const video = document.querySelector('video');
+    if (video) {
+      video.currentTime = Math.max(0, video.currentTime - seconds);
+    }
+  }
+
+  function getCurrentVideoTime(): string {
+    const video = document.querySelector('video');
+    if (video && !isNaN(video.currentTime)) {
+      return formatTime(Math.floor(video.currentTime));
+    }
+    return '0:00';
+  }
+
+  $: isVideoPlaying = videoElement && !videoElement.paused;
+
   function handleMouseEnter() {
     isExpanded = true;
     if (fadeOutTimer) clearTimeout(fadeOutTimer);
   }
 
   function handleMouseLeave() {
-    if (!showAddTriggerForm && !isVideoPaused && !isVideoStarting) {
+    // Only collapse if not showing form
+    if (!showAddTriggerForm) {
       isExpanded = false;
       if (appearingMode === 'onMove') {
         fadeOutTimer = window.setTimeout(() => {
@@ -268,6 +297,12 @@
         }, fadeOutDelay);
       }
     }
+  }
+
+  function handleCompactClick(e: MouseEvent) {
+    // Allow expansion even during playback
+    e.stopPropagation();
+    isExpanded = !isExpanded;
   }
 
   $: hasActiveWarnings = activeWarnings.length > 0;
@@ -290,8 +325,14 @@
     on:focusout={handleMouseLeave}
   >
     <div class="tw-overlay-content">
-      <!-- Compact view (always visible) -->
-      <div class="tw-overlay-compact">
+      <!-- Compact view (always visible) - clickable to expand -->
+      <div
+        class="tw-overlay-compact"
+        on:click={handleCompactClick}
+        role="button"
+        tabindex="0"
+        aria-label="Toggle trigger warnings overlay"
+      >
         <!-- Status badge -->
         <div class="tw-overlay-badge">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -313,7 +354,7 @@
         <!-- Quick add icon (always visible) -->
         <button
           class="tw-overlay-add-icon"
-          on:click={handleQuickAdd}
+          on:click|stopPropagation={handleQuickAdd}
           title="Add trigger warning"
           aria-label="Add trigger warning"
         >
@@ -452,6 +493,30 @@
                     </div>
                   </div>
 
+                  <!-- Video Controls -->
+                  <div class="tw-form-section tw-video-controls">
+                    <div class="tw-video-time-display">
+                      <span class="tw-video-icon">🎬</span>
+                      <span class="tw-video-current-time">{getCurrentVideoTime()}</span>
+                    </div>
+                    <div class="tw-control-buttons">
+                      <button
+                        class="tw-control-btn"
+                        on:click={() => rewindVideo(10)}
+                        title="Rewind 10 seconds"
+                      >
+                        ⏪ 10s
+                      </button>
+                      <button
+                        class="tw-control-btn tw-play-pause-btn"
+                        on:click={togglePlayPause}
+                        title={isVideoPlaying ? 'Pause' : 'Play'}
+                      >
+                        {isVideoPlaying ? '⏸' : '▶'}
+                      </button>
+                    </div>
+                  </div>
+
                   <!-- Description (optional) -->
                   <div class="tw-form-section">
                     <label class="tw-form-label">Description (optional)</label>
@@ -541,11 +606,7 @@
     display: flex;
     align-items: center;
     gap: 0;
-    background: linear-gradient(135deg,
-      rgba(var(--button-color-rgb, 139, 92, 246), var(--button-opacity, 0.95)) 0%,
-      rgba(var(--button-color-rgb, 168, 85, 247), var(--button-opacity, 0.95)) 100%
-    );
-    background: rgba(139, 92, 246, 0.95); /* More violet as requested */
+    background: rgba(139, 92, 246, var(--button-opacity, 0.75)); /* Use opacity variable */
     border-radius: 24px;
     box-shadow: 0 8px 32px rgba(139, 92, 246, 0.4);
     backdrop-filter: blur(16px);
@@ -556,17 +617,17 @@
   }
 
   .tw-overlay:hover .tw-overlay-content {
-    background: rgba(168, 85, 247, 0.98);
+    background: rgba(168, 85, 247, calc(var(--button-opacity, 0.75) + 0.15));
     box-shadow: 0 12px 40px rgba(168, 85, 247, 0.5);
   }
 
   .tw-overlay.has-warnings .tw-overlay-content {
-    background: rgba(239, 68, 68, 0.95);
+    background: rgba(239, 68, 68, var(--button-opacity, 0.75));
     box-shadow: 0 8px 32px rgba(239, 68, 68, 0.4);
   }
 
   .tw-overlay.has-warnings:hover .tw-overlay-content {
-    background: rgba(220, 38, 38, 0.98);
+    background: rgba(220, 38, 38, calc(var(--button-opacity, 0.75) + 0.15));
     box-shadow: 0 12px 40px rgba(220, 38, 38, 0.5);
   }
 
@@ -577,6 +638,12 @@
     gap: 8px;
     padding: 10px 16px;
     transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  .tw-overlay-compact:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 24px 0 0 24px;
   }
 
   .tw-overlay.expanded .tw-overlay-compact {
@@ -919,15 +986,17 @@
 
   .tw-category-scroll {
     display: flex;
-    gap: 6px;
-    overflow-x: auto;
+    flex-wrap: wrap;
+    gap: 4px;
     padding: 4px 0;
+    max-height: 120px;
+    overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
   }
 
   .tw-category-scroll::-webkit-scrollbar {
-    height: 4px;
+    width: 4px;
   }
 
   .tw-category-scroll::-webkit-scrollbar-thumb {
@@ -939,15 +1008,15 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
-    padding: 8px 10px;
+    gap: 2px;
+    padding: 4px 6px;
     background: rgba(255, 255, 255, 0.1);
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    border-radius: 10px;
+    border: 1.5px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
     color: white;
     cursor: pointer;
     transition: all 0.2s ease;
-    min-width: 70px;
+    min-width: 50px;
     flex-shrink: 0;
   }
 
@@ -964,14 +1033,18 @@
   }
 
   .tw-cat-icon {
-    font-size: 20px;
+    font-size: 16px;
   }
 
   .tw-cat-name {
-    font-size: 9px;
+    font-size: 8px;
     font-weight: 600;
     text-align: center;
-    line-height: 1.1;
+    line-height: 1;
+    max-width: 50px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .tw-time-section {
@@ -1037,6 +1110,73 @@
     font-weight: bold;
     opacity: 0.6;
     margin-top: 20px;
+  }
+
+  /* Video Controls */
+  .tw-video-controls {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+  }
+
+  .tw-video-time-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: monospace;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .tw-video-icon {
+    font-size: 16px;
+  }
+
+  .tw-video-current-time {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 4px 10px;
+    border-radius: 6px;
+    letter-spacing: 1px;
+  }
+
+  .tw-control-buttons {
+    display: flex;
+    gap: 6px;
+  }
+
+  .tw-control-btn {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 8px;
+    color: white;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .tw-control-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(1.05);
+  }
+
+  .tw-control-btn:active {
+    transform: scale(0.95);
+  }
+
+  .tw-play-pause-btn {
+    min-width: 45px;
+    justify-content: center;
+    font-size: 16px;
   }
 
   .tw-textarea {
