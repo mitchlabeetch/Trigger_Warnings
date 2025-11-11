@@ -1491,9 +1491,14 @@
             .video-scene::before {
                 font-size: 2.5rem;
                 /* Center the video icon properly on mobile */
+                width: 100%;
+                height: 100%;
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                position: absolute;
+                top: 0;
+                left: 0;
             }
 
             /* Warning banners - better mobile positioning */
@@ -1522,7 +1527,7 @@
             }
 
             .warning-banner.blood {
-                top: 70px; /* Increased spacing to prevent overlap */
+                top: 75px; /* Further increased spacing to prevent overlap */
                 right: 10px;
             }
 
@@ -1873,7 +1878,7 @@
             <div class="hero-content">
                 <div class="hero-text">
                     <div class="hero-logo">
-                        <img src="../images/icon128.png" alt="Trigger Warnings Logo">
+                        <img src="images/icon128.png" alt="Trigger Warnings Logo">
                     </div>
                     <div class="badge">⚡ Real-Time Detection • 100% Private • Community-Powered</div>
                     <h1>Watch Anything, Safely</h1>
@@ -1961,7 +1966,7 @@
         </div>
 
         <!-- Scroll incentive -->
-        <div class="scroll-incentive">
+        <div class="scroll-incentive" onclick="document.querySelector('.stats').scrollIntoView({behavior: 'smooth', block: 'start'})">
             <div class="scroll-arrow">
                 ↓
             </div>
@@ -1993,9 +1998,59 @@
         </div>
     </section>
 
+    <!-- Platforms with Glassmorphism - Moved earlier -->
+    <section class="platforms">
+        <div class="container">
+            <div class="section-header fade-in-up">
+                <h2 class="section-title">Works on All Major Platforms</h2>
+                <p class="section-subtitle">
+                    Seamless protection across your favorite streaming services
+                </p>
+            </div>
+
+            <div class="platform-grid fade-in-up">
+                <div class="platform">
+                    <div class="platform-logo">🔴</div>
+                    <div class="platform-name">Netflix</div>
+                </div>
+                <div class="platform">
+                    <div class="platform-logo">▶️</div>
+                    <div class="platform-name">YouTube</div>
+                </div>
+                <div class="platform">
+                    <div class="platform-logo">📦</div>
+                    <div class="platform-name">Prime Video</div>
+                </div>
+                <div class="platform">
+                    <div class="platform-logo">🟢</div>
+                    <div class="platform-name">Hulu</div>
+                </div>
+                <div class="platform">
+                    <div class="platform-logo">✨</div>
+                    <div class="platform-name">Disney+</div>
+                </div>
+                <div class="platform">
+                    <div class="platform-logo">⚪</div>
+                    <div class="platform-name">Max (HBO)</div>
+                </div>
+                <div class="platform">
+                    <div class="platform-logo">🦚</div>
+                    <div class="platform-name">Peacock</div>
+                </div>
+            </div>
+
+            <!-- Disclaimer about database work -->
+            <div style="margin-top: 60px; text-align: center; max-width: 800px; margin-left: auto; margin-right: auto;">
+                <p style="font-size: 0.95rem; opacity: 0.9; line-height: 1.7; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2);">
+                    <strong>📊 Continuous Improvement:</strong> We're actively enriching our database and refining our detection algorithms to provide the most accurate warnings possible. While our system is highly effective, some triggers may occasionally slip through. Your feedback and contributions help us improve every day.
+                </p>
+            </div>
+        </div>
+    </section>
+
     <!-- Section divider -->
     <div class="section-divider">
-        <div class="scroll-hint">↓ Discover How It Works ↓</div>
+        <div class="scroll-hint" onclick="document.querySelector('#features').scrollIntoView({behavior: 'smooth', block: 'start'})" style="cursor: pointer;">↓ Discover How It Works ↓</div>
     </div>
 
     <!-- Subtitle Detection Feature -->
@@ -2146,7 +2201,7 @@
 
     <!-- Section divider -->
     <div class="section-divider">
-        <div class="scroll-hint">↓ Community-Powered Accuracy ↓</div>
+        <div class="scroll-hint" onclick="this.closest('.section-divider').nextElementSibling.scrollIntoView({behavior: 'smooth', block: 'start'})" style="cursor: pointer;">↓ Community-Powered Accuracy ↓</div>
     </div>
 
     <!-- Voting System -->
@@ -2245,7 +2300,7 @@
 
     <!-- Section divider -->
     <div class="section-divider">
-        <div class="scroll-hint">↓ Help Build the Database ↓</div>
+        <div class="scroll-hint" onclick="this.closest('.section-divider').nextElementSibling.scrollIntoView({behavior: 'smooth', block: 'start'})" style="cursor: pointer;">↓ Help Build the Database ↓</div>
     </div>
 
     <!-- Helper Mode -->
@@ -2330,7 +2385,7 @@
 
     <!-- Section divider -->
     <div class="section-divider">
-        <div class="scroll-hint">↓ Browser Support & Categories ↓</div>
+        <div class="scroll-hint" onclick="this.closest('.section-divider').nextElementSibling.scrollIntoView({behavior: 'smooth', block: 'start'})" style="cursor: pointer;">↓ Browser Support & Categories ↓</div>
     </div>
 
     <!-- Browser Compatibility -->
@@ -2363,6 +2418,16 @@
                 <div class="browser-card supported">
                     <div class="browser-icon">🦁</div>
                     <div class="browser-name">Brave</div>
+                    <div class="browser-status available">Available Now</div>
+                </div>
+                <div class="browser-card supported">
+                    <div class="browser-icon">🌊</div>
+                    <div class="browser-name">Vivaldi</div>
+                    <div class="browser-status available">Available Now</div>
+                </div>
+                <div class="browser-card supported">
+                    <div class="browser-icon">⚡</div>
+                    <div class="browser-name">Arc</div>
                     <div class="browser-status available">Available Now</div>
                 </div>
                 <div class="browser-card coming-soon">
@@ -2507,56 +2572,12 @@
         </div>
     </section>
 
-    <!-- Platforms with Glassmorphism -->
-    <section class="platforms">
-        <div class="container">
-            <div class="section-header fade-in-up">
-                <h2 class="section-title">Works Everywhere You Watch</h2>
-                <p class="section-subtitle">
-                    Seamless integration with all major streaming platforms
-                </p>
-            </div>
-
-            <div class="platform-grid fade-in-up">
-                <div class="platform">
-                    <div class="platform-logo">🔴</div>
-                    <div class="platform-name">Netflix</div>
-                </div>
-                <div class="platform">
-                    <div class="platform-logo">▶️</div>
-                    <div class="platform-name">YouTube</div>
-                </div>
-                <div class="platform">
-                    <div class="platform-logo">📦</div>
-                    <div class="platform-name">Prime Video</div>
-                </div>
-                <div class="platform">
-                    <div class="platform-logo">🟢</div>
-                    <div class="platform-name">Hulu</div>
-                </div>
-                <div class="platform">
-                    <div class="platform-logo">✨</div>
-                    <div class="platform-name">Disney+</div>
-                </div>
-                <div class="platform">
-                    <div class="platform-logo">⚪</div>
-                    <div class="platform-name">Max (HBO)</div>
-                </div>
-                <div class="platform">
-                    <div class="platform-logo">🦚</div>
-                    <div class="platform-name">Peacock</div>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
             <div class="footer-links">
                 <a href="#" class="footer-link">Documentation</a>
                 <a href="privacy.html" class="footer-link">Privacy Policy</a>
-                <a href="https://github.com/lightmyfireadmin/triggerwarnings/issues" class="footer-link">Report Issue</a>
                 <a href="#" class="footer-link">Contribute</a>
             </div>
             <p style="opacity: 0.7; margin-top: 20px;">
