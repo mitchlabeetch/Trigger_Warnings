@@ -1,7 +1,8 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
-  import type { ActiveWarning } from '@shared/types/Warning.types';
+  import type { ActiveWarning, TriggerCategory } from '@shared/types/Warning.types';
   import { TRIGGER_CATEGORIES } from '@shared/constants/categories';
+  import { SupabaseClient } from '@core/api/SupabaseClient';
 
   export let onQuickAdd: () => void;
   export let activeWarnings: ActiveWarning[] = [];
@@ -14,9 +15,21 @@
   let videoElement: HTMLVideoElement | null = null;
   let playerContainer: HTMLElement | null = null;
 
+  // Form state for inline trigger addition
+  let selectedCategory: TriggerCategory | null = null;
+  let startTime = 0;
+  let endTime = 10;
+  let description = '';
+  let isSubmitting = false;
+  let formError = '';
+  let formSuccess = false;
+
+  // Category keys for selection
+  const CATEGORY_KEYS = Object.keys(TRIGGER_CATEGORIES) as TriggerCategory[];
+
   // Customization props (will come from profile settings)
   export let buttonColor: string = '#8b5cf6'; // More violet as requested
-  export let buttonOpacity: number = 0.95;
+  export let buttonOpacity: number = 0.75; // Reduced opacity
   export let appearingMode: 'always' | 'onMove' | 'onHover' = 'always';
   export let fadeOutDelay: number = 3000; // milliseconds
 
@@ -123,7 +136,122 @@
     showAddTriggerForm = !showAddTriggerForm;
     if (showAddTriggerForm) {
       isExpanded = true;
+      // Initialize form with current video time
+      const video = document.querySelector('video');
+      if (video && !isNaN(video.currentTime)) {
+        const current = Math.floor(video.currentTime);
+        startTime = Math.max(0, current - 5);
+        endTime = current + 5;
+      }
+      // Reset form state
+      selectedCategory = null;
+      description = '';
+      formError = '';
+      formSuccess = false;
     }
+  }
+
+  async function handleSubmitTrigger() {
+    // Validate form
+    if (!selectedCategory) {
+      formError = 'Please select a category';
+      return;
+    }
+    if (startTime < 0) {
+      formError = 'Start time cannot be negative';
+      return;
+    }
+    if (endTime <= startTime) {
+      formError = 'End time must be after start time';
+      return;
+    }
+    if (description.length > 500) {
+      formError = 'Description must be 500 characters or less';
+      return;
+    }
+
+    // Get video info
+    const videoId = getVideoId();
+    const platform = getPlatform();
+    const videoTitle = getVideoTitle();
+
+    if (!videoId || !platform) {
+      formError = 'Could not detect video information';
+      return;
+    }
+
+    isSubmitting = true;
+    formError = '';
+
+    try {
+      await SupabaseClient.submitTrigger({
+        videoId,
+        platform,
+        videoTitle,
+        categoryKey: selectedCategory,
+        startTime,
+        endTime,
+        description: description.trim() || undefined,
+        confidence: 75,
+      });
+
+      // Success!
+      formSuccess = true;
+      setTimeout(() => {
+        showAddTriggerForm = false;
+        formSuccess = false;
+      }, 2000);
+    } catch (error) {
+      formError = error instanceof Error ? error.message : 'Failed to submit trigger';
+    } finally {
+      isSubmitting = false;
+    }
+  }
+
+  function getVideoId(): string | null {
+    const url = new URL(window.location.href);
+    // YouTube
+    if (url.hostname.includes('youtube')) {
+      return url.searchParams.get('v');
+    }
+    // Netflix (example - would need proper implementation)
+    if (url.hostname.includes('netflix')) {
+      const match = url.pathname.match(/watch\/(\d+)/);
+      return match ? match[1] : null;
+    }
+    // Add other platforms as needed
+    return null;
+  }
+
+  function getPlatform(): string {
+    const hostname = window.location.hostname;
+    if (hostname.includes('youtube')) return 'youtube';
+    if (hostname.includes('netflix')) return 'netflix';
+    if (hostname.includes('prime')) return 'prime';
+    if (hostname.includes('hulu')) return 'hulu';
+    if (hostname.includes('disney')) return 'disney';
+    if (hostname.includes('max.')) return 'max';
+    return 'unknown';
+  }
+
+  function getVideoTitle(): string | undefined {
+    // Try to get video title from page
+    const titleElement = document.querySelector('h1.title, h1[class*="title"], meta[property="og:title"]');
+    if (titleElement) {
+      if (titleElement.tagName === 'META') {
+        return (titleElement as HTMLMetaElement).content;
+      }
+      return titleElement.textContent?.trim();
+    }
+    return document.title;
+  }
+
+  function captureCurrentTime() {
+    const video = document.querySelector('video');
+    if (video && !isNaN(video.currentTime)) {
+      return Math.floor(video.currentTime);
+    }
+    return 0;
   }
 
   function handleMouseEnter() {
@@ -250,20 +378,112 @@
             </button>
           {/if}
 
-          <!-- Add trigger form (inline, horizontal layout) -->
+          <!-- Add trigger form (complete inline form) -->
           {#if showAddTriggerForm}
             <div class="tw-overlay-form">
               <div class="tw-form-header">
-                <span>Add Trigger Warning</span>
+                <span>🎯 Add Trigger Warning</span>
                 <button class="tw-form-close" on:click={() => showAddTriggerForm = false}>✕</button>
               </div>
-              <div class="tw-form-content">
-                <p class="tw-form-hint">🎯 Quick workflow - no fullscreen exit needed</p>
-                <!-- Form implementation will connect to existing add trigger functionality -->
-                <div class="tw-form-message">
-                  Click extension icon to complete adding trigger
+
+              {#if formSuccess}
+                <div class="tw-form-success">
+                  ✓ Trigger submitted successfully!
                 </div>
-              </div>
+              {:else}
+                <div class="tw-form-content">
+                  <!-- Category selection -->
+                  <div class="tw-form-section">
+                    <label class="tw-form-label">Category *</label>
+                    <div class="tw-category-scroll">
+                      {#each CATEGORY_KEYS as key}
+                        <button
+                          type="button"
+                          class="tw-category-btn"
+                          class:selected={selectedCategory === key}
+                          on:click={() => selectedCategory = key}
+                          title={TRIGGER_CATEGORIES[key].name}
+                        >
+                          <span class="tw-cat-icon">{TRIGGER_CATEGORIES[key].icon}</span>
+                          <span class="tw-cat-name">{TRIGGER_CATEGORIES[key].name}</span>
+                        </button>
+                      {/each}
+                    </div>
+                  </div>
+
+                  <!-- Time range -->
+                  <div class="tw-form-section tw-time-section">
+                    <div class="tw-time-group">
+                      <label class="tw-form-label">Start</label>
+                      <div class="tw-time-input-group">
+                        <input
+                          type="number"
+                          bind:value={startTime}
+                          min="0"
+                          class="tw-time-input"
+                        />
+                        <button
+                          class="tw-capture-btn"
+                          on:click={() => startTime = captureCurrentTime()}
+                          title="Capture current time"
+                        >📍</button>
+                      </div>
+                      <span class="tw-time-display">{formatTime(startTime)}</span>
+                    </div>
+
+                    <div class="tw-time-separator">→</div>
+
+                    <div class="tw-time-group">
+                      <label class="tw-form-label">End</label>
+                      <div class="tw-time-input-group">
+                        <input
+                          type="number"
+                          bind:value={endTime}
+                          min={startTime + 1}
+                          class="tw-time-input"
+                        />
+                        <button
+                          class="tw-capture-btn"
+                          on:click={() => endTime = captureCurrentTime()}
+                          title="Capture current time"
+                        >📍</button>
+                      </div>
+                      <span class="tw-time-display">{formatTime(endTime)}</span>
+                    </div>
+                  </div>
+
+                  <!-- Description (optional) -->
+                  <div class="tw-form-section">
+                    <label class="tw-form-label">Description (optional)</label>
+                    <textarea
+                      bind:value={description}
+                      placeholder="Brief description..."
+                      class="tw-textarea"
+                      rows="2"
+                      maxlength="500"
+                    ></textarea>
+                    <span class="tw-char-count">{description.length}/500</span>
+                  </div>
+
+                  <!-- Error message -->
+                  {#if formError}
+                    <div class="tw-form-error">⚠️ {formError}</div>
+                  {/if}
+
+                  <!-- Submit button -->
+                  <button
+                    class="tw-submit-btn"
+                    on:click={handleSubmitTrigger}
+                    disabled={isSubmitting || !selectedCategory}
+                  >
+                    {#if isSubmitting}
+                      <span class="tw-spinner"></span> Submitting...
+                    {:else}
+                      Submit Trigger
+                    {/if}
+                  </button>
+                </div>
+              {/if}
             </div>
           {/if}
         </div>
@@ -294,7 +514,7 @@
 
 <style>
   .tw-overlay {
-    position: absolute;
+    position: fixed;
     top: 16px;
     left: 50%;
     transform: translateX(-50%);
@@ -303,6 +523,7 @@
     animation: tw-overlay-fade-in 0.5s ease-out;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     max-width: 90vw;
+    pointer-events: auto;
   }
 
   @keyframes tw-overlay-fade-in {
@@ -418,17 +639,23 @@
     transform: scale(0.95) rotate(90deg);
   }
 
-  /* Expanded content - horizontal layout */
+  /* Expanded content - horizontal layout with bidirectional animation */
   .tw-overlay-expanded {
     display: flex;
     align-items: center;
     gap: 12px;
     padding: 10px 16px;
     max-height: 400px;
+    max-width: 800px;
     overflow-x: auto;
     overflow-y: hidden;
-    animation: tw-expand-horizontal 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     flex-wrap: nowrap;
+    animation: tw-expand-horizontal 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  /* Shrink animation when expanded content disappears */
+  .tw-overlay:not(.expanded) .tw-overlay-expanded {
+    animation: tw-shrink-horizontal 0.3s cubic-bezier(0.4, 0, 0.6, 1) forwards;
   }
 
   @keyframes tw-expand-horizontal {
@@ -437,12 +664,31 @@
       max-width: 0;
       padding-left: 0;
       padding-right: 0;
+      gap: 0;
     }
     to {
       opacity: 1;
       max-width: 800px;
       padding-left: 16px;
       padding-right: 16px;
+      gap: 12px;
+    }
+  }
+
+  @keyframes tw-shrink-horizontal {
+    from {
+      opacity: 1;
+      max-width: 800px;
+      padding-left: 16px;
+      padding-right: 16px;
+      gap: 12px;
+    }
+    to {
+      opacity: 0;
+      max-width: 0;
+      padding-left: 0;
+      padding-right: 0;
+      gap: 0;
     }
   }
 
@@ -654,21 +900,234 @@
   .tw-form-content {
     display: flex;
     flex-direction: column;
+    gap: 12px;
+  }
+
+  .tw-form-section {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .tw-form-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    opacity: 0.9;
+  }
+
+  .tw-category-scroll {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 4px 0;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+  }
+
+  .tw-category-scroll::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  .tw-category-scroll::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+  }
+
+  .tw-category-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 70px;
+    flex-shrink: 0;
+  }
+
+  .tw-category-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-2px);
+  }
+
+  .tw-category-btn.selected {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.6);
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.3);
+  }
+
+  .tw-cat-icon {
+    font-size: 20px;
+  }
+
+  .tw-cat-name {
+    font-size: 9px;
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.1;
+  }
+
+  .tw-time-section {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .tw-time-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+  }
+
+  .tw-time-input-group {
+    display: flex;
+    gap: 4px;
+  }
+
+  .tw-time-input {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 8px;
+    color: white;
+    padding: 6px 10px;
+    font-size: 13px;
+    font-family: monospace;
+    transition: all 0.2s ease;
+  }
+
+  .tw-time-input:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+
+  .tw-capture-btn {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 8px;
+    color: white;
+    padding: 6px 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 16px;
+  }
+
+  .tw-capture-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(1.1);
+  }
+
+  .tw-time-display {
+    font-size: 11px;
+    opacity: 0.8;
+    font-family: monospace;
+  }
+
+  .tw-time-separator {
+    font-size: 18px;
+    font-weight: bold;
+    opacity: 0.6;
+    margin-top: 20px;
+  }
+
+  .tw-textarea {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 8px;
+    color: white;
+    padding: 8px 10px;
+    font-size: 12px;
+    font-family: inherit;
+    resize: vertical;
+    transition: all 0.2s ease;
+  }
+
+  .tw-textarea:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+
+  .tw-textarea::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  .tw-char-count {
+    font-size: 10px;
+    opacity: 0.7;
+    text-align: right;
+  }
+
+  .tw-form-error {
+    font-size: 11px;
+    color: #ffcccc;
+    background: rgba(255, 0, 0, 0.2);
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 100, 100, 0.3);
+  }
+
+  .tw-form-success {
+    font-size: 13px;
+    color: #ccffcc;
+    background: rgba(0, 255, 0, 0.2);
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(100, 255, 100, 0.3);
+    text-align: center;
+    font-weight: 600;
+  }
+
+  .tw-submit-btn {
+    background: rgba(255, 255, 255, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 10px;
+    color: white;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     gap: 8px;
   }
 
-  .tw-form-hint {
-    font-size: 11px;
-    opacity: 0.85;
-    margin: 0;
+  .tw-submit-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.35);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   }
 
-  .tw-form-message {
-    font-size: 12px;
-    padding: 8px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    text-align: center;
+  .tw-submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .tw-spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: tw-spin 0.6s linear infinite;
+  }
+
+  @keyframes tw-spin {
+    to {
+      transform: rotate(360deg);
+    }
   }
 
   /* Fullscreen adjustments */
