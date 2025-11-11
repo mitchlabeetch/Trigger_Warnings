@@ -27,6 +27,8 @@ const logger = new Logger('VisualColorAnalyzer');
 interface ColorAnalysis {
   brightRed: number;          // 0-1 (percentage of frame)
   orangeYellow: number;       // Fire detection
+  yellowBrown: number;        // Vomit detection - EQUAL TREATMENT
+  greenishYellow: number;     // Vomit detection (bile colors)
   sterileWhite: number;       // Medical scenes
   medicalBlueGreen: number;   // Medical equipment/scrubs
   blueGreen: number;          // Underwater
@@ -34,10 +36,11 @@ interface ColorAnalysis {
   brightness: number;         // Average luminance
   saturation: number;         // Color intensity
   irregularity: number;       // Edge complexity (gore indicator)
+  chunkiness: number;         // Texture irregularity (vomit, gore)
 }
 
 interface VisualEvent {
-  type: 'blood' | 'gore' | 'fire' | 'medical' | 'underwater' | 'scene_change';
+  type: 'blood' | 'gore' | 'fire' | 'medical' | 'underwater' | 'scene_change' | 'vomit';
   timestamp: number;
   confidence: number;
   colorAnalysis: ColorAnalysis;
@@ -66,6 +69,7 @@ export class VisualColorAnalyzer {
     bloodDetections: 0,
     goreDetections: 0,
     fireDetections: 0,
+    vomitDetections: 0,  // EQUAL TREATMENT: Vomit tracking added
     medicalDetections: 0,
     underwaterDetections: 0,
     sceneChangeDetections: 0
@@ -160,6 +164,7 @@ export class VisualColorAnalyzer {
       this.detectBlood(currentTime, analysis);
       this.detectGore(currentTime, analysis);
       this.detectFire(currentTime, analysis);
+      this.detectVomit(currentTime, analysis);  // EQUAL TREATMENT: Vomit detection
       this.detectMedical(currentTime, analysis);
       this.detectUnderwater(currentTime, analysis);
 
@@ -185,6 +190,8 @@ export class VisualColorAnalyzer {
 
     let brightRedCount = 0;
     let orangeYellowCount = 0;
+    let yellowBrownCount = 0;        // VOMIT: yellowish-brown colors
+    let greenishYellowCount = 0;     // VOMIT: bile green-yellow
     let sterileWhiteCount = 0;
     let medicalBlueGreenCount = 0;
     let blueGreenCount = 0;
@@ -208,6 +215,17 @@ export class VisualColorAnalyzer {
       // 2. FIRE: Orange/Yellow (R > 200, G > 150, B < 100)
       if (r > 200 && g > 150 && b < 100) {
         orangeYellowCount++;
+      }
+
+      // 2b. VOMIT: Yellow-Brown (R > 150, G > 130, B < 100, yellowish-brown tones)
+      // EQUAL TREATMENT: Vomit detection equivalent to blood detection
+      if (r > 150 && g > 130 && r > b + 50 && g > b + 40 && b < 100) {
+        yellowBrownCount++;
+      }
+
+      // 2c. VOMIT: Greenish-Yellow/Bile (G > 150, R > 120, B < 120, greenish tint)
+      if (g > 150 && r > 120 && r < 200 && g > r && g > b + 30 && b < 120) {
+        greenishYellowCount++;
       }
 
       // 3. STERILE WHITE: High luminance, low saturation
@@ -239,19 +257,23 @@ export class VisualColorAnalyzer {
       totalSaturation += saturation;
     }
 
-    // Calculate irregularity (edge complexity)
+    // Calculate irregularity (edge complexity) and chunkiness
     const irregularity = this.calculateIrregularity(imageData);
+    const chunkiness = this.calculateChunkiness(imageData);
 
     return {
       brightRed: brightRedCount / totalPixels,
       orangeYellow: orangeYellowCount / totalPixels,
+      yellowBrown: yellowBrownCount / totalPixels,           // VOMIT
+      greenishYellow: greenishYellowCount / totalPixels,     // VOMIT
       sterileWhite: sterileWhiteCount / totalPixels,
       medicalBlueGreen: medicalBlueGreenCount / totalPixels,
       blueGreen: blueGreenCount / totalPixels,
       darkPixels: darkPixelCount / totalPixels,
       brightness: totalBrightness / totalPixels / 255,
       saturation: totalSaturation / totalPixels,
-      irregularity
+      irregularity,
+      chunkiness  // VOMIT: texture irregularity
     };
   }
 
@@ -295,6 +317,64 @@ export class VisualColorAnalyzer {
 
     const sampledPixels = ((width / sampleRate) * (height / sampleRate));
     return edgeCount / sampledPixels;
+  }
+
+  /**
+   * Calculate chunkiness (texture irregularity) - useful for vomit, gore detection
+   * Looks for inconsistent color patches (chunky appearance)
+   */
+  private calculateChunkiness(imageData: ImageData): number {
+    const data = imageData.data;
+    const width = imageData.width;
+    const height = imageData.height;
+
+    let inconsistentPatches = 0;
+    const sampleRate = 8;  // Sample every 8th pixel for performance
+    const patchSize = 4;   // Look at 4x4 pixel patches
+
+    // Check for color variance in small patches
+    for (let y = 0; y < height - patchSize; y += sampleRate) {
+      for (let x = 0; x < width - patchSize; x += sampleRate) {
+        const idx = (y * width + x) * 4;
+
+        // Get average color of patch
+        let avgR = 0, avgG = 0, avgB = 0;
+        let maxVariance = 0;
+
+        for (let py = 0; py < patchSize; py++) {
+          for (let px = 0; px < patchSize; px++) {
+            const pIdx = ((y + py) * width + (x + px)) * 4;
+            avgR += data[pIdx];
+            avgG += data[pIdx + 1];
+            avgB += data[pIdx + 2];
+          }
+        }
+
+        const patchPixels = patchSize * patchSize;
+        avgR /= patchPixels;
+        avgG /= patchPixels;
+        avgB /= patchPixels;
+
+        // Calculate variance within patch
+        for (let py = 0; py < patchSize; py++) {
+          for (let px = 0; px < patchSize; px++) {
+            const pIdx = ((y + py) * width + (x + px)) * 4;
+            const variance = Math.abs(data[pIdx] - avgR) +
+                           Math.abs(data[pIdx + 1] - avgG) +
+                           Math.abs(data[pIdx + 2] - avgB);
+            maxVariance = Math.max(maxVariance, variance);
+          }
+        }
+
+        // High variance = chunky, inconsistent texture
+        if (maxVariance > 100) {
+          inconsistentPatches++;
+        }
+      }
+    }
+
+    const sampledPatches = ((width / sampleRate) * (height / sampleRate));
+    return inconsistentPatches / sampledPatches;
   }
 
   /**
@@ -382,6 +462,95 @@ export class VisualColorAnalyzer {
 
         this.createWarning(eventKey, timestamp, 'violence', confidence,
           `Fire detected via color analysis (${(analysis.orangeYellow * 100).toFixed(1)}% orange/yellow)`,
+          analysis);
+      }
+    }
+  }
+
+  /**
+   * Detect vomit (yellowBrown OR greenishYellow > 12% + chunkiness)
+   *
+   * EQUAL TREATMENT: Vomit detection with same rigor as blood detection
+   * ADDRESSES CONCERN: "I'm not sensitive to blood, but to vomit!!"
+   *
+   * Vomit characteristics:
+   * - Yellowish-brown or greenish-yellow colors (12%+ of frame)
+   * - Chunky, irregular texture (high chunkiness score)
+   * - Often combined with liquid pooling
+   */
+  private detectVomit(timestamp: number, analysis: ColorAnalysis): void {
+    // Detect yellowish-brown vomit (most common)
+    if (analysis.yellowBrown > 0.12 && analysis.chunkiness > 0.15) {
+      const eventKey = `vomit-yellowbrown-${Math.floor(timestamp)}`;
+
+      if (!this.detectedEvents.has(eventKey)) {
+        this.stats.vomitDetections++;
+
+        const confidence = Math.min(
+          Math.round((analysis.yellowBrown * 400) + (analysis.chunkiness * 200)),
+          92
+        );
+
+        logger.warn(
+          `[TW VisualColorAnalyzer] 🤮 VOMIT DETECTED (yellow-brown) at ${timestamp.toFixed(1)}s | ` +
+          `Yellow-brown pixels: ${(analysis.yellowBrown * 100).toFixed(1)}% | ` +
+          `Chunkiness: ${(analysis.chunkiness * 100).toFixed(1)}% | ` +
+          `Confidence: ${confidence}%`
+        );
+
+        this.createWarning(eventKey, timestamp, 'vomit', confidence,
+          `Vomit detected via color analysis (${(analysis.yellowBrown * 100).toFixed(1)}% yellow-brown, chunky texture)`,
+          analysis);
+      }
+    }
+
+    // Detect greenish-yellow vomit (bile, less common but equally important)
+    if (analysis.greenishYellow > 0.12 && analysis.chunkiness > 0.15) {
+      const eventKey = `vomit-green-${Math.floor(timestamp)}`;
+
+      if (!this.detectedEvents.has(eventKey)) {
+        this.stats.vomitDetections++;
+
+        const confidence = Math.min(
+          Math.round((analysis.greenishYellow * 400) + (analysis.chunkiness * 200)),
+          90
+        );
+
+        logger.warn(
+          `[TW VisualColorAnalyzer] 🤮 VOMIT DETECTED (greenish-bile) at ${timestamp.toFixed(1)}s | ` +
+          `Greenish-yellow pixels: ${(analysis.greenishYellow * 100).toFixed(1)}% | ` +
+          `Chunkiness: ${(analysis.chunkiness * 100).toFixed(1)}% | ` +
+          `Confidence: ${confidence}%`
+        );
+
+        this.createWarning(eventKey, timestamp, 'vomit', confidence,
+          `Vomit detected via color analysis (${(analysis.greenishYellow * 100).toFixed(1)}% greenish-bile, chunky texture)`,
+          analysis);
+      }
+    }
+
+    // Detect mixed vomit (both colors present - highest confidence)
+    if (analysis.yellowBrown > 0.08 && analysis.greenishYellow > 0.08 && analysis.chunkiness > 0.12) {
+      const eventKey = `vomit-mixed-${Math.floor(timestamp)}`;
+
+      if (!this.detectedEvents.has(eventKey)) {
+        this.stats.vomitDetections++;
+
+        const confidence = Math.min(
+          Math.round((analysis.yellowBrown + analysis.greenishYellow) * 400 + (analysis.chunkiness * 200)),
+          95
+        );
+
+        logger.warn(
+          `[TW VisualColorAnalyzer] 🤮 VOMIT DETECTED (mixed colors) at ${timestamp.toFixed(1)}s | ` +
+          `Yellow-brown: ${(analysis.yellowBrown * 100).toFixed(1)}%, ` +
+          `Greenish: ${(analysis.greenishYellow * 100).toFixed(1)}%, ` +
+          `Chunkiness: ${(analysis.chunkiness * 100).toFixed(1)}% | ` +
+          `Confidence: ${confidence}%`
+        );
+
+        this.createWarning(eventKey, timestamp, 'vomit', confidence,
+          'Vomit detected via color analysis (mixed yellow-brown and greenish colors, chunky texture)',
           analysis);
       }
     }

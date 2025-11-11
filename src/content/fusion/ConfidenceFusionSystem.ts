@@ -95,9 +95,20 @@ export class ConfidenceFusionSystem {
     const related = this.findRelatedDetections(newDetection);
 
     if (related.length === 0) {
-      // No related detections, check if this single detection passes threshold
-      if (newDetection.confidence >= this.OUTPUT_THRESHOLD) {
-        this.outputFusedWarning(newDetection.category, newDetection.timestamp, [newDetection]);
+      // No related detections - apply multi-modal validation
+      // For VISUAL triggers, require visual confirmation or reduce confidence significantly
+      const adjustedConfidence = this.applyMultiModalValidation(newDetection);
+
+      if (adjustedConfidence >= this.OUTPUT_THRESHOLD) {
+        this.outputFusedWarning(newDetection.category, newDetection.timestamp, [newDetection], adjustedConfidence);
+      } else {
+        this.stats.falsePositivesFiltered++;
+        logger.debug(
+          `[TW ConfidenceFusion] ❌ SINGLE DETECTION REJECTED | ` +
+          `Category: ${newDetection.category} | ` +
+          `Source: ${newDetection.source} | ` +
+          `Original: ${newDetection.confidence}% → Adjusted: ${adjustedConfidence}% < threshold`
+        );
       }
       return;
     }
@@ -134,6 +145,71 @@ export class ConfidenceFusionSystem {
         `Fused confidence ${fusedConfidence}% < threshold ${this.OUTPUT_THRESHOLD}%`
       );
     }
+  }
+
+  /**
+   * Apply multi-modal validation for single detections
+   *
+   * ADDRESSES CONCERN: "How does it make sure it's SHOWN and not just TALKING about it??"
+   *
+   * Visual triggers (blood, gore, vomit, etc.) should require BOTH:
+   * - Subtitle/audio detection AND visual confirmation
+   * OR have significantly reduced confidence if only one modality detects
+   */
+  private applyMultiModalValidation(detection: Detection): number {
+    // Define VISUAL trigger categories that require seeing the content
+    const visualTriggers: TriggerCategory[] = [
+      'blood',
+      'gore',
+      'vomit',
+      'dead_body_body_horror',
+      'medical_procedures',
+      'self_harm',
+      'violence'  // Physical violence is visual
+    ];
+
+    // If this is a visual trigger category
+    if (visualTriggers.includes(detection.category)) {
+      // If detection is from subtitle/audio only (not from visual analyzer)
+      if (detection.source === 'subtitle' ||
+          detection.source === 'audio-waveform' ||
+          detection.source === 'audio-frequency' ||
+          detection.source === 'temporal-pattern') {
+
+        // Check if we have ANY visual confirmation in recent detections
+        const hasVisualConfirmation = this.recentDetections.some(
+          d => d.category === detection.category &&
+               d.source === 'visual' &&
+               Math.abs(d.timestamp - detection.timestamp) <= 3  // Within 3 seconds
+        );
+
+        if (hasVisualConfirmation) {
+          // Visual confirmation exists - keep confidence as is
+          logger.debug(
+            `[TW ConfidenceFusion] ✅ MULTI-MODAL VALIDATED | ` +
+            `${detection.category} from ${detection.source} has visual confirmation`
+          );
+          return detection.confidence;
+        } else {
+          // NO visual confirmation - significantly reduce confidence
+          // For discussion vs shown: "there was blood" but no red pixels on screen
+          const reductionFactor = 0.4;  // Reduce to 40% of original
+          const adjustedConfidence = Math.round(detection.confidence * reductionFactor);
+
+          logger.info(
+            `[TW ConfidenceFusion] ⚠️  VISUAL TRIGGER WITHOUT VISUAL CONFIRMATION | ` +
+            `${detection.category} from ${detection.source} | ` +
+            `${detection.confidence}% → ${adjustedConfidence}% (60% reduction) | ` +
+            `Likely DISCUSSED not SHOWN`
+          );
+
+          return adjustedConfidence;
+        }
+      }
+    }
+
+    // Non-visual triggers or visual-source detections pass through unchanged
+    return detection.confidence;
   }
 
   /**

@@ -28,7 +28,7 @@ export declare function createTranslationStore(key: string, substitutions?: stri
 /**
  * Svelte store containing the current locale
  */
-export declare const locale: import("svelte/store").Writable<string>;
+export declare const locale: any;
 /**
  * Helper for translations that need dynamic substitutions
  * Returns a function that takes substitutions and returns the translated string
@@ -56,7 +56,7 @@ declare const _default: {
     tFunc: typeof tFunc;
     tBatch: typeof tBatch;
     getLocale: typeof getLocale;
-    locale: import("svelte/store").Writable<string>;
+    locale: any;
     hasTranslation: typeof hasTranslation;
     createTranslationStore: typeof createTranslationStore;
 };

@@ -86,7 +86,7 @@ export class SystemHealthMonitor {
   private systems: Map<string, MonitoredSystem> = new Map();
   private monitoringInterval: number | null = null;
   private startTime: number = Date.now();
-  private onHealthChange: ((report: SystemHealthReport) => void) | null = null;
+  private onHealthChangeCallback: ((report: SystemHealthReport) => void) | null = null;
 
   // Statistics
   private stats = {
@@ -496,16 +496,16 @@ export class SystemHealthMonitor {
    * Register callback for health changes
    */
   onHealthChange(callback: (report: SystemHealthReport) => void): void {
-    this.onHealthChange = callback;
+    this.onHealthChangeCallback = callback;
   }
 
   /**
    * Notify listeners of health change
    */
   private notifyHealthChange(): void {
-    if (this.onHealthChange) {
+    if (this.onHealthChangeCallback) {
       const report = this.getHealthReport();
-      this.onHealthChange(report);
+      this.onHealthChangeCallback(report);
     }
   }
 
@@ -576,7 +576,7 @@ export class SystemHealthMonitor {
   dispose(): void {
     this.stopMonitoring();
     this.systems.clear();
-    this.onHealthChange = null;
+    this.onHealthChangeCallback = null;
 
     logger.info('[TW SystemHealthMonitor] 🛑 Disposed');
   }
