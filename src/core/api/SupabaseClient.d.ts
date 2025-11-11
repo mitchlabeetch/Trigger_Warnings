@@ -7,6 +7,8 @@ export declare class SupabaseClient {
     private static instance;
     private static userId;
     private static initializationPromise;
+    private static supabaseAvailable;
+    private static authenticationInProgress;
     /**
      * Initialize the Supabase client
      */
@@ -21,8 +23,13 @@ export declare class SupabaseClient {
     private static signInAnonymously;
     /**
      * Get the current user ID
+     * Returns null if user is not authenticated yet
      */
-    static getUserId(): string;
+    static getUserId(): string | null;
+    /**
+     * Check if user is authenticated
+     */
+    static isAuthenticated(): boolean;
     /**
      * Check if user is online
      */

@@ -451,6 +451,11 @@ CREATE POLICY "Moderators can read all feedback"
 CREATE OR REPLACE FUNCTION increment_user_submissions()
 RETURNS TRIGGER AS $$
 BEGIN
+  -- Skip if submitted_by is NULL (e.g., test data or system-generated)
+  IF NEW.submitted_by IS NULL THEN
+    RETURN NEW;
+  END IF;
+
   -- Insert user profile if it doesn't exist
   INSERT INTO user_profiles (id, display_name)
   VALUES (NEW.submitted_by, 'User ' || substring(NEW.submitted_by::text, 1, 8))

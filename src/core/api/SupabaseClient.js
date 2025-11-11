@@ -11,6 +11,8 @@ export class SupabaseClient {
     static instance = null;
     static userId = null;
     static initializationPromise = null;
+    static supabaseAvailable = false;
+    static authenticationInProgress = false;
     /**
      * Initialize the Supabase client
      */
@@ -59,6 +61,7 @@ export class SupabaseClient {
     static async signInAnonymously() {
         if (!this.instance)
             return;
+        this.authenticationInProgress = true;
         try {
             // Add timeout to prevent hanging
             const signInPromise = this.instance.auth.signInAnonymously();
@@ -66,23 +69,36 @@ export class SupabaseClient {
             const { data, error } = await Promise.race([signInPromise, timeoutPromise]);
             if (error) {
                 console.error('[TW Supabase] Anonymous sign-in error:', error);
+                this.supabaseAvailable = false;
+                this.authenticationInProgress = false;
                 return;
             }
             if (data?.user) {
                 this.userId = data.user.id;
+                this.supabaseAvailable = true;
+                this.authenticationInProgress = false;
                 console.log('[TW Supabase] Signed in anonymously:', this.userId);
             }
         }
         catch (error) {
             console.error('[TW Supabase] Error signing in:', error);
-            // Extension continues to work without Supabase connection
+            this.supabaseAvailable = false;
+            this.authenticationInProgress = false;
+            // Extension continues to work without Supabase connection (reading warnings still works)
         }
     }
     /**
      * Get the current user ID
+     * Returns null if user is not authenticated yet
      */
     static getUserId() {
-        return this.userId || 'anonymous';
+        return this.userId || null;
+    }
+    /**
+     * Check if user is authenticated
+     */
+    static isAuthenticated() {
+        return this.userId !== null && this.userId !== undefined;
     }
     /**
      * Check if user is online
@@ -218,6 +234,18 @@ export class SupabaseClient {
             await this.withRetry(async () => {
                 const client = await this.getInstance();
                 const userId = this.getUserId();
+                // Check if user is authenticated
+                if (!userId) {
+                    if (this.authenticationInProgress) {
+                        throw new Error('Authentication in progress. Please wait a moment and try again.');
+                    }
+                    else if (!this.supabaseAvailable) {
+                        throw new Error('Unable to connect to database. Please check your internet connection.');
+                    }
+                    else {
+                        throw new Error('User not authenticated. Please reload the extension.');
+                    }
+                }
                 const { error } = await client.from('triggers').insert({
                     video_id: submission.videoId,
                     platform: submission.platform,
@@ -254,6 +282,18 @@ export class SupabaseClient {
             await this.withRetry(async () => {
                 const client = await this.getInstance();
                 const userId = this.getUserId();
+                // Check if user is authenticated
+                if (!userId) {
+                    if (this.authenticationInProgress) {
+                        throw new Error('Authentication in progress. Please wait a moment and try again.');
+                    }
+                    else if (!this.supabaseAvailable) {
+                        throw new Error('Unable to connect to database. Please check your internet connection.');
+                    }
+                    else {
+                        throw new Error('User not authenticated. Please reload the extension.');
+                    }
+                }
                 // Insert or update vote
                 const { error: upsertError } = await client
                     .from('trigger_votes')
@@ -283,6 +323,10 @@ export class SupabaseClient {
         try {
             const client = await this.getInstance();
             const userId = this.getUserId();
+            // If not authenticated, user hasn't voted
+            if (!userId) {
+                return null;
+            }
             const { data, error } = await client
                 .from('trigger_votes')
                 .select('vote_type')
@@ -304,6 +348,18 @@ export class SupabaseClient {
         try {
             const client = await this.getInstance();
             const userId = this.getUserId();
+            // Check if user is authenticated
+            if (!userId) {
+                if (this.authenticationInProgress) {
+                    throw new Error('Authentication in progress. Please wait a moment and try again.');
+                }
+                else if (!this.supabaseAvailable) {
+                    throw new Error('Unable to connect to database. Please check your internet connection.');
+                }
+                else {
+                    throw new Error('User not authenticated. Please reload the extension.');
+                }
+            }
             const { error } = await client.from('feedback').insert({
                 name: name || null,
                 email: email || null,

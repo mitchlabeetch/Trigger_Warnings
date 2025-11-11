@@ -2,6 +2,10 @@
  * Content script - main entry point
  * Runs on streaming platform pages to detect video and show warnings
  */
+// IMMEDIATE console log to verify script loads
+console.log('🚀 [TW] Content script file loaded at:', new Date().toISOString());
+console.log('🌐 [TW] Current URL:', window.location.href);
+console.log('📍 [TW] Document ready state:', document.readyState);
 import browser from 'webextension-polyfill';
 import { ProviderFactory } from './providers/ProviderFactory';
 import { WarningManager } from '@core/warning-system/WarningManager';
@@ -17,21 +21,30 @@ class TriggerWarningsContent {
     initialized = false;
     activeWarningsMap = new Map();
     async initialize() {
-        if (this.initialized)
+        if (this.initialized) {
+            console.log('⚠️ [TW] Already initialized, skipping');
             return;
+        }
+        console.log('🎬 [TW] Starting initialization...');
         logger.info('Initializing content script...');
         try {
             // Check if this site is supported
+            console.log('🔍 [TW] Checking if site is supported...');
             if (!ProviderFactory.isSupported()) {
+                console.warn('❌ [TW] Site not supported:', window.location.hostname);
                 logger.warn('Site not supported');
                 return;
             }
+            console.log('✅ [TW] Site is supported');
             // Create provider for current site
+            console.log('🏭 [TW] Creating provider...');
             this.provider = await ProviderFactory.createProvider();
             if (!this.provider) {
+                console.error('❌ [TW] Failed to create provider');
                 logger.error('Failed to create provider');
                 return;
             }
+            console.log(`✅ [TW] Provider created: ${this.provider.name}`);
             logger.info(`Provider initialized: ${this.provider.name}`);
             // Initialize warning manager
             this.warningManager = new WarningManager(this.provider);
@@ -82,9 +95,16 @@ class TriggerWarningsContent {
                 this.handleQuickAddTrigger();
             });
             this.initialized = true;
+            console.log('🎉 [TW] Content script initialized successfully!');
             logger.info('Content script initialized successfully');
         }
         catch (error) {
+            console.error('💥 [TW] INITIALIZATION FAILED:', error);
+            console.error('💥 [TW] Error details:', {
+                message: error instanceof Error ? error.message : String(error),
+                stack: error instanceof Error ? error.stack : undefined,
+                type: typeof error
+            });
             logger.error('Initialization error:', error);
         }
     }
@@ -178,15 +198,24 @@ class TriggerWarningsContent {
     }
 }
 // Create and initialize
+console.log('📦 [TW] Creating TriggerWarningsContent instance...');
 const app = new TriggerWarningsContent();
 // Initialize when DOM is ready
+console.log('⏰ [TW] Setting up initialization trigger...');
 if (document.readyState === 'loading') {
+    console.log('⏳ [TW] DOM still loading, waiting for DOMContentLoaded...');
     document.addEventListener('DOMContentLoaded', () => {
-        app.initialize();
+        console.log('✅ [TW] DOMContentLoaded fired, initializing...');
+        app.initialize().catch(err => {
+            console.error('💥 [TW] Fatal error during initialization:', err);
+        });
     });
 }
 else {
-    app.initialize();
+    console.log('✅ [TW] DOM already ready, initializing immediately...');
+    app.initialize().catch(err => {
+        console.error('💥 [TW] Fatal error during initialization:', err);
+    });
 }
 // Listen for messages from background script
 browser.runtime.onMessage.addListener((message) => {

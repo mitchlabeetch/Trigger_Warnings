@@ -36,7 +36,7 @@
         "*://*.netflix.com/watch/*"
       ],
       "js": ["src/content/index.ts"],
-      "run_at": "document_idle"
+      "run_at": "document_end"
     },
     {
       "matches": [
@@ -44,42 +44,42 @@
         "*://*.amazon.com/gp/video/*"
       ],
       "js": ["src/content/index.ts"],
-      "run_at": "document_idle"
+      "run_at": "document_end"
     },
     {
       "matches": [
         "*://*.hulu.com/watch/*"
       ],
       "js": ["src/content/index.ts"],
-      "run_at": "document_idle"
+      "run_at": "document_end"
     },
     {
       "matches": [
         "*://*.disneyplus.com/video/*"
       ],
       "js": ["src/content/index.ts"],
-      "run_at": "document_idle"
+      "run_at": "document_end"
     },
     {
       "matches": [
         "*://*.max.com/video/watch/*"
       ],
       "js": ["src/content/index.ts"],
-      "run_at": "document_idle"
+      "run_at": "document_end"
     },
     {
       "matches": [
         "*://*.peacocktv.com/watch/*"
       ],
       "js": ["src/content/index.ts"],
-      "run_at": "document_idle"
+      "run_at": "document_end"
     },
     {
       "matches": [
         "*://*.youtube.com/watch*"
       ],
       "js": ["src/content/index.ts"],
-      "run_at": "document_idle"
+      "run_at": "document_end"
     }
   ],
   "action": {
