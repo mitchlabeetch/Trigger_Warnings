@@ -78,5 +78,12 @@ export function createContainer(id: string, className?: string): HTMLDivElement 
  */
 export function injectContainer(container: HTMLElement, parent?: HTMLElement): void {
   const targetParent = parent || document.body;
+
+  // Ensure parent has position: relative for absolute positioned children
+  const computedStyle = window.getComputedStyle(targetParent);
+  if (computedStyle.position === 'static') {
+    targetParent.style.position = 'relative';
+  }
+
   targetParent.appendChild(container);
 }

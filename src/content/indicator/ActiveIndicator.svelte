@@ -37,6 +37,7 @@
   let isVideoPaused = false;
   let isVideoStarting = true;
   let videoStartTimer: number | null = null;
+  let isVideoPlaying = false; // Track playing state
 
   // Fade in after a short delay
   onMount(() => {
@@ -52,6 +53,14 @@
     updateTimestamp();
     intervalId = window.setInterval(updateTimestamp, 1000);
 
+    // Update video playing state every 100ms for responsiveness
+    const playingStateInterval = window.setInterval(() => {
+      const video = document.querySelector('video');
+      if (video) {
+        isVideoPlaying = !video.paused;
+      }
+    }, 100);
+
     // Track video paused state
     if (videoElement) {
       videoElement.addEventListener('pause', handleVideoPause);
@@ -64,6 +73,10 @@
     if (appearingMode === 'onMove') {
       document.addEventListener('mousemove', handleMouseMove);
     }
+
+    return () => {
+      clearInterval(playingStateInterval);
+    };
   });
 
   onDestroy(() => {
@@ -280,8 +293,6 @@
     return '0:00';
   }
 
-  $: isVideoPlaying = videoElement && !videoElement.paused;
-
   function handleMouseEnter() {
     isExpanded = true;
     if (fadeOutTimer) clearTimeout(fadeOutTimer);
@@ -318,7 +329,6 @@
     class:showing-form={showAddTriggerForm}
     role="complementary"
     aria-label="Trigger Warnings Extension Overlay"
-    style="--button-color: {buttonColor}; --button-opacity: {buttonOpacity};"
     on:mouseenter={handleMouseEnter}
     on:mouseleave={handleMouseLeave}
     on:focusin={handleMouseEnter}
@@ -579,11 +589,11 @@
 
 <style>
   .tw-overlay {
-    position: fixed;
+    position: absolute;
     top: 16px;
     left: 50%;
     transform: translateX(-50%);
-    z-index: 999998;
+    z-index: 2147483647; /* Maximum z-index for absolute priority */
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     animation: tw-overlay-fade-in 0.5s ease-out;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -606,7 +616,7 @@
     display: flex;
     align-items: center;
     gap: 0;
-    background: rgba(139, 92, 246, var(--button-opacity, 0.75)); /* Use opacity variable */
+    background: rgba(139, 92, 246, 0.75); /* Direct opacity value */
     border-radius: 24px;
     box-shadow: 0 8px 32px rgba(139, 92, 246, 0.4);
     backdrop-filter: blur(16px);
@@ -617,17 +627,17 @@
   }
 
   .tw-overlay:hover .tw-overlay-content {
-    background: rgba(168, 85, 247, calc(var(--button-opacity, 0.75) + 0.15));
+    background: rgba(168, 85, 247, 0.85);
     box-shadow: 0 12px 40px rgba(168, 85, 247, 0.5);
   }
 
   .tw-overlay.has-warnings .tw-overlay-content {
-    background: rgba(239, 68, 68, var(--button-opacity, 0.75));
+    background: rgba(239, 68, 68, 0.75);
     box-shadow: 0 8px 32px rgba(239, 68, 68, 0.4);
   }
 
   .tw-overlay.has-warnings:hover .tw-overlay-content {
-    background: rgba(220, 38, 38, calc(var(--button-opacity, 0.75) + 0.15));
+    background: rgba(220, 38, 38, 0.85);
     box-shadow: 0 12px 40px rgba(220, 38, 38, 0.5);
   }
 

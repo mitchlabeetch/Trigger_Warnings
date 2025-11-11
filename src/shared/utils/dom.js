@@ -63,6 +63,11 @@ export function createContainer(id, className) {
  */
 export function injectContainer(container, parent) {
     const targetParent = parent || document.body;
+    // Ensure parent has position: relative for absolute positioned children
+    const computedStyle = window.getComputedStyle(targetParent);
+    if (computedStyle.position === 'static') {
+        targetParent.style.position = 'relative';
+    }
     targetParent.appendChild(container);
 }
 //# sourceMappingURL=dom.js.map
