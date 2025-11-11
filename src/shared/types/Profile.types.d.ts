@@ -2,7 +2,7 @@
  * User profile types for multi-profile support
  */
 import type { TriggerCategory, WarningAction } from './Warning.types';
-export type BannerPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+export type BannerPosition = 'top-left' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-center' | 'bottom-right';
 export type Theme = 'light' | 'dark' | 'system';
 export type ProtectionType = 'none' | 'blackout' | 'mute' | 'both';
 export interface DisplaySettings {

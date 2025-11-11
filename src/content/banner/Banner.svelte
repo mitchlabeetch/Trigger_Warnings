@@ -98,15 +98,19 @@
   function getPositionStyles(pos: BannerPosition): string {
     switch (pos) {
       case 'top-left':
-        return 'top: 20px; left: 20px; right: auto;';
+        return 'top: 16px; left: 20px; right: auto;';
       case 'top-right':
-        return 'top: 20px; right: 20px; left: auto;';
+        return 'top: 16px; right: 20px; left: auto;';
+      case 'top-center':
+        return 'top: 16px; left: 50%; transform: translateX(-50%);';
       case 'bottom-left':
         return 'bottom: 20px; left: 20px; right: auto; top: auto;';
       case 'bottom-right':
         return 'bottom: 20px; right: 20px; left: auto; top: auto;';
+      case 'bottom-center':
+        return 'bottom: 20px; left: 50%; transform: translateX(-50%); top: auto;';
       default:
-        return 'top: 20px; right: 20px; left: auto;';
+        return 'top: 16px; right: 20px; left: auto;';
     }
   }
 
@@ -427,7 +431,14 @@
   :global(body:fullscreen) .tw-banner,
   :global(body:-webkit-full-screen) .tw-banner,
   :global(body:-moz-full-screen) .tw-banner {
-    top: 60px;
+    top: 16px !important;
+  }
+
+  /* Center-positioned banners maintain centering */
+  :global(body:fullscreen) .tw-banner[style*="translateX"],
+  :global(body:-webkit-full-screen) .tw-banner[style*="translateX"],
+  :global(body:-moz-full-screen) .tw-banner[style*="translateX"] {
+    left: 50% !important;
   }
 
   /* Thank you message */

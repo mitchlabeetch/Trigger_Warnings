@@ -25,6 +25,7 @@ export class SubtitleAnalyzer {
     constructor() {
         this.buildKeywordDictionary();
         this.translator = new SubtitleTranslator();
+        logger.info('[TW SubtitleAnalyzer] 🎬 SubtitleAnalyzer initialized with', this.keywordDictionary.length, 'keyword patterns');
     }
     /**
      * Build comprehensive trigger keyword dictionary

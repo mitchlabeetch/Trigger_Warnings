@@ -118,6 +118,19 @@
     endTime = Math.floor(currentVideoTime);
   }
 
+  function resetStartTime() {
+    startTime = Math.max(0, Math.floor(currentTime - 5));
+  }
+
+  function resetEndTime() {
+    endTime = Math.floor(currentTime + 5);
+  }
+
+  function resetBothTimes() {
+    resetStartTime();
+    resetEndTime();
+  }
+
   // Multi-step navigation
   function goToNextStep() {
     const validationError = validateCurrentStep();
@@ -401,16 +414,28 @@
               </div>
 
               <div class="capture-buttons">
-                <button type="button" class="btn-capture" on:click={captureStartTime}>
-                  📍 Set Start Time
+                <button type="button" class="btn-capture" on:click={captureStartTime} title="Capture current video time as start">
+                  📍 Set Start
                 </button>
-                <button type="button" class="btn-capture" on:click={captureEndTime}>
-                  📍 Set End Time
+                <button type="button" class="btn-capture" on:click={captureEndTime} title="Capture current video time as end">
+                  📍 Set End
+                </button>
+              </div>
+
+              <div class="reset-buttons">
+                <button type="button" class="btn-reset" on:click={resetStartTime} title="Reset start time to default">
+                  ↺ Reset Start
+                </button>
+                <button type="button" class="btn-reset" on:click={resetEndTime} title="Reset end time to default">
+                  ↺ Reset End
+                </button>
+                <button type="button" class="btn-reset-all" on:click={resetBothTimes} title="Reset both times to default">
+                  ⟲ Reset Both
                 </button>
               </div>
 
               <div class="player-hint">
-                Use controls to find exact start/end times for the trigger
+                Use controls to find exact start/end times, or reset to defaults
               </div>
             </div>
 
@@ -575,16 +600,19 @@
 
 <style>
   .submit-warning {
-    padding: 20px;
-    max-height: 600px;
-    overflow-y: auto;
+    padding: 16px;
+    max-height: 580px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
 
   .submit-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 12px;
+    flex-shrink: 0;
   }
 
   .submit-header h2 {
@@ -730,12 +758,23 @@
   }
 
   .error-message {
-    padding: 12px;
-    background: #fee;
-    border: 2px solid #fcc;
-    border-radius: 6px;
+    padding: 10px 12px;
+    background: linear-gradient(135deg, #fee 0%, #fdd 100%);
+    border: 2px solid #f8b4b4;
+    border-radius: 8px;
     color: #c00;
-    font-size: 14px;
+    font-size: 13px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 8px 0;
+  }
+
+  .error-message::before {
+    content: '⚠️';
+    font-size: 16px;
+    flex-shrink: 0;
   }
 
   .success-message {
@@ -799,20 +838,20 @@
   .player-controls {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     border: 2px solid #dee2e6;
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 20px;
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 14px;
   }
 
   .player-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
   }
 
   .player-title {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     color: #495057;
   }
@@ -820,10 +859,10 @@
   .btn-refresh {
     background: white;
     border: 1px solid #dee2e6;
-    border-radius: 6px;
-    padding: 4px 8px;
+    border-radius: 5px;
+    padding: 3px 7px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 13px;
     transition: all 0.2s;
   }
 
@@ -840,48 +879,48 @@
 
   .player-timestamp {
     background: white;
-    padding: 10px;
-    border-radius: 8px;
+    padding: 8px;
+    border-radius: 6px;
     text-align: center;
-    font-size: 14px;
+    font-size: 13px;
     color: #495057;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
     border: 1px solid #dee2e6;
   }
 
   .player-timestamp strong {
     color: #667eea;
-    font-size: 16px;
+    font-size: 15px;
   }
 
   .player-buttons {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    gap: 8px;
-    margin-bottom: 12px;
+    gap: 6px;
+    margin-bottom: 8px;
   }
 
   .btn-player {
-    padding: 8px 12px;
+    padding: 7px 10px;
     background: white;
-    border: 2px solid #667eea;
-    border-radius: 8px;
+    border: 1.5px solid #667eea;
+    border-radius: 6px;
     color: #667eea;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 4px;
+    gap: 3px;
   }
 
   .btn-player:hover:not(:disabled) {
     background: #667eea;
     color: white;
     transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 2px 6px rgba(102, 126, 234, 0.3);
   }
 
   .btn-player:disabled {
@@ -892,17 +931,17 @@
   .capture-buttons {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin-bottom: 12px;
+    gap: 6px;
+    margin-bottom: 8px;
   }
 
   .btn-capture {
-    padding: 8px 12px;
+    padding: 7px 10px;
     background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
     border: none;
-    border-radius: 8px;
+    border-radius: 6px;
     color: white;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
@@ -913,8 +952,49 @@
     box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
   }
 
-  .player-hint {
+  /* Reset buttons */
+  .reset-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .btn-reset,
+  .btn-reset-all {
+    padding: 6px 8px;
+    background: white;
+    border: 1.5px solid #dc3545;
+    border-radius: 6px;
+    color: #dc3545;
     font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-reset:hover,
+  .btn-reset-all:hover {
+    background: #dc3545;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(220, 53, 69, 0.3);
+  }
+
+  .btn-reset-all {
+    grid-column: 1 / -1;
+    border-color: #fd7e14;
+    color: #fd7e14;
+  }
+
+  .btn-reset-all:hover {
+    background: #fd7e14;
+    color: white;
+    box-shadow: 0 2px 6px rgba(253, 126, 20, 0.3);
+  }
+
+  .player-hint {
+    font-size: 10px;
     color: #6c757d;
     text-align: center;
     font-style: italic;
@@ -924,10 +1004,11 @@
   .wizard-progress {
     display: flex;
     justify-content: space-between;
-    padding: 16px 20px;
+    padding: 12px 16px;
     background: #f8f9fa;
     border-bottom: 2px solid #dee2e6;
-    gap: 8px;
+    gap: 6px;
+    flex-shrink: 0;
   }
 
   .progress-step {
@@ -990,8 +1071,10 @@
 
   /* Wizard Content */
   .wizard-content {
-    padding: 20px;
-    min-height: 300px;
+    padding: 16px;
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
   }
 
   .wizard-step {
@@ -1010,60 +1093,60 @@
   }
 
   .step-title {
-    font-size: 18px;
+    font-size: 17px;
     font-weight: 600;
     color: #212529;
-    margin: 0 0 8px 0;
+    margin: 0 0 6px 0;
   }
 
   .step-description {
-    font-size: 13px;
+    font-size: 12px;
     color: #6c757d;
-    margin: 0 0 20px 0;
+    margin: 0 0 14px 0;
   }
 
   /* Category Grid (Step 1) */
   .category-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-    gap: 10px;
-    max-height: 320px;
+    grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
+    gap: 8px;
+    max-height: 300px;
     overflow-y: auto;
-    padding: 4px;
+    padding: 2px;
   }
 
   .category-option {
     background: white;
     border: 2px solid #dee2e6;
     border-radius: 8px;
-    padding: 12px 8px;
+    padding: 10px 6px;
     cursor: pointer;
     transition: all 0.2s;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     text-align: center;
   }
 
   .category-option:hover {
     border-color: #667eea;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+    box-shadow: 0 3px 10px rgba(102, 126, 234, 0.15);
   }
 
   .category-option.selected {
     border-color: #667eea;
     background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+    box-shadow: 0 3px 10px rgba(102, 126, 234, 0.2);
   }
 
   .category-icon-large {
-    font-size: 28px;
+    font-size: 26px;
   }
 
   .category-name {
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 600;
     color: #495057;
     line-height: 1.2;
@@ -1078,17 +1161,17 @@
     background: #f8f9fa;
     border: 2px solid #dee2e6;
     border-radius: 10px;
-    padding: 16px;
+    padding: 14px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
   }
 
   .review-item {
     display: flex;
     flex-direction: column;
     gap: 4px;
-    padding-bottom: 12px;
+    padding-bottom: 10px;
     border-bottom: 1px solid #dee2e6;
   }
 
@@ -1098,7 +1181,7 @@
   }
 
   .review-label {
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
     color: #6c757d;
     text-transform: uppercase;
@@ -1106,7 +1189,7 @@
   }
 
   .review-value {
-    font-size: 14px;
+    font-size: 13px;
     color: #212529;
     font-weight: 500;
   }
@@ -1114,25 +1197,26 @@
   /* Wizard Navigation */
   .wizard-nav {
     display: flex;
-    gap: 10px;
-    padding: 16px 20px;
+    gap: 8px;
+    padding: 12px 16px;
     background: #f8f9fa;
     border-top: 2px solid #dee2e6;
+    flex-shrink: 0;
   }
 
   .btn-nav {
     flex: 1;
-    padding: 10px 16px;
+    padding: 9px 14px;
     border: none;
     border-radius: 6px;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 5px;
   }
 
   .btn-back,
