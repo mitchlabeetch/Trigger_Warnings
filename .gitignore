@@ -11,3 +11,5 @@ database/imdb-import-*.json
 # Downloaded datasets
 scripts/*.csv
 scripts/imdb-*.csv
+# Backups
+backup-*/
