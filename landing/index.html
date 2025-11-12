@@ -868,6 +868,201 @@
     </section>
 
     <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- PROFILE SWITCHING - Interactive Demo -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <section class="profiles-section section section-alt">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">One Extension, Unlimited Profiles</h2>
+                <p class="section-subtitle">
+                    Perfect for families or different moods. Switch profiles instantly. Each person gets their own sensitivity settings—saved automatically.
+                </p>
+            </div>
+
+            <div class="profiles-demo">
+                <div class="profiles-display">
+                    <div class="profile-selector">
+                        <button class="profile-btn active" onclick="switchProfile('alex')" data-profile="alex">
+                            <div class="profile-avatar" style="background: linear-gradient(135deg, #8b5cf6, #6366f1);">A</div>
+                            <div class="profile-info">
+                                <div class="profile-name">Alex</div>
+                                <div class="profile-desc">High sensitivity</div>
+                            </div>
+                        </button>
+                        <button class="profile-btn" onclick="switchProfile('sam')" data-profile="sam">
+                            <div class="profile-avatar" style="background: linear-gradient(135deg, #ec4899, #f59e0b);">S</div>
+                            <div class="profile-info">
+                                <div class="profile-name">Sam</div>
+                                <div class="profile-desc">Moderate</div>
+                            </div>
+                        </button>
+                        <button class="profile-btn" onclick="switchProfile('jordan')" data-profile="jordan">
+                            <div class="profile-avatar" style="background: linear-gradient(135deg, #10b981, #3b82f6);">J</div>
+                            <div class="profile-info">
+                                <div class="profile-name">Jordan</div>
+                                <div class="profile-desc">Minimal warnings</div>
+                            </div>
+                        </button>
+                        <button class="profile-btn add-profile" onclick="alert('In the extension, this creates a new profile!')">
+                            <div class="profile-avatar" style="background: var(--bg-light); color: var(--primary);">+</div>
+                            <div class="profile-info">
+                                <div class="profile-name">Add Profile</div>
+                            </div>
+                        </button>
+                    </div>
+
+                    <div class="profile-details" id="profileDetails">
+                        <div class="profile-header">
+                            <h3 id="currentProfileName">Alex's Settings</h3>
+                            <span class="profile-badge" id="profileBadge">High Sensitivity</span>
+                        </div>
+
+                        <div class="profile-settings">
+                            <div class="setting-row">
+                                <span class="setting-label">Blood & Gore</span>
+                                <div class="setting-level">
+                                    <div class="level-bar" id="blood-level" style="width: 90%"></div>
+                                </div>
+                                <span class="setting-value">Very High</span>
+                            </div>
+                            <div class="setting-row">
+                                <span class="setting-label">Spiders & Insects</span>
+                                <div class="setting-level">
+                                    <div class="level-bar" id="spiders-level" style="width: 85%"></div>
+                                </div>
+                                <span class="setting-value">Very High</span>
+                            </div>
+                            <div class="setting-row">
+                                <span class="setting-label">Violence</span>
+                                <div class="setting-level">
+                                    <div class="level-bar" id="violence-level" style="width: 75%"></div>
+                                </div>
+                                <span class="setting-value">High</span>
+                            </div>
+                            <div class="setting-row">
+                                <span class="setting-label">Flashing Lights</span>
+                                <div class="setting-level">
+                                    <div class="level-bar" id="flashing-level" style="width: 95%"></div>
+                                </div>
+                                <span class="setting-value">Very High</span>
+                            </div>
+                        </div>
+
+                        <div class="profile-stats">
+                            <div class="stat-item-profile">
+                                <span class="stat-number-profile" id="categoriesActive">18</span>
+                                <span class="stat-label-profile">Categories Active</span>
+                            </div>
+                            <div class="stat-item-profile">
+                                <span class="stat-number-profile" id="warningsBlocked">247</span>
+                                <span class="stat-label-profile">Warnings Shown</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profiles-features">
+                    <div class="feature-item-profile">
+                        <span class="feature-icon-profile">⚡</span>
+                        <div class="feature-content">
+                            <strong>Instant Switching</strong>
+                            <span>Change profiles with one click, no page reload needed</span>
+                        </div>
+                    </div>
+                    <div class="feature-item-profile">
+                        <span class="feature-icon-profile">💾</span>
+                        <div class="feature-content">
+                            <strong>Auto-Save</strong>
+                            <span>Every adjustment is saved immediately to your profile</span>
+                        </div>
+                    </div>
+                    <div class="feature-item-profile">
+                        <span class="feature-icon-profile">🔒</span>
+                        <div class="feature-content">
+                            <strong>Privacy Protected</strong>
+                            <span>All profiles stored locally, never synced to cloud</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- STREAMING WORKFLOW - Animated Steps -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <section class="workflow-section section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">How It Works While You Stream</h2>
+                <p class="section-subtitle">
+                    From the moment you press play, our invisible guardian is working. Here's the complete workflow in action.
+                </p>
+            </div>
+
+            <div class="workflow-timeline">
+                <div class="workflow-step" data-step="1">
+                    <div class="step-icon-workflow">
+                        <span class="icon-emoji">▶️</span>
+                    </div>
+                    <div class="step-content-workflow">
+                        <h4 class="step-title-workflow">You Press Play</h4>
+                        <p class="step-description">Start watching any show on Netflix, YouTube, or 5 other platforms. The extension activates silently.</p>
+                    </div>
+                    <div class="step-connector"></div>
+                </div>
+
+                <div class="workflow-step" data-step="2">
+                    <div class="step-icon-workflow">
+                        <span class="icon-emoji">🎯</span>
+                    </div>
+                    <div class="step-content-workflow">
+                        <h4 class="step-title-workflow">Real-Time Analysis</h4>
+                        <p class="step-description">Every frame is analyzed at 60 FPS. Visual, audio, and text channels scanned simultaneously for potential triggers.</p>
+                    </div>
+                    <div class="step-connector"></div>
+                </div>
+
+                <div class="workflow-step" data-step="3">
+                    <div class="step-icon-workflow">
+                        <span class="icon-emoji">⚠️</span>
+                    </div>
+                    <div class="step-content-workflow">
+                        <h4 class="step-title-workflow">Detection Alert</h4>
+                        <p class="step-description">When sensitive content is detected 5-10 seconds ahead, you get a calm warning overlay. You stay in control.</p>
+                    </div>
+                    <div class="step-connector"></div>
+                </div>
+
+                <div class="workflow-step" data-step="4">
+                    <div class="step-icon-workflow">
+                        <span class="icon-emoji">🎚️</span>
+                    </div>
+                    <div class="step-content-workflow">
+                        <h4 class="step-title-workflow">You Choose</h4>
+                        <p class="step-description">Skip ahead, prepare yourself, or dismiss if you're okay. Your choice is remembered for adaptive learning.</p>
+                    </div>
+                    <div class="step-connector"></div>
+                </div>
+
+                <div class="workflow-step" data-step="5">
+                    <div class="step-icon-workflow">
+                        <span class="icon-emoji">📊</span>
+                    </div>
+                    <div class="step-content-workflow">
+                        <h4 class="step-title-workflow">Continuous Learning</h4>
+                        <p class="step-description">The system adapts to your preferences. More accurate over time, personalized to your comfort level.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="workflow-note">
+                <strong>⚡ Lightning Fast:</strong> All processing happens locally on your device. No delays, no buffering, no data sent anywhere.
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
     <!-- PRIVACY & ENVIRONMENT - Side by Side Cards -->
     <!-- ═══════════════════════════════════════════════════════════════ -->
     <section class="privacy-environment section section-alt">
@@ -2162,6 +2357,324 @@
             border-color: var(--primary);
         }
 
+        /* Profile Switching Section */
+        .profiles-section {
+            background: var(--bg-light);
+        }
+
+        .profiles-demo {
+            max-width: 1000px;
+            margin: 60px auto 0;
+        }
+
+        .profiles-display {
+            background: white;
+            border-radius: 24px;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            margin-bottom: 40px;
+        }
+
+        .profile-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            border-bottom: 2px solid var(--bg-light);
+            background: var(--bg-calm);
+        }
+
+        .profile-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 20px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+
+        .profile-btn:hover {
+            background: rgba(139, 92, 246, 0.05);
+        }
+
+        .profile-btn.active {
+            background: white;
+            border-bottom-color: var(--primary);
+        }
+
+        .profile-btn.add-profile:hover {
+            background: var(--bg-light);
+        }
+
+        .profile-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .profile-info {
+            text-align: left;
+            flex: 1;
+        }
+
+        .profile-name {
+            font-weight: 600;
+            color: var(--text-dark);
+            font-size: 1rem;
+            margin-bottom: 2px;
+        }
+
+        .profile-desc {
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+
+        .profile-details {
+            padding: 40px;
+        }
+
+        .profile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .profile-header h3 {
+            font-size: 1.75rem;
+            color: var(--text-dark);
+        }
+
+        .profile-badge {
+            padding: 8px 16px;
+            background: var(--gradient-hero);
+            color: white;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .profile-settings {
+            margin-bottom: 32px;
+        }
+
+        .setting-row {
+            display: grid;
+            grid-template-columns: 180px 1fr 100px;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--bg-light);
+        }
+
+        .setting-label {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .setting-level {
+            height: 8px;
+            background: var(--bg-light);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .level-bar {
+            height: 100%;
+            background: var(--gradient-hero);
+            border-radius: 4px;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .setting-value {
+            text-align: right;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            font-weight: 600;
+        }
+
+        .profile-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            padding: 24px;
+            background: var(--gradient-light);
+            border-radius: 16px;
+        }
+
+        .stat-item-profile {
+            text-align: center;
+        }
+
+        .stat-number-profile {
+            display: block;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .stat-label-profile {
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .profiles-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+        }
+
+        .feature-item-profile {
+            display: flex;
+            gap: 16px;
+            padding: 24px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s ease;
+        }
+
+        .feature-item-profile:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .feature-icon-profile {
+            font-size: 2rem;
+            flex-shrink: 0;
+        }
+
+        .feature-content {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .feature-content strong {
+            font-size: 1rem;
+            color: var(--text-dark);
+        }
+
+        .feature-content span {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            line-height: 1.5;
+        }
+
+        /* Workflow Section */
+        .workflow-section {
+            background: var(--bg-white);
+        }
+
+        .workflow-timeline {
+            max-width: 800px;
+            margin: 60px auto 0;
+            position: relative;
+        }
+
+        .workflow-step {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 48px;
+            position: relative;
+            opacity: 0;
+            animation: slideIn 0.6s ease forwards;
+        }
+
+        @media (prefers-reduced-motion: no-preference) {
+            @keyframes slideIn {
+                from {
+                    opacity: 0;
+                    transform: translateX(-20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+            }
+
+            .workflow-step[data-step="1"] { animation-delay: 0.1s; }
+            .workflow-step[data-step="2"] { animation-delay: 0.2s; }
+            .workflow-step[data-step="3"] { animation-delay: 0.3s; }
+            .workflow-step[data-step="4"] { animation-delay: 0.4s; }
+            .workflow-step[data-step="5"] { animation-delay: 0.5s; }
+        }
+
+        .step-icon-workflow {
+            width: 64px;
+            height: 64px;
+            background: var(--gradient-hero);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: var(--shadow-md);
+            position: relative;
+            z-index: 2;
+        }
+
+        .icon-emoji {
+            font-size: 1.8rem;
+        }
+
+        .step-content-workflow {
+            flex: 1;
+            padding-top: 8px;
+        }
+
+        .step-title-workflow {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 12px;
+        }
+
+        .step-description {
+            font-size: 1rem;
+            color: var(--text-light);
+            line-height: 1.7;
+        }
+
+        .step-connector {
+            position: absolute;
+            left: 31px;
+            top: 64px;
+            bottom: -48px;
+            width: 2px;
+            background: linear-gradient(to bottom, var(--primary), var(--accent));
+            opacity: 0.3;
+        }
+
+        .workflow-step:last-child .step-connector {
+            display: none;
+        }
+
+        .workflow-note {
+            max-width: 700px;
+            margin: 40px auto 0;
+            padding: 24px 32px;
+            background: var(--gradient-glass);
+            border-radius: 16px;
+            border: 2px solid rgba(139, 92, 246, 0.2);
+            text-align: center;
+            font-size: 1rem;
+            color: var(--text-dark);
+        }
+
+        .workflow-note strong {
+            color: var(--primary);
+        }
+
         /* Footer */
         .footer {
             background: var(--text-dark);
@@ -2252,6 +2765,40 @@
             .sustainability-note {
                 flex-direction: column;
                 text-align: center;
+            }
+
+            .profile-selector {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .setting-row {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+
+            .setting-value {
+                text-align: left;
+            }
+
+            .profiles-features {
+                grid-template-columns: 1fr;
+            }
+
+            .workflow-step {
+                gap: 16px;
+            }
+
+            .step-icon-workflow {
+                width: 48px;
+                height: 48px;
+            }
+
+            .icon-emoji {
+                font-size: 1.4rem;
+            }
+
+            .step-connector {
+                left: 23px;
             }
 
             .testimonials {
@@ -2470,6 +3017,99 @@
                 slider.style.background = `linear-gradient(to right, var(--primary) ${value}%, var(--bg-light) ${value}%)`;
             });
         });
+
+        // ═══════════════════════════════════════════════════════════════
+        // PROFILE SWITCHING - Interactive Demo
+        // ═══════════════════════════════════════════════════════════════
+
+        const profileData = {
+            'alex': {
+                name: "Alex's Settings",
+                badge: "High Sensitivity",
+                settings: {
+                    blood: { width: 90, label: "Very High" },
+                    spiders: { width: 85, label: "Very High" },
+                    violence: { width: 75, label: "High" },
+                    flashing: { width: 95, label: "Very High" }
+                },
+                stats: {
+                    categories: 18,
+                    warnings: 247
+                }
+            },
+            'sam': {
+                name: "Sam's Settings",
+                badge: "Moderate",
+                settings: {
+                    blood: { width: 60, label: "Medium" },
+                    spiders: { width: 45, label: "Low" },
+                    violence: { width: 55, label: "Medium" },
+                    flashing: { width: 70, label: "High" }
+                },
+                stats: {
+                    categories: 12,
+                    warnings: 89
+                }
+            },
+            'jordan': {
+                name: "Jordan's Settings",
+                badge: "Minimal Warnings",
+                settings: {
+                    blood: { width: 30, label: "Low" },
+                    spiders: { width: 0, label: "Off" },
+                    violence: { width: 25, label: "Low" },
+                    flashing: { width: 80, label: "High" }
+                },
+                stats: {
+                    categories: 5,
+                    warnings: 34
+                }
+            }
+        };
+
+        function switchProfile(profileName) {
+            const profile = profileData[profileName];
+            if (!profile) return;
+
+            // Update active button
+            document.querySelectorAll('.profile-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.closest('.profile-btn').classList.add('active');
+
+            // Update profile details with animation
+            const details = document.getElementById('profileDetails');
+            details.style.opacity = '0';
+            details.style.transform = 'translateY(10px)';
+
+            setTimeout(() => {
+                // Update content
+                document.getElementById('currentProfileName').textContent = profile.name;
+                document.getElementById('profileBadge').textContent = profile.badge;
+
+                // Update settings
+                document.getElementById('blood-level').style.width = profile.settings.blood.width + '%';
+                document.getElementById('spiders-level').style.width = profile.settings.spiders.width + '%';
+                document.getElementById('violence-level').style.width = profile.settings.violence.width + '%';
+                document.getElementById('flashing-level').style.width = profile.settings.flashing.width + '%';
+
+                // Update value labels
+                const rows = document.querySelectorAll('.setting-row');
+                rows[0].querySelector('.setting-value').textContent = profile.settings.blood.label;
+                rows[1].querySelector('.setting-value').textContent = profile.settings.spiders.label;
+                rows[2].querySelector('.setting-value').textContent = profile.settings.violence.label;
+                rows[3].querySelector('.setting-value').textContent = profile.settings.flashing.label;
+
+                // Update stats
+                document.getElementById('categoriesActive').textContent = profile.stats.categories;
+                document.getElementById('warningsBlocked').textContent = profile.stats.warnings;
+
+                // Fade back in
+                details.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                details.style.opacity = '1';
+                details.style.transform = 'translateY(0)';
+            }, 150);
+        }
     </script>
 </body>
 </html>
