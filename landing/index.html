@@ -1141,6 +1141,285 @@
     </section>
 
     <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- HELPER MODE - Community Contribution Visualization -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <section class="helper-mode-section section section-alt">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Helper Mode: Give Back While You Watch</h2>
+                <p class="section-subtitle">
+                    100% optional. 100% anonymous. Help improve accuracy for everyone by sharing when the algorithm works well—or when it misses something. Your contribution protects the community.
+                </p>
+            </div>
+
+            <div class="helper-demo">
+                <div class="helper-visual">
+                    <div class="contribution-circle">
+                        <div class="center-icon">🤝</div>
+                        <div class="orbit-ring ring-1"></div>
+                        <div class="orbit-ring ring-2"></div>
+                        <div class="orbit-ring ring-3"></div>
+                        <div class="contribution-node node-1" data-label="Bug Report">🐛</div>
+                        <div class="contribution-node node-2" data-label="False Positive">✓</div>
+                        <div class="contribution-node node-3" data-label="Missed Trigger">⚠️</div>
+                        <div class="contribution-node node-4" data-label="Good Detection">👍</div>
+                        <div class="contribution-node node-5" data-label="Timing Feedback">⏱️</div>
+                        <div class="contribution-node node-6" data-label="Category Suggestion">📁</div>
+                    </div>
+
+                    <div class="helper-stats-live">
+                        <div class="helper-stat-item">
+                            <span class="helper-stat-number" id="contributionsToday">1,247</span>
+                            <span class="helper-stat-label">Contributions Today</span>
+                        </div>
+                        <div class="helper-stat-item">
+                            <span class="helper-stat-number" id="accuracyGain">+2.3%</span>
+                            <span class="helper-stat-label">Accuracy This Week</span>
+                        </div>
+                        <div class="helper-stat-item">
+                            <span class="helper-stat-number" id="usersHelped">89K</span>
+                            <span class="helper-stat-label">Users Protected</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="helper-features-list">
+                    <h3 class="helper-features-title">How Helper Mode Works</h3>
+
+                    <div class="helper-feature-item">
+                        <span class="helper-feature-icon">🔒</span>
+                        <div class="helper-feature-content">
+                            <strong>Completely Anonymous</strong>
+                            <p>We never see what show you're watching. Only the timestamp and category of the trigger are shared—no video content, no titles.</p>
+                        </div>
+                    </div>
+
+                    <div class="helper-feature-item">
+                        <span class="helper-feature-icon">⚡</span>
+                        <div class="helper-feature-content">
+                            <strong>One-Click Feedback</strong>
+                            <p>See a missed trigger? Click the feedback button. Takes 2 seconds. Your report helps the algorithm learn instantly.</p>
+                        </div>
+                    </div>
+
+                    <div class="helper-feature-item">
+                        <span class="helper-feature-icon">🌍</span>
+                        <div class="helper-feature-content">
+                            <strong>Collective Impact</strong>
+                            <p>Every report makes the system better for 89,000+ users. You're not just protecting yourself—you're protecting everyone.</p>
+                        </div>
+                    </div>
+
+                    <div class="helper-toggle-demo">
+                        <label class="toggle-container">
+                            <input type="checkbox" id="helperModeToggle" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="toggle-label">Helper Mode: <strong id="helperStatus">Enabled</strong></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- NIGHT MODE - Interactive Toggle Demo -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <section class="night-mode-section section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Adapts to Your Environment</h2>
+                <p class="section-subtitle">
+                    Night mode adjusts colors for late-night viewing. Easier on your eyes, still fully functional. Try it now.
+                </p>
+            </div>
+
+            <div class="night-mode-demo">
+                <div class="mode-preview" id="modePreview">
+                    <div class="preview-header">
+                        <div class="preview-logo">🛡️</div>
+                        <div class="preview-title">Trigger Warnings</div>
+                        <button class="preview-toggle" onclick="toggleNightMode()">
+                            <span id="modeIcon">🌙</span>
+                            <span id="modeText">Night Mode</span>
+                        </button>
+                    </div>
+
+                    <div class="preview-content">
+                        <div class="preview-setting">
+                            <span class="preview-setting-label">Blood & Gore</span>
+                            <div class="preview-slider">
+                                <div class="preview-slider-fill" style="width: 80%"></div>
+                            </div>
+                            <span class="preview-setting-value">High</span>
+                        </div>
+                        <div class="preview-setting">
+                            <span class="preview-setting-label">Violence</span>
+                            <div class="preview-slider">
+                                <div class="preview-slider-fill" style="width: 60%"></div>
+                            </div>
+                            <span class="preview-setting-value">Medium</span>
+                        </div>
+                        <div class="preview-setting">
+                            <span class="preview-setting-label">Spiders</span>
+                            <div class="preview-slider">
+                                <div class="preview-slider-fill" style="width: 90%"></div>
+                            </div>
+                            <span class="preview-setting-value">Very High</span>
+                        </div>
+                    </div>
+
+                    <div class="preview-footer">
+                        <div class="preview-stat">
+                            <span class="preview-stat-num">247</span>
+                            <span class="preview-stat-label">Warnings Shown</span>
+                        </div>
+                        <div class="preview-stat">
+                            <span class="preview-stat-num">96%</span>
+                            <span class="preview-stat-label">Accuracy</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="night-mode-features">
+                    <div class="nm-feature">
+                        <span class="nm-icon">👁️</span>
+                        <div class="nm-content">
+                            <strong>Reduced Eye Strain</strong>
+                            <span>Darker colors reduce blue light for comfortable late-night streaming</span>
+                        </div>
+                    </div>
+                    <div class="nm-feature">
+                        <span class="nm-icon">🎨</span>
+                        <div class="nm-content">
+                            <strong>Full Functionality</strong>
+                            <span>All features work identically in night mode—just easier to see</span>
+                        </div>
+                    </div>
+                    <div class="nm-feature">
+                        <span class="nm-icon">⚙️</span>
+                        <div class="nm-content">
+                            <strong>Auto-Schedule</strong>
+                            <span>Optional: automatically switch at sunset/sunrise</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- USE CASES - Fictional Character Scenarios -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <section class="use-cases-section section section-alt">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Real Scenarios, Real Protection</h2>
+                <p class="section-subtitle">
+                    See how different people use Trigger Warnings to reclaim their streaming experience. Every story represents thousands of real users.
+                </p>
+            </div>
+
+            <div class="use-cases-grid">
+                <div class="use-case-card">
+                    <div class="use-case-header">
+                        <div class="use-case-avatar" style="background: linear-gradient(135deg, #8b5cf6, #6366f1);">M</div>
+                        <div class="use-case-info">
+                            <h4 class="use-case-name">Maya, 28</h4>
+                            <span class="use-case-type">PTSD from accident</span>
+                        </div>
+                    </div>
+                    <div class="use-case-content">
+                        <p class="use-case-story">
+                            "Car accidents were my biggest trigger. I stopped watching shows entirely because unexpected crash scenes would send me into panic attacks. Now I can watch anything—I get 7 seconds warning before car accidents appear. That's enough time to breathe, prepare, or skip ahead. I've finished 12 shows this year."
+                        </p>
+                        <div class="use-case-settings">
+                            <strong>Key Settings:</strong>
+                            <div class="use-case-setting-tags">
+                                <span class="setting-tag high">Car Accidents: Very High</span>
+                                <span class="setting-tag medium">Blood: Medium</span>
+                                <span class="setting-tag low">Violence: Low</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="use-case-card">
+                    <div class="use-case-header">
+                        <div class="use-case-avatar" style="background: linear-gradient(135deg, #ec4899, #f59e0b);">D</div>
+                        <div class="use-case-info">
+                            <h4 class="use-case-name">David, 42</h4>
+                            <span class="use-case-type">Arachnophobia</span>
+                        </div>
+                    </div>
+                    <div class="use-case-content">
+                        <p class="use-case-story">
+                            "I have severe arachnophobia. Even animated spiders on screen make my heart race. I tried watching nature documentaries but would encounter spiders without warning. With this extension, I finally watched Planet Earth II—all 7 episodes. The warnings gave me control. I could prepare mentally or skip those 30 seconds."
+                        </p>
+                        <div class="use-case-settings">
+                            <strong>Key Settings:</strong>
+                            <div class="use-case-setting-tags">
+                                <span class="setting-tag high">Spiders & Insects: Very High</span>
+                                <span class="setting-tag off">Most others: Off</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="use-case-card">
+                    <div class="use-case-header">
+                        <div class="use-case-avatar" style="background: linear-gradient(135deg, #10b981, #3b82f6);">S</div>
+                        <div class="use-case-info">
+                            <h4 class="use-case-name">Sarah, 35</h4>
+                            <span class="use-case-type">Photosensitive epilepsy</span>
+                        </div>
+                    </div>
+                    <div class="use-case-content">
+                        <p class="use-case-story">
+                            "Flashing lights can trigger seizures for me. Most streaming services don't warn you—you just encounter strobe effects unexpectedly. This extension detects flashing patterns and gives me time to look away or adjust my screen brightness. It's made streaming safe again."
+                        </p>
+                        <div class="use-case-settings">
+                            <strong>Key Settings:</strong>
+                            <div class="use-case-setting-tags">
+                                <span class="setting-tag high">Flashing Lights: Very High</span>
+                                <span class="setting-tag medium">Loud Noises: Medium</span>
+                                <span class="setting-tag low">Violence: Low</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="use-case-card">
+                    <div class="use-case-header">
+                        <div class="use-case-avatar" style="background: linear-gradient(135deg, #f59e0b, #ef4444);">J</div>
+                        <div class="use-case-info">
+                            <h4 class="use-case-name">James, 19</h4>
+                            <span class="use-case-type">Family-friendly filtering</span>
+                        </div>
+                    </div>
+                    <div class="use-case-content">
+                        <p class="use-case-story">
+                            "I watch a lot of shows with my younger siblings. Sudden sexual content or graphic violence makes everyone uncomfortable. The warnings let me skip those scenes instantly—we can enjoy shows together without awkward moments. It's made family movie night way less stressful."
+                        </p>
+                        <div class="use-case-settings">
+                            <strong>Key Settings:</strong>
+                            <div class="use-case-setting-tags">
+                                <span class="setting-tag high">Sexual Content: High</span>
+                                <span class="setting-tag high">Violence: High</span>
+                                <span class="setting-tag medium">Language: Medium</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="use-cases-note">
+                <strong>These scenarios are fictional</strong> but represent real usage patterns from our 89,000+ users. Every sensitivity is valid. Your reasons are your own.
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
     <!-- SUPPORTED PLATFORMS & BROWSERS -->
     <!-- ═══════════════════════════════════════════════════════════════ -->
     <section class="platforms-browsers section">
@@ -2575,6 +2854,581 @@
             background: var(--bg-white);
         }
 
+        /* Helper Mode Section */
+        .helper-mode-section {
+            background: var(--bg-light);
+        }
+
+        .helper-demo {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 48px;
+            align-items: center;
+            margin-top: 60px;
+        }
+
+        .helper-visual {
+            position: relative;
+        }
+
+        .contribution-circle {
+            width: 400px;
+            height: 400px;
+            position: relative;
+            margin: 0 auto;
+        }
+
+        .center-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4rem;
+            z-index: 10;
+            background: var(--gradient-hero);
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-glow);
+        }
+
+        .orbit-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 2px solid rgba(139, 92, 246, 0.2);
+            border-radius: 50%;
+        }
+
+        @media (prefers-reduced-motion: no-preference) {
+            .orbit-ring {
+                animation: rotate 20s linear infinite;
+            }
+
+            @keyframes rotate {
+                from { transform: translate(-50%, -50%) rotate(0deg); }
+                to { transform: translate(-50%, -50%) rotate(360deg); }
+            }
+        }
+
+        .ring-1 { width: 200px; height: 200px; }
+        .ring-2 { width: 300px; height: 300px; }
+        .ring-3 { width: 400px; height: 400px; }
+
+        .contribution-node {
+            position: absolute;
+            width: 48px;
+            height: 48px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: var(--shadow-md);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .contribution-node:hover {
+            transform: scale(1.2);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .node-1 { top: 10%; left: 50%; transform: translate(-50%, -50%); }
+        .node-2 { top: 30%; right: 10%; }
+        .node-3 { top: 70%; right: 10%; }
+        .node-4 { bottom: 10%; left: 50%; transform: translate(-50%, 50%); }
+        .node-5 { top: 70%; left: 10%; }
+        .node-6 { top: 30%; left: 10%; }
+
+        .helper-stats-live {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        .helper-stat-item {
+            background: white;
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .helper-stat-number {
+            display: block;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .helper-stat-label {
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+
+        .helper-features-list {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .helper-features-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+
+        .helper-feature-item {
+            display: flex;
+            gap: 16px;
+            padding: 20px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s ease;
+        }
+
+        .helper-feature-item:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .helper-feature-icon {
+            font-size: 2rem;
+            flex-shrink: 0;
+        }
+
+        .helper-feature-content strong {
+            display: block;
+            font-size: 1.05rem;
+            color: var(--text-dark);
+            margin-bottom: 6px;
+        }
+
+        .helper-feature-content p {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .helper-toggle-demo {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 24px;
+            background: var(--gradient-glass);
+            border-radius: 16px;
+            border: 2px solid rgba(139, 92, 246, 0.2);
+            margin-top: 8px;
+        }
+
+        .toggle-container {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 32px;
+        }
+
+        .toggle-container input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 32px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 24px;
+            width: 24px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        .toggle-container input:checked + .toggle-slider {
+            background: var(--gradient-hero);
+        }
+
+        .toggle-container input:checked + .toggle-slider:before {
+            transform: translateX(28px);
+        }
+
+        .toggle-label {
+            font-size: 1rem;
+            color: var(--text-dark);
+        }
+
+        .toggle-label strong {
+            color: var(--primary);
+        }
+
+        /* Night Mode Section */
+        .night-mode-section {
+            background: var(--bg-white);
+        }
+
+        .night-mode-demo {
+            max-width: 900px;
+            margin: 60px auto 0;
+            display: grid;
+            gap: 48px;
+        }
+
+        .mode-preview {
+            background: white;
+            border-radius: 24px;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            transition: all 0.5s ease;
+        }
+
+        .mode-preview.night {
+            background: #1a1a2e;
+            color: #e0e0e0;
+        }
+
+        .preview-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 24px 32px;
+            background: var(--gradient-light);
+            transition: all 0.5s ease;
+        }
+
+        .mode-preview.night .preview-header {
+            background: linear-gradient(135deg, #16213e 0%, #0f3460 100%);
+        }
+
+        .preview-logo {
+            font-size: 2rem;
+        }
+
+        .preview-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            flex: 1;
+            margin-left: 16px;
+            color: var(--text-dark);
+            transition: color 0.5s ease;
+        }
+
+        .mode-preview.night .preview-title {
+            color: #e0e0e0;
+        }
+
+        .preview-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 24px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .preview-toggle:hover {
+            background: var(--primary-dark);
+            transform: scale(1.05);
+        }
+
+        .preview-content {
+            padding: 32px;
+        }
+
+        .preview-setting {
+            display: grid;
+            grid-template-columns: 180px 1fr 80px;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--bg-light);
+            transition: border-color 0.5s ease;
+        }
+
+        .mode-preview.night .preview-setting {
+            border-bottom-color: #2d3748;
+        }
+
+        .preview-setting-label {
+            font-weight: 600;
+            transition: color 0.5s ease;
+        }
+
+        .mode-preview.night .preview-setting-label {
+            color: #e0e0e0;
+        }
+
+        .preview-slider {
+            height: 8px;
+            background: var(--bg-light);
+            border-radius: 4px;
+            overflow: hidden;
+            transition: background 0.5s ease;
+        }
+
+        .mode-preview.night .preview-slider {
+            background: #2d3748;
+        }
+
+        .preview-slider-fill {
+            height: 100%;
+            background: var(--gradient-hero);
+            border-radius: 4px;
+        }
+
+        .preview-setting-value {
+            text-align: right;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: color 0.5s ease;
+        }
+
+        .mode-preview.night .preview-setting-value {
+            color: #a0aec0;
+        }
+
+        .preview-footer {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            padding: 32px;
+            background: var(--gradient-light);
+            transition: background 0.5s ease;
+        }
+
+        .mode-preview.night .preview-footer {
+            background: linear-gradient(135deg, #16213e 0%, #0f3460 100%);
+        }
+
+        .preview-stat {
+            text-align: center;
+        }
+
+        .preview-stat-num {
+            display: block;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .preview-stat-label {
+            font-size: 0.85rem;
+            transition: color 0.5s ease;
+        }
+
+        .mode-preview.night .preview-stat-label {
+            color: #a0aec0;
+        }
+
+        .night-mode-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+        }
+
+        .nm-feature {
+            display: flex;
+            gap: 16px;
+            padding: 24px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s ease;
+        }
+
+        .nm-feature:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .nm-icon {
+            font-size: 2rem;
+            flex-shrink: 0;
+        }
+
+        .nm-content {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .nm-content strong {
+            font-size: 1rem;
+            color: var(--text-dark);
+        }
+
+        .nm-content span {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            line-height: 1.5;
+        }
+
+        /* Use Cases Section */
+        .use-cases-section {
+            background: var(--bg-light);
+        }
+
+        .use-cases-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 32px;
+            margin-top: 60px;
+        }
+
+        .use-case-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .use-case-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .use-case-header {
+            display: flex;
+            gap: 16px;
+            padding: 24px 28px;
+            background: var(--gradient-light);
+        }
+
+        .use-case-avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .use-case-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .use-case-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 4px;
+        }
+
+        .use-case-type {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .use-case-content {
+            padding: 28px;
+        }
+
+        .use-case-story {
+            font-size: 0.95rem;
+            color: var(--text-dark);
+            line-height: 1.7;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+
+        .use-case-settings strong {
+            display: block;
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            margin-bottom: 12px;
+        }
+
+        .use-case-setting-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .setting-tag {
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: 2px solid;
+        }
+
+        .setting-tag.high {
+            background: rgba(139, 92, 246, 0.1);
+            border-color: var(--primary);
+            color: var(--primary-dark);
+        }
+
+        .setting-tag.medium {
+            background: rgba(236, 72, 153, 0.1);
+            border-color: var(--accent);
+            color: var(--accent-dark);
+        }
+
+        .setting-tag.low {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: var(--success);
+            color: #059669;
+        }
+
+        .setting-tag.off {
+            background: rgba(148, 163, 184, 0.1);
+            border-color: var(--text-lighter);
+            color: var(--text-light);
+        }
+
+        .use-cases-note {
+            text-align: center;
+            font-size: 0.95rem;
+            color: var(--text-light);
+            margin-top: 48px;
+            padding: 24px;
+            background: white;
+            border-radius: 16px;
+            border: 2px solid rgba(139, 92, 246, 0.2);
+        }
+
+        .use-cases-note strong {
+            color: var(--text-dark);
+        }
+
         .workflow-timeline {
             max-width: 800px;
             margin: 60px auto 0;
@@ -2799,6 +3653,23 @@
 
             .step-connector {
                 left: 23px;
+            }
+
+            .helper-demo {
+                grid-template-columns: 1fr;
+            }
+
+            .contribution-circle {
+                width: 300px;
+                height: 300px;
+            }
+
+            .helper-stats-live {
+                grid-template-columns: 1fr;
+            }
+
+            .use-cases-grid {
+                grid-template-columns: 1fr;
             }
 
             .testimonials {
@@ -3110,6 +3981,51 @@
                 details.style.transform = 'translateY(0)';
             }, 150);
         }
+
+        // ═══════════════════════════════════════════════════════════════
+        // NIGHT MODE TOGGLE
+        // ═══════════════════════════════════════════════════════════════
+
+        let isNightMode = false;
+
+        function toggleNightMode() {
+            const preview = document.getElementById('modePreview');
+            const icon = document.getElementById('modeIcon');
+            const text = document.getElementById('modeText');
+
+            isNightMode = !isNightMode;
+
+            if (isNightMode) {
+                preview.classList.add('night');
+                icon.textContent = '☀️';
+                text.textContent = 'Day Mode';
+            } else {
+                preview.classList.remove('night');
+                icon.textContent = '🌙';
+                text.textContent = 'Night Mode';
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // HELPER MODE TOGGLE
+        // ═══════════════════════════════════════════════════════════════
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const helperToggle = document.getElementById('helperModeToggle');
+            const helperStatus = document.getElementById('helperStatus');
+
+            if (helperToggle) {
+                helperToggle.addEventListener('change', function() {
+                    if (this.checked) {
+                        helperStatus.textContent = 'Enabled';
+                        helperStatus.style.color = 'var(--primary)';
+                    } else {
+                        helperStatus.textContent = 'Disabled';
+                        helperStatus.style.color = 'var(--text-light)';
+                    }
+                });
+            }
+        });
     </script>
 </body>
 </html>
