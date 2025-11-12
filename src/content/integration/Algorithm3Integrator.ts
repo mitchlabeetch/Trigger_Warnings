@@ -55,6 +55,11 @@ import { multiTaskLearner, type MultiTaskPrediction, type MultiModalFeatures as 
 import { fewShotLearner, type FewShotPrediction, type FeatureVector as FewShotFeatures } from '../learning/FewShotLearner';
 import { explainabilityEngine, type DetectionExplanation } from '../explainability/ExplainabilityEngine';
 
+// Algorithm 3.0 Innovations (Phase 6)
+import { incrementalProcessor, type IncrementalResult } from '../performance/IncrementalProcessor';
+import { smartCache, type CacheStats } from '../performance/SmartCache';
+import { parallelEngine, type ParallelDetectionResult, type EngineStats } from '../performance/ParallelDetectionEngine';
+
 const logger = new Logger('Algorithm3Integrator');
 
 /**
@@ -109,6 +114,11 @@ export interface EnhancedDetection {
   fewShotPrediction?: FewShotPrediction;
   explanation?: DetectionExplanation;
 
+  // Algorithm 3.0 enhancements (Phase 6)
+  incrementalResult?: IncrementalResult;
+  cacheHit?: boolean;
+  parallelProcessingTimeMs?: number;
+
   // User personalization
   userThreshold: number;
   shouldWarn: boolean;
@@ -149,6 +159,13 @@ interface IntegrationStats {
   fewShotMatches: number;
   explanationsGenerated: number;
   avgKnowledgeTransferBoost: number;
+
+  // Phase 6 statistics
+  incrementalProcessingOps: number;
+  cacheHits: number;
+  cacheMisses: number;
+  parallelDetections: number;
+  avgProcessingLatencyMs: number;
 }
 
 /**
@@ -192,7 +209,12 @@ export class Algorithm3Integrator {
     multiTaskPredictions: 0,
     fewShotMatches: 0,
     explanationsGenerated: 0,
-    avgKnowledgeTransferBoost: 0
+    avgKnowledgeTransferBoost: 0,
+    incrementalProcessingOps: 0,
+    cacheHits: 0,
+    cacheMisses: 0,
+    parallelDetections: 0,
+    avgProcessingLatencyMs: 0
   };
 
   private confidenceBoosts: number[] = [];
@@ -208,8 +230,8 @@ export class Algorithm3Integrator {
     // Initialize adaptive threshold learner (Phase 4)
     this.adaptiveThresholdLearner = new AdaptiveThresholdLearner(profile.userId || 'default');
 
-    logger.info('[Algorithm3Integrator] 🚀 Algorithm 3.0 Integration Layer initialized (Phases 1-5)');
-    logger.info('[Algorithm3Integrator] ✅ All innovations active: Routing, Attention, Temporal, Fusion, Personalization, Hierarchical, Validation, Features, Dependencies, Adaptive Learning, Multi-Task, Few-Shot, Explainability');
+    logger.info('[Algorithm3Integrator] 🚀 Algorithm 3.0 Integration Layer initialized (Phases 1-6)');
+    logger.info('[Algorithm3Integrator] ✅ All innovations active: Routing, Attention, Temporal, Fusion, Personalization, Hierarchical, Validation, Features, Dependencies, Adaptive Learning, Multi-Task, Few-Shot, Explainability, Incremental Processing, Smart Caching, Parallel Detection');
     logger.info(`[Algorithm3Integrator] Enabled categories: ${profile.enabledCategories.join(', ')}`);
   }
 
@@ -783,7 +805,10 @@ export class Algorithm3Integrator {
       adaptiveThresholds: this.adaptiveThresholdLearner.getStats(),
       multiTask: multiTaskLearner.getStats(),
       fewShot: fewShotLearner.getStats(),
-      explainability: explainabilityEngine.getStats()
+      explainability: explainabilityEngine.getStats(),
+      incrementalProcessing: incrementalProcessor.getStats(),
+      smartCache: smartCache.getStats(),
+      parallelEngine: parallelEngine.getStats()
     };
   }
 
@@ -798,8 +823,11 @@ export class Algorithm3Integrator {
     categoryDependencyGraph.clear();
     multiTaskLearner.clear();
     fewShotLearner.clear();
+    incrementalProcessor.clear();
+    smartCache.clear();
+    parallelEngine.clear();
 
-    logger.info('[Algorithm3Integrator] 🧹 Cleared all state (Phases 1-5)');
+    logger.info('[Algorithm3Integrator] 🧹 Cleared all state (Phases 1-6)');
   }
 
   /**
@@ -807,7 +835,8 @@ export class Algorithm3Integrator {
    */
   dispose(): void {
     this.clear();
-    logger.info('[Algorithm3Integrator] 🛑 Algorithm 3.0 Integration Layer disposed (Phases 1-5)');
+    parallelEngine.dispose();
+    logger.info('[Algorithm3Integrator] 🛑 Algorithm 3.0 Integration Layer disposed (Phases 1-6)');
   }
 }
 
