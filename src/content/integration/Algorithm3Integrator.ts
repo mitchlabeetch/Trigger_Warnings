@@ -72,6 +72,12 @@ import { modalFusionTransformer, type TransformerInput, type TransformerFusionRe
 import { contrastiveLearner, type ContrastiveEmbeddings, type ContrastiveResult } from '../crossmodal/ContrastiveLearner';
 import { selfSupervisedPretrainer, type UnlabeledSample, type TransferLearningResult } from '../crossmodal/SelfSupervisedPretrainer';
 
+// Algorithm 3.0 Innovations (Phase 10 - Reinforcement Learning)
+import { rlPolicy, type RLState, type RLAction, type PolicyResult } from '../rl/RLPolicy';
+import { rewardShaper, type FeedbackEvent, type ShapedReward } from '../rl/RewardShaper';
+import { banditSelector, type BanditArm, type BanditContext, type BanditSelection } from '../rl/BanditSelector';
+import { onlineLearner, type OnlineExample, type DriftDetection } from '../rl/OnlineLearner';
+
 const logger = new Logger('Algorithm3Integrator');
 
 /**
@@ -137,6 +143,12 @@ export interface EnhancedDetection {
   contrastiveAlignment?: ContrastiveResult;
   transferLearning?: TransferLearningResult;
 
+  // Algorithm 3.0 enhancements (Phase 10 - Reinforcement Learning)
+  rlPolicyResult?: PolicyResult;
+  banditSelection?: BanditSelection;
+  onlineLearningPrediction?: number;
+  driftDetection?: DriftDetection;
+
   // User personalization
   userThreshold: number;
   shouldWarn: boolean;
@@ -194,6 +206,15 @@ interface IntegrationStats {
   avgContrastiveLoss: number;
   transferLearningOps: number;
   avgPretrainingBenefit: number;
+
+  // Phase 10 statistics (Reinforcement Learning)
+  rlPolicySelections: number;
+  banditSelections: number;
+  onlineLearningUpdates: number;
+  avgRLReward: number;
+  driftsDetected: number;
+  avgBanditRegret: number;
+  avgOnlineLearningLoss: number;
 }
 
 /**
@@ -250,7 +271,14 @@ export class Algorithm3Integrator {
     contrastiveAlignments: 0,
     avgContrastiveLoss: 0,
     transferLearningOps: 0,
-    avgPretrainingBenefit: 0
+    avgPretrainingBenefit: 0,
+    rlPolicySelections: 0,
+    banditSelections: 0,
+    onlineLearningUpdates: 0,
+    avgRLReward: 0,
+    driftsDetected: 0,
+    avgBanditRegret: 0,
+    avgOnlineLearningLoss: 0
   };
 
   private confidenceBoosts: number[] = [];
@@ -260,6 +288,9 @@ export class Algorithm3Integrator {
   private transformerConfidences: number[] = [];
   private contrastiveLosses: number[] = [];
   private pretrainingBenefits: number[] = [];
+  private rlRewards: number[] = [];
+  private banditRegrets: number[] = [];
+  private onlineLearningLosses: number[] = [];
 
   constructor(profile: Profile) {
     this.profile = profile;
@@ -293,8 +324,8 @@ export class Algorithm3Integrator {
       }
     }
 
-    logger.info('[Algorithm3Integrator] 🚀 Algorithm 3.0 Integration Layer initialized (Phases 1-8)');
-    logger.info('[Algorithm3Integrator] ✅ All innovations active: Routing, Attention, Temporal, Fusion, Personalization, Hierarchical, Validation, Features, Dependencies, Adaptive Learning, Multi-Task, Few-Shot, Explainability, Incremental Processing, Smart Caching, Parallel Detection, Unified Contribution, Content Fingerprinting, Progressive Learning, Cross-Device Sync, Cross-Modal Attention, Modal Fusion Transformers, Contrastive Learning, Self-Supervised Pre-training');
+    logger.info('[Algorithm3Integrator] 🚀 Algorithm 3.0 Integration Layer initialized (Phases 1-10)');
+    logger.info('[Algorithm3Integrator] ✅ All innovations active: Routing, Attention, Temporal, Fusion, Personalization, Hierarchical, Validation, Features, Dependencies, Adaptive Learning, Multi-Task, Few-Shot, Explainability, Incremental Processing, Smart Caching, Parallel Detection, Unified Contribution, Content Fingerprinting, Progressive Learning, Cross-Device Sync, Cross-Modal Attention, Modal Fusion Transformers, Contrastive Learning, Self-Supervised Pre-training, RL Policy, Reward Shaping, Multi-Armed Bandits, Online Learning');
     logger.info(`[Algorithm3Integrator] Enabled categories: ${profile.enabledCategories.join(', ')}`);
   }
 
@@ -627,7 +658,7 @@ export class Algorithm3Integrator {
     const shouldWarnAdaptive = finalConfidence >= adaptiveThreshold;
 
     // Use adaptive threshold if it overrides personalization (more restrictive)
-    const finalShouldWarn = personalizedResult.shouldWarn && shouldWarnAdaptive;
+    let finalShouldWarn = personalizedResult.shouldWarn && shouldWarnAdaptive;
 
     if (!shouldWarnAdaptive && personalizedResult.shouldWarn) {
       // Adaptive threshold suppressed warning
@@ -641,6 +672,89 @@ export class Algorithm3Integrator {
         `✅ Adaptive threshold learning: using learned threshold ${adaptiveThreshold.toFixed(1)}% ` +
         `(default: ${this.adaptiveThresholdLearner.getThresholdData(detection.category)?.defaultThreshold.toFixed(1)}%)`
       );
+    }
+
+    // STEP 7: Apply Phase 10 - Reinforcement Learning & Adaptive Optimization
+    let rlPolicyResult: PolicyResult | undefined;
+    let banditSelection: BanditSelection | undefined;
+    let onlineLearningPrediction: number | undefined;
+    let driftDetection: DriftDetection | undefined;
+
+    // Innovation #35: RL Policy (Q-learning)
+    const rlState: RLState = {
+      category: detection.category,
+      confidenceBin: Math.floor(finalConfidence / 10),  // Discretize to 0-9
+      modalityCount: [multiModalInput.visual, multiModalInput.audio, multiModalInput.text].filter(Boolean).length,
+      timeOfDay: this.getTimeOfDay(),
+      userSensitivity: personalizedResult.sensitivityLevel === 'very-high' || personalizedResult.sensitivityLevel === 'high' ? 'high' :
+                       personalizedResult.sensitivityLevel === 'low' || personalizedResult.sensitivityLevel === 'off' ? 'low' : 'medium'
+    };
+
+    rlPolicyResult = rlPolicy.selectAction(rlState);
+    this.stats.rlPolicySelections++;
+
+    reasoning.push(
+      `✅ RL Policy: action=${rlPolicyResult.action}, ` +
+      `Q=${rlPolicyResult.qValue.toFixed(3)}, ` +
+      `policy=${rlPolicyResult.policy}, ` +
+      `exploration=${rlPolicyResult.isExploration}`
+    );
+
+    // Innovation #37: Multi-Armed Bandit Selection
+    const banditContext: BanditContext = {
+      category: detection.category,
+      timeOfDay: this.getTimeOfDay(),
+      userSensitivity: rlState.userSensitivity,
+      recentAccuracy: 0.75,  // TODO: Track actual accuracy
+      modalityCount: rlState.modalityCount,
+      complexityScore: (categoryFeatures?.confidence || 50) / 100
+    };
+
+    banditSelection = banditSelector.select(banditContext);
+    this.stats.banditSelections++;
+
+    reasoning.push(
+      `✅ Bandit Selection: arm=${banditSelection.arm}, ` +
+      `algorithm=${banditSelection.algorithm}, ` +
+      `expectedReward=${banditSelection.expectedReward.toFixed(3)}, ` +
+      `exploration=${banditSelection.isExploration}`
+    );
+
+    // Innovation #38: Online Learning
+    if (modalFeatures.visual || modalFeatures.audio || modalFeatures.text) {
+      const features = this.extractFeatureVector(modalFeatures.visual || modalFeatures.audio || modalFeatures.text || {});
+      onlineLearningPrediction = onlineLearner.predictForCategory(features, detection.category);
+
+      reasoning.push(
+        `✅ Online Learning: prediction=${(onlineLearningPrediction * 100).toFixed(1)}%`
+      );
+
+      // Check for concept drift
+      driftDetection = onlineLearner.detectDrift(detection.category);
+      if (driftDetection.driftDetected) {
+        this.stats.driftsDetected++;
+        reasoning.push(
+          `⚠️  Drift Detected: type=${driftDetection.driftType}, ` +
+          `magnitude=${driftDetection.driftMagnitude.toFixed(3)}, ` +
+          `action=${driftDetection.recommendedAction}`
+        );
+
+        // Adapt if drift detected
+        if (driftDetection.recommendedAction === 'adapt') {
+          onlineLearner.adaptToDrift(detection.category);
+        } else if (driftDetection.recommendedAction === 'retrain') {
+          onlineLearner.retrainModel(detection.category);
+        }
+      }
+    }
+
+    // Apply RL policy action to final decision
+    if (rlPolicyResult.action === 'suppress') {
+      finalShouldWarn = false;
+      reasoning.push(`🤖 RL Policy: SUPPRESSED (action=${rlPolicyResult.action})`);
+    } else if (rlPolicyResult.action === 'detect-high-threshold' && rlPolicyResult.confidence < 0.85) {
+      finalShouldWarn = false;
+      reasoning.push(`🤖 RL Policy: SUPPRESSED (high threshold not met: ${(rlPolicyResult.confidence * 100).toFixed(1)}% < 85%)`);
     }
 
     // Create enhanced detection
@@ -667,6 +781,10 @@ export class Algorithm3Integrator {
       transformerFusion,
       contrastiveAlignment,
       transferLearning,
+      rlPolicyResult,
+      banditSelection,
+      onlineLearningPrediction,
+      driftDetection,
       userThreshold: personalizedResult.threshold,
       shouldWarn: finalShouldWarn,
       warning: this.createEnhancedWarning(detection, finalConfidence, reasoning),
@@ -910,7 +1028,7 @@ export class Algorithm3Integrator {
   }
 
   /**
-   * Process user feedback for adaptive threshold learning (Phase 4)
+   * Process user feedback for adaptive threshold learning (Phase 4 & Phase 10)
    */
   processFeedback(feedback: UserFeedback): void {
     const adjustment = this.adaptiveThresholdLearner.processFeedback(feedback);
@@ -921,6 +1039,83 @@ export class Algorithm3Integrator {
         `${adjustment.oldThreshold.toFixed(1)}% → ${adjustment.newThreshold.toFixed(1)}%`
       );
     }
+
+    // Phase 10: RL & Bandit feedback processing
+    // Innovation #36: Reward Shaping
+    const feedbackEvent: FeedbackEvent = {
+      type: feedback.wasHelpful ? 'confirm' : 'dismiss',
+      category: feedback.category,
+      confidence: feedback.originalConfidence / 100,
+      timestamp: Date.now(),
+      detectionCorrect: feedback.wasHelpful
+    };
+
+    const shapedReward = rewardShaper.shapeReward(feedbackEvent);
+    this.rlRewards.push(shapedReward.totalReward);
+    this.updateAvgRLReward(shapedReward.totalReward);
+
+    // Innovation #35: RL Policy Update (Q-learning)
+    // Create state and episode for RL update
+    const rlState: RLState = {
+      category: feedback.category,
+      confidenceBin: Math.floor(feedback.originalConfidence / 10),
+      modalityCount: 1,  // Simplified - actual value would come from detection
+      timeOfDay: this.getTimeOfDay(),
+      userSensitivity: 'medium'  // Simplified
+    };
+
+    const action = rlPolicy.confidenceToAction(feedback.originalConfidence / 100);
+    const nextState = { ...rlState };  // Simplified - same state
+
+    rlPolicy.update({
+      state: rlState,
+      action,
+      reward: shapedReward.totalReward,
+      nextState,
+      done: true
+    });
+
+    // Innovation #37: Bandit Update
+    const banditArm: BanditArm = feedback.wasHelpful ? 'balanced' : 'conservative';  // Simplified
+    banditSelector.updateReward(banditArm, shapedReward.totalReward);
+
+    const banditStats = banditSelector.getStats();
+    this.banditRegrets.push(banditStats.avgRegret);
+    this.updateAvgBanditRegret(banditStats.avgRegret);
+
+    // Innovation #38: Online Learning Update
+    const onlineExample: OnlineExample = {
+      features: new Array(256).fill(0),  // Simplified - would extract from detection
+      category: feedback.category,
+      label: feedback.wasHelpful,
+      timestamp: Date.now(),
+      confidence: feedback.originalConfidence / 100
+    };
+
+    onlineLearner.update(onlineExample);
+    this.stats.onlineLearningUpdates++;
+
+    const onlineStats = onlineLearner.getStats();
+    this.onlineLearningLosses.push(onlineStats.avgLoss);
+    this.updateAvgOnlineLearningLoss(onlineStats.avgLoss);
+
+    logger.info(
+      `[Algorithm3Integrator] 🤖 RL Feedback processed for ${feedback.category} | ` +
+      `Reward=${shapedReward.totalReward.toFixed(2)}, ` +
+      `Action=${action}, ` +
+      `OnlineLoss=${onlineStats.avgLoss.toFixed(4)}`
+    );
+  }
+
+  /**
+   * Get time of day
+   */
+  private getTimeOfDay(): 'morning' | 'afternoon' | 'evening' | 'night' {
+    const hour = new Date().getHours();
+    if (hour >= 6 && hour < 12) return 'morning';
+    if (hour >= 12 && hour < 18) return 'afternoon';
+    if (hour >= 18 && hour < 22) return 'evening';
+    return 'night';
   }
 
   /**
@@ -961,6 +1156,30 @@ export class Algorithm3Integrator {
   private updateAvgPretrainingBenefit(newBenefit: number): void {
     const n = this.pretrainingBenefits.length;
     this.stats.avgPretrainingBenefit = ((this.stats.avgPretrainingBenefit * (n - 1)) + newBenefit) / n;
+  }
+
+  /**
+   * Update average RL reward (Phase 10)
+   */
+  private updateAvgRLReward(newReward: number): void {
+    const n = this.rlRewards.length;
+    this.stats.avgRLReward = ((this.stats.avgRLReward * (n - 1)) + newReward) / n;
+  }
+
+  /**
+   * Update average bandit regret (Phase 10)
+   */
+  private updateAvgBanditRegret(newRegret: number): void {
+    const n = this.banditRegrets.length;
+    this.stats.avgBanditRegret = ((this.stats.avgBanditRegret * (n - 1)) + newRegret) / n;
+  }
+
+  /**
+   * Update average online learning loss (Phase 10)
+   */
+  private updateAvgOnlineLearningLoss(newLoss: number): void {
+    const n = this.onlineLearningLosses.length;
+    this.stats.avgOnlineLearningLoss = ((this.stats.avgOnlineLearningLoss * (n - 1)) + newLoss) / n;
   }
 
   /**
@@ -1059,7 +1278,11 @@ export class Algorithm3Integrator {
       crossModalAttention: crossModalAttention.getStats(),
       modalFusionTransformer: modalFusionTransformer.getStats(),
       contrastiveLearner: contrastiveLearner.getStats(),
-      selfSupervisedPretrainer: selfSupervisedPretrainer.getStats()
+      selfSupervisedPretrainer: selfSupervisedPretrainer.getStats(),
+      rlPolicy: rlPolicy.getStats(),
+      rewardShaper: rewardShaper.getStats(),
+      banditSelector: banditSelector.getStats(),
+      onlineLearner: onlineLearner.getStats()
     };
   }
 
@@ -1085,8 +1308,12 @@ export class Algorithm3Integrator {
     modalFusionTransformer.clear();
     contrastiveLearner.clear();
     selfSupervisedPretrainer.clear();
+    rlPolicy.clear();
+    rewardShaper.clear();
+    banditSelector.clear();
+    onlineLearner.clear();
 
-    logger.info('[Algorithm3Integrator] 🧹 Cleared all state (Phases 1-8)');
+    logger.info('[Algorithm3Integrator] 🧹 Cleared all state (Phases 1-10)');
   }
 
   /**
@@ -1097,7 +1324,7 @@ export class Algorithm3Integrator {
     parallelEngine.dispose();
     getProgressiveLearning()?.dispose();
     getCrossDeviceSync()?.dispose();
-    logger.info('[Algorithm3Integrator] 🛑 Algorithm 3.0 Integration Layer disposed (Phases 1-8)');
+    logger.info('[Algorithm3Integrator] 🛑 Algorithm 3.0 Integration Layer disposed (Phases 1-10)');
   }
 }
 
@@ -1114,11 +1341,15 @@ export class Algorithm3Integrator {
  * ✅ Deep transformer fusion (Innovation #28 - Phase 8)
  * ✅ Contrastive learning alignment (Innovation #29 - Phase 8)
  * ✅ Self-supervised pre-training (Innovation #30 - Phase 8)
+ * ✅ Q-learning policy optimization (Innovation #35 - Phase 10)
+ * ✅ Reward shaping from user feedback (Innovation #36 - Phase 10)
+ * ✅ Multi-armed bandit strategy selection (Innovation #37 - Phase 10)
+ * ✅ Online learning with drift detection (Innovation #38 - Phase 10)
  * ✅ Adaptive learning from user feedback
  * ✅ Equal treatment for ALL 28 trigger categories
  * ✅ Research-backed: +25-35% overall accuracy improvement
  *
- * INTEGRATION FLOW (Phases 1-8):
+ * INTEGRATION FLOW (Phases 1-10):
  * 1. Legacy detection → convertToMultiModalInput()
  * 2. Route through DetectionRouter → specialized pipeline
  * 3. Compute attention weights → ModalityAttentionMechanism
@@ -1129,7 +1360,10 @@ export class Algorithm3Integrator {
  * 8. Contrastive alignment → ContrastiveLearner (Phase 8)
  * 9. Transfer learning → SelfSupervisedPretrainer (Phase 8)
  * 10. Check user sensitivity → PersonalizedDetector
- * 11. Emit enhanced warning (or suppress based on personalization)
+ * 11. Apply RL policy → RLPolicy (Phase 10)
+ * 12. Select strategy → BanditSelector (Phase 10)
+ * 13. Online prediction → OnlineLearner (Phase 10)
+ * 14. Emit enhanced warning (or suppress based on RL + personalization)
  *
  * BACKWARD COMPATIBILITY:
  * - Works with existing DetectionOrchestrator
