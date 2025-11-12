@@ -50,6 +50,11 @@ import { categoryFeatureExtractor, type CategoryFeatures, type MultiModalInput a
 import { categoryDependencyGraph, type CategoryDetection, type DependencyAnalysisResult } from '../graph/CategoryDependencyGraph';
 import { AdaptiveThresholdLearner, type UserFeedback } from '../learning/AdaptiveThresholdLearner';
 
+// Algorithm 3.0 Innovations (Phase 5)
+import { multiTaskLearner, type MultiTaskPrediction, type MultiModalFeatures as MTLFeatures } from '../learning/MultiTaskLearner';
+import { fewShotLearner, type FewShotPrediction, type FeatureVector as FewShotFeatures } from '../learning/FewShotLearner';
+import { explainabilityEngine, type DetectionExplanation } from '../explainability/ExplainabilityEngine';
+
 const logger = new Logger('Algorithm3Integrator');
 
 /**
@@ -99,6 +104,11 @@ export interface EnhancedDetection {
   dependencyBoost?: DependencyAnalysisResult;
   adaptiveThreshold?: number;
 
+  // Algorithm 3.0 enhancements (Phase 5)
+  multiTaskPrediction?: MultiTaskPrediction;
+  fewShotPrediction?: FewShotPrediction;
+  explanation?: DetectionExplanation;
+
   // User personalization
   userThreshold: number;
   shouldWarn: boolean;
@@ -133,6 +143,12 @@ interface IntegrationStats {
   dependencyBoosts: number;
   avgDependencyBoost: number;
   adaptiveThresholdAdjustments: number;
+
+  // Phase 5 statistics
+  multiTaskPredictions: number;
+  fewShotMatches: number;
+  explanationsGenerated: number;
+  avgKnowledgeTransferBoost: number;
 }
 
 /**
@@ -172,7 +188,11 @@ export class Algorithm3Integrator {
     featureExtractions: 0,
     dependencyBoosts: 0,
     avgDependencyBoost: 0,
-    adaptiveThresholdAdjustments: 0
+    adaptiveThresholdAdjustments: 0,
+    multiTaskPredictions: 0,
+    fewShotMatches: 0,
+    explanationsGenerated: 0,
+    avgKnowledgeTransferBoost: 0
   };
 
   private confidenceBoosts: number[] = [];
@@ -188,7 +208,8 @@ export class Algorithm3Integrator {
     // Initialize adaptive threshold learner (Phase 4)
     this.adaptiveThresholdLearner = new AdaptiveThresholdLearner(profile.userId || 'default');
 
-    logger.info('[Algorithm3Integrator] 🚀 Algorithm 3.0 Integration Layer initialized (Phases 1-4)');
+    logger.info('[Algorithm3Integrator] 🚀 Algorithm 3.0 Integration Layer initialized (Phases 1-5)');
+    logger.info('[Algorithm3Integrator] ✅ All innovations active: Routing, Attention, Temporal, Fusion, Personalization, Hierarchical, Validation, Features, Dependencies, Adaptive Learning, Multi-Task, Few-Shot, Explainability');
     logger.info(`[Algorithm3Integrator] Enabled categories: ${profile.enabledCategories.join(', ')}`);
   }
 
@@ -759,7 +780,10 @@ export class Algorithm3Integrator {
       validation: conditionalValidator.getStats(),
       features: categoryFeatureExtractor.getStats(),
       dependencies: categoryDependencyGraph.getStats(),
-      adaptiveThresholds: this.adaptiveThresholdLearner.getStats()
+      adaptiveThresholds: this.adaptiveThresholdLearner.getStats(),
+      multiTask: multiTaskLearner.getStats(),
+      fewShot: fewShotLearner.getStats(),
+      explainability: explainabilityEngine.getStats()
     };
   }
 
@@ -772,8 +796,10 @@ export class Algorithm3Integrator {
     temporalCoherenceRegularizer.clearHistory();
     categoryFeatureExtractor.clear();
     categoryDependencyGraph.clear();
+    multiTaskLearner.clear();
+    fewShotLearner.clear();
 
-    logger.info('[Algorithm3Integrator] 🧹 Cleared all state (Phases 1-4)');
+    logger.info('[Algorithm3Integrator] 🧹 Cleared all state (Phases 1-5)');
   }
 
   /**
@@ -781,7 +807,7 @@ export class Algorithm3Integrator {
    */
   dispose(): void {
     this.clear();
-    logger.info('[Algorithm3Integrator] 🛑 Algorithm 3.0 Integration Layer disposed (Phases 1-4)');
+    logger.info('[Algorithm3Integrator] 🛑 Algorithm 3.0 Integration Layer disposed (Phases 1-5)');
   }
 }
 
