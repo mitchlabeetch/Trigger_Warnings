@@ -13,29 +13,13 @@
  */
 
 import type { Warning } from '@shared/types/Warning.types';
+import type { AnalyzeAudioPayload, DetectionPayload } from '@shared/types/analysis.types';
 import { Logger } from '@shared/utils/logger';
 import { PerformanceGovernor } from '../performance/PerformanceGovernor';
 // @ts-ignore - Query params for worker import
 import AudioAnalyzerWorker from './AudioAnalyzer.worker?worker';
 
 const logger = new Logger('AudioFrequencyAnalyzer');
-
-interface FrequencyBands {
-  subBass: number;
-  bass: number;
-  lowMid: number;
-  mid: number;
-  highMid: number;
-  presence: number;
-  brilliance: number;
-}
-
-interface FrequencyEvent {
-  type: 'scream' | 'gunshot' | 'explosion' | 'siren' | 'medical_beep' | 'crying' | 'power_tool';
-  timestamp: number;
-  confidence: number;
-  frequencyProfile: FrequencyBands;
-}
 
 export class AudioFrequencyAnalyzer {
   private audioContext: AudioContext | null = null;
@@ -87,15 +71,16 @@ export class AudioFrequencyAnalyzer {
     const { type, payload } = e.data;
 
     if (type === 'detection') {
-      this.handleDetection(payload);
+      this.handleDetection(payload as DetectionPayload);
     }
   }
 
-  private handleDetection(payload: any) {
+  private handleDetection(payload: DetectionPayload) {
       const warning: Warning = {
           ...payload,
           createdAt: new Date(payload.createdAt),
-          updatedAt: new Date(payload.updatedAt)
+          updatedAt: new Date(payload.updatedAt),
+          categoryKey: payload.categoryKey as any
       };
 
       if (warning.categoryKey === 'children_screaming') this.stats.screamDetections++;
@@ -198,14 +183,16 @@ export class AudioFrequencyAnalyzer {
     this.analyser.getByteFrequencyData(this.frequencyData);
 
     // Send to worker
+    const payload: AnalyzeAudioPayload = {
+      frequencyData: this.frequencyData, // Cloned automatically
+      timestamp: this.video.currentTime,
+      sampleRate: this.analyser.context.sampleRate,
+      binCount: this.analyser.frequencyBinCount
+    };
+
     this.worker.postMessage({
       type: 'analyze_audio',
-      payload: {
-        frequencyData: this.frequencyData, // Cloned automatically
-        timestamp: this.video.currentTime,
-        sampleRate: this.analyser.context.sampleRate,
-        binCount: this.analyser.frequencyBinCount
-      }
+      payload
     });
   }
 

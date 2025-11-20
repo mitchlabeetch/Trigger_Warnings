@@ -22,18 +22,22 @@ export class PerformanceGovernor {
   private listeners: ((tier: PerformanceTier) => void)[] = [];
 
   // Monitoring state
-  private lastFrameTime: number = 0;
   private frameCount: number = 0;
   private lastCheckTime: number = 0;
-  private checkInterval: number = 2000; // Check every 2 seconds
+  private checkInterval: number = 1000; // Check every 1 second for smoother updates
   private rafId: number | null = null;
   private isMonitoring: boolean = false;
 
-  // Performance thresholds
+  // FPS Smoothing (Exponential Moving Average)
+  private currentFPS: number = 60;
+  private readonly ALPHA = 0.2; // Weight for new value (0.2 means 20% new, 80% history)
+
+  // Performance thresholds with Hysteresis buffers
+  // We use separate up/down thresholds to prevent flickering
   private readonly THRESHOLDS = {
-    OPTIMAL: 55, // fps > 55
-    BALANCED: 45, // fps > 45
-    STRESSED: 30  // fps > 30
+    OPTIMAL: { UP: 58, DOWN: 55 },
+    BALANCED: { UP: 48, DOWN: 45 },
+    STRESSED: { UP: 35, DOWN: 30 }
   };
 
   private constructor() {
@@ -56,6 +60,7 @@ export class PerformanceGovernor {
     this.isMonitoring = true;
     this.lastCheckTime = performance.now();
     this.frameCount = 0;
+    this.currentFPS = 60; // Reset FPS assumption
 
     logger.info('Performance monitoring started');
     this.monitorLoop();
@@ -112,27 +117,60 @@ export class PerformanceGovernor {
 
   /**
    * Evaluate performance and update tier
+   * Uses EMA smoothing and Hysteresis for stability
    */
   private evaluatePerformance(now: number): void {
     const elapsed = now - this.lastCheckTime;
-    const fps = (this.frameCount / elapsed) * 1000;
+    const instantFPS = (this.frameCount / elapsed) * 1000;
+
+    // Apply Exponential Moving Average (EMA)
+    this.currentFPS = (this.ALPHA * instantFPS) + ((1 - this.ALPHA) * this.currentFPS);
 
     const previousTier = this.currentTier;
+    let newTier = previousTier;
 
-    // Determine new tier
-    if (fps >= this.THRESHOLDS.OPTIMAL) {
-      this.currentTier = PerformanceTier.OPTIMAL;
-    } else if (fps >= this.THRESHOLDS.BALANCED) {
-      this.currentTier = PerformanceTier.BALANCED;
-    } else if (fps >= this.THRESHOLDS.STRESSED) {
-      this.currentTier = PerformanceTier.STRESSED;
-    } else {
-      this.currentTier = PerformanceTier.CRITICAL;
+    // Determine new tier with hysteresis
+    // Logic: Only change if we cross the specific threshold for that direction
+
+    switch (previousTier) {
+      case PerformanceTier.OPTIMAL:
+        if (this.currentFPS < this.THRESHOLDS.OPTIMAL.DOWN) {
+          newTier = PerformanceTier.BALANCED;
+        }
+        break;
+
+      case PerformanceTier.BALANCED:
+        if (this.currentFPS > this.THRESHOLDS.OPTIMAL.UP) {
+          newTier = PerformanceTier.OPTIMAL;
+        } else if (this.currentFPS < this.THRESHOLDS.BALANCED.DOWN) {
+          newTier = PerformanceTier.STRESSED;
+        }
+        break;
+
+      case PerformanceTier.STRESSED:
+        if (this.currentFPS > this.THRESHOLDS.BALANCED.UP) {
+          newTier = PerformanceTier.BALANCED;
+        } else if (this.currentFPS < this.THRESHOLDS.STRESSED.DOWN) {
+          newTier = PerformanceTier.CRITICAL;
+        }
+        break;
+
+      case PerformanceTier.CRITICAL:
+        if (this.currentFPS > this.THRESHOLDS.STRESSED.UP) {
+          newTier = PerformanceTier.STRESSED;
+        }
+        break;
     }
 
-    // Log if tier changed
-    if (previousTier !== this.currentTier) {
-      logger.info(`Performance tier changed: ${previousTier} -> ${this.currentTier} (FPS: ${fps.toFixed(1)})`);
+    // If tier dropped significantly (e.g. sudden lag spike), we might want to skip intermediate steps
+    // But for now, let's stick to smooth transitions unless it's critical
+    if (this.currentFPS < 20 && newTier !== PerformanceTier.CRITICAL) {
+        newTier = PerformanceTier.CRITICAL;
+    }
+
+    if (newTier !== previousTier) {
+      this.currentTier = newTier;
+      logger.info(`Performance tier changed: ${previousTier} -> ${this.currentTier} (FPS: ${this.currentFPS.toFixed(1)})`);
       this.notifyListeners();
     }
 

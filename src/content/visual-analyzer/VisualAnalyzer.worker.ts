@@ -1,29 +1,4 @@
-import type { Warning } from '@shared/types/Warning.types';
-
-// Define types locally since we can't easily share non-type imports in workers without complex setup
-// In a real setup, these should be in a shared types file
-
-interface ColorAnalysis {
-  brightRed: number;          // 0-1 (percentage of frame)
-  orangeYellow: number;       // Fire detection
-  yellowBrown: number;        // Vomit detection
-  greenishYellow: number;     // Vomit detection
-  sterileWhite: number;       // Medical scenes
-  medicalBlueGreen: number;   // Medical equipment/scrubs
-  blueGreen: number;          // Underwater
-  darkPixels: number;         // Shadow/night
-  brightness: number;         // Average luminance
-  saturation: number;         // Color intensity
-  irregularity: number;       // Edge complexity (gore indicator)
-  chunkiness: number;         // Texture irregularity (vomit, gore)
-}
-
-interface VisualEvent {
-  type: 'blood' | 'gore' | 'fire' | 'medical' | 'underwater' | 'scene_change' | 'vomit';
-  timestamp: number;
-  confidence: number;
-  colorAnalysis: ColorAnalysis;
-}
+import type { ColorAnalysis, VisualEvent, AnalyzeFramePayload, DetectionPayload } from '@shared/types/analysis.types';
 
 // Worker state
 let offscreenCanvas: OffscreenCanvas | null = null;
@@ -48,7 +23,8 @@ self.onmessage = (e: MessageEvent) => {
   const { type, payload } = e.data;
 
   if (type === 'analyze_frame') {
-    analyzeFrame(payload.bitmap, payload.timestamp);
+    const p = payload as AnalyzeFramePayload;
+    analyzeFrame(p.bitmap, p.timestamp);
   } else if (type === 'reset') {
     resetState();
   }
@@ -412,22 +388,24 @@ function createWarning(
   detectedEvents.set(eventKey, event);
 
   // Send warning back to main thread
+  const payload: DetectionPayload = {
+    id: eventKey,
+    videoId: 'visual-color-detected', // This will be updated by main thread if needed
+    categoryKey: category,
+    startTime: Math.max(0, timestamp - 2),
+    endTime: timestamp + 5,
+    submittedBy: 'visual-color-analyzer',
+    status: 'approved',
+    score: 0,
+    confidenceLevel: confidence,
+    requiresModeration: false,
+    description,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+
   self.postMessage({
     type: 'detection',
-    payload: {
-      id: eventKey,
-      videoId: 'visual-color-detected', // This will be updated by main thread if needed
-      categoryKey: category,
-      startTime: Math.max(0, timestamp - 2),
-      endTime: timestamp + 5,
-      submittedBy: 'visual-color-analyzer',
-      status: 'approved',
-      score: 0,
-      confidenceLevel: confidence,
-      requiresModeration: false,
-      description,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    }
+    payload
   });
 }

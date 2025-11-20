@@ -1,23 +1,4 @@
-import type { Warning } from '@shared/types/Warning.types';
-
-// Local interfaces (copied from original file for worker isolation)
-
-interface FrequencyBands {
-  subBass: number;      // 20-60 Hz
-  bass: number;         // 60-250 Hz (explosions)
-  lowMid: number;       // 250-500 Hz
-  mid: number;          // 500-2000 Hz (speech, crying)
-  highMid: number;      // 2-4 kHz (screaming)
-  presence: number;     // 4-6 kHz (screaming, gunshots)
-  brilliance: number;   // 6-20 kHz
-}
-
-interface FrequencyEvent {
-  type: 'scream' | 'gunshot' | 'explosion' | 'siren' | 'medical_beep' | 'crying' | 'power_tool';
-  timestamp: number;
-  confidence: number;
-  frequencyProfile: FrequencyBands;
-}
+import type { FrequencyBands, FrequencyEvent, AnalyzeAudioPayload, DetectionPayload } from '@shared/types/analysis.types';
 
 // Worker State
 let frequencyHistory: FrequencyBands[] = [];
@@ -38,7 +19,8 @@ self.onmessage = (e: MessageEvent) => {
   const { type, payload } = e.data;
 
   if (type === 'analyze_audio') {
-    analyzeAudio(payload.frequencyData, payload.timestamp, payload.sampleRate, payload.binCount);
+    const p = payload as AnalyzeAudioPayload;
+    analyzeAudio(p.frequencyData, p.timestamp, p.sampleRate, p.binCount);
   } else if (type === 'reset') {
     resetState();
   }
@@ -241,22 +223,24 @@ function createWarning(
 
   detectedEvents.set(eventKey, event);
 
+  const payload: DetectionPayload = {
+    id: eventKey,
+    videoId: 'audio-frequency-detected',
+    categoryKey: category,
+    startTime: Math.max(0, timestamp - 2),
+    endTime: timestamp + 3,
+    submittedBy: 'audio-frequency-analyzer',
+    status: 'approved',
+    score: 0,
+    confidenceLevel: confidence,
+    requiresModeration: false,
+    description,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+
   self.postMessage({
     type: 'detection',
-    payload: {
-      id: eventKey,
-      videoId: 'audio-frequency-detected',
-      categoryKey: category,
-      startTime: Math.max(0, timestamp - 2),
-      endTime: timestamp + 3,
-      submittedBy: 'audio-frequency-analyzer',
-      status: 'approved',
-      score: 0,
-      confidenceLevel: confidence,
-      requiresModeration: false,
-      description,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    }
+    payload
   });
 }

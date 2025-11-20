@@ -13,34 +13,13 @@
  */
 
 import type { Warning } from '@shared/types/Warning.types';
+import type { AnalyzeFramePayload, DetectionPayload } from '@shared/types/analysis.types';
 import { Logger } from '@shared/utils/logger';
 import { PerformanceGovernor } from '../performance/PerformanceGovernor';
 // @ts-ignore - Query params for worker import
 import VisualAnalyzerWorker from './VisualAnalyzer.worker?worker';
 
 const logger = new Logger('VisualColorAnalyzer');
-
-interface ColorAnalysis {
-  brightRed: number;
-  orangeYellow: number;
-  yellowBrown: number;
-  greenishYellow: number;
-  sterileWhite: number;
-  medicalBlueGreen: number;
-  blueGreen: number;
-  darkPixels: number;
-  brightness: number;
-  saturation: number;
-  irregularity: number;
-  chunkiness: number;
-}
-
-interface VisualEvent {
-  type: 'blood' | 'gore' | 'fire' | 'medical' | 'underwater' | 'scene_change' | 'vomit';
-  timestamp: number;
-  confidence: number;
-  colorAnalysis: ColorAnalysis;
-}
 
 export class VisualColorAnalyzer {
   private video: HTMLVideoElement | null = null;
@@ -89,21 +68,22 @@ export class VisualColorAnalyzer {
     const { type, payload } = e.data;
 
     if (type === 'detection') {
-        this.handleDetection(payload);
+        this.handleDetection(payload as DetectionPayload);
     } else if (type === 'stats') {
         // Update local stats if worker sends them
         // this.stats = { ...this.stats, ...payload };
     }
   }
 
-  private handleDetection(payload: any) {
+  private handleDetection(payload: DetectionPayload) {
       // Convert payload to Warning type if needed or pass directly
       // The worker sends a payload that matches Warning structure mostly
       const warning: Warning = {
           ...payload,
           // Ensure dates are Date objects
           createdAt: new Date(payload.createdAt),
-          updatedAt: new Date(payload.updatedAt)
+          updatedAt: new Date(payload.updatedAt),
+          categoryKey: payload.categoryKey as any
       };
 
       // Update stats based on category (simple approximation)
@@ -186,12 +166,14 @@ export class VisualColorAnalyzer {
       this.stats.totalFramesAnalyzed++;
 
       // Transfer the bitmap to the worker (zero-copy)
+      const payload: AnalyzeFramePayload = {
+        timestamp: this.video.currentTime,
+        bitmap: bitmap
+      };
+
       this.worker.postMessage({
         type: 'analyze_frame',
-        payload: {
-            timestamp: this.video.currentTime,
-            bitmap: bitmap
-        }
+        payload
       }, [bitmap]);
 
     } catch (error) {
