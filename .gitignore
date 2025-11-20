@@ -1,8 +1,36 @@
 node_modules/
 dist/
+build/
+.svelte-kit/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+*.tsbuildinfo
+*.js
+*.js.map
+*.d.ts
+*.d.ts.map
+!vite.config.ts
+!svelte.config.js
+!tailwind.config.js
+!postcss.config.js
+!src/**/*.js
+!src/**/*.ts
+!background.js
+!content.js
+!offscreen.js
+!offscreen-wrapper.js
+!offscreen-bundle.js
+!options.js
+!popup.js
+!303.js
+!591.js
+!node_modules_ws_browser_js.offscreen.bundle.js
 
 # Environment variables with API keys
 scripts/.env
+.env
+.env.local
 
 # Data import outputs
 database/imdb-import-*.sql
@@ -11,5 +39,10 @@ database/imdb-import-*.json
 # Downloaded datasets
 scripts/*.csv
 scripts/imdb-*.csv
+
 # Backups
 backup-*/
+
+# OS files
+.DS_Store
+Thumbs.db

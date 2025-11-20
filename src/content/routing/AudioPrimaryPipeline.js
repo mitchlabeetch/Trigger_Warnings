@@ -172,7 +172,7 @@ export class AudioPrimaryPipeline {
             confidence += 30;
         }
         // High intensity spike
-        confidence += features.intensityAnalysis.transientIntensity * 0.3;
+        confidence += features.waveformAnalysis.transientIntensity * 0.3;
         return Math.min(confidence, 100);
     }
     /**

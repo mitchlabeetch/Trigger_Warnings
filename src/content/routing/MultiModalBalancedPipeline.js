@@ -42,7 +42,7 @@ export class MultiModalBalancedPipeline {
             this.stats.highSensitivity++;
         }
         // Check if all modalities present
-        const allPresent = input.visual && input.audio && input.text;
+        const allPresent = !!(input.visual && input.audio && input.text);
         if (allPresent) {
             this.stats.allModalitiesPresent++;
         }

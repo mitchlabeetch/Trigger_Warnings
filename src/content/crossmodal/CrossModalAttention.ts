@@ -10,8 +10,8 @@
  * Equal Treatment: All 28 categories benefit from cross-modal correlation learning
  */
 
-import type { TriggerCategory } from '../../types/triggers';
-import { logger } from '../../utils/Logger';
+import type { TriggerCategory } from '../types/triggers';
+import { logger } from '../utils/Logger';
 
 /**
  * Multi-modal features for attention
@@ -44,6 +44,7 @@ export interface CrossModalResult {
   crossModalBoost: number;      // Confidence boost from correlation (0-1)
   dominantCorrelation: string;  // e.g., "visual-audio", "audio-text"
   correlationScore: number;     // 0-1, how well modalities agree
+  dominantPair: string[]; // Added dominantPair
 }
 
 /**
@@ -103,13 +104,11 @@ export class CrossModalAttention {
 
   // All 28 categories
   private readonly CATEGORIES: TriggerCategory[] = [
-    'blood', 'gore', 'violence', 'murder', 'torture', 'child-abuse',
-    'sexual-content', 'sexual-assault', 'incest', 'pedophilia',
-    'death', 'suicide', 'self-harm', 'eating-disorders',
-    'animal-abuse', 'natural-disasters', 'medical', 'vomit',
-    'phobias', 'claustrophobia', 'pregnancy-childbirth', 'miscarriage',
-    'racial-slurs', 'hate-speech', 'substance-abuse', 'addiction',
-    'gunshots', 'extreme-sounds'
+    'blood', 'gore', 'violence', 'murder', 'torture', 'child_abuse',
+    'sex', 'sexual_assault', 'death_dying', 'suicide', 'self_harm', 'eating_disorders',
+    'animal_cruelty', 'natural_disasters', 'medical_procedures', 'vomit',
+    'claustrophobia_triggers', 'pregnancy_childbirth', 'slurs', 'hate_speech',
+    'gunshots', 'explosions'
   ];
 
   constructor() {
@@ -176,7 +175,8 @@ export class CrossModalAttention {
       attentionWeights: weights,
       crossModalBoost,
       dominantCorrelation: dominantPair.join('-'),
-      correlationScore
+      correlationScore,
+      dominantPair
     };
   }
 
@@ -490,10 +490,10 @@ export class CrossModalAttention {
     this.learnCorrelation('gunshots', ['audio', 'visual'], 0.95);
 
     // Screaming: audio-text correlation (sound + words)
-    this.learnCorrelation('extreme-sounds', ['audio', 'text'], 0.80);
+    this.learnCorrelation('loud_noises', ['audio', 'text'], 0.80);
 
     // Sexual content: visual-text correlation (imagery + description)
-    this.learnCorrelation('sexual-content', ['visual', 'text'], 0.85);
+    this.learnCorrelation('sex', ['visual', 'text'], 0.85);
 
     // ... more patterns can be added based on domain knowledge
 
@@ -533,7 +533,8 @@ export class CrossModalAttention {
       attentionWeights: this.getDefaultWeights(),
       crossModalBoost: 0,
       dominantCorrelation: modality ? `${modality}-only` : 'none',
-      correlationScore: 0
+      correlationScore: 0,
+      dominantPair: [modality || 'none', 'none']
     };
   }
 

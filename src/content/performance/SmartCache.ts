@@ -10,8 +10,8 @@
  * Equal Treatment: All 28 categories benefit from same caching optimizations
  */
 
-import type { TriggerCategory } from '../../types/triggers';
-import { logger } from '../../utils/Logger';
+import type { TriggerCategory } from '../types/triggers';
+import { logger } from '../utils/Logger';
 
 /**
  * Cache entry types for different levels
@@ -78,7 +78,7 @@ export interface PredictionCacheEntry {
 /**
  * Cache statistics
  */
-interface CacheStats {
+export interface CacheStats {
   // Overall stats
   totalRequests: number;
   totalHits: number;

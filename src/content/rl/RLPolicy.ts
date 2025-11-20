@@ -12,8 +12,8 @@
  * Equal Treatment: All 28 categories benefit from same RL framework
  */
 
-import type { TriggerCategory } from '../../types/triggers';
-import { logger } from '../../utils/Logger';
+import type { TriggerCategory } from '../types/triggers';
+import { logger } from '../utils/Logger';
 
 /**
  * RL State (simplified - discretized state space)

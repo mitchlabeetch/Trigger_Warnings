@@ -132,7 +132,7 @@ export class MultiTaskLearner {
       'vomit',
       'dead_body_body_horror',
       'medical_procedures',
-      'needles_trypanophobia',
+      'needles_injections',
       'self_harm'
     ],
     'violence': [
@@ -141,8 +141,8 @@ export class MultiTaskLearner {
       'torture',
       'domestic_violence',
       'racial_violence',
-      'police_violence',
-      'gunshots_gun_violence',
+      'violence',
+      'gunshots',
       'animal_cruelty',
       'child_abuse'
     ],

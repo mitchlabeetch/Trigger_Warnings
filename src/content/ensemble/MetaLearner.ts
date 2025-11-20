@@ -12,8 +12,8 @@
  * Equal Treatment: All 28 categories benefit from same meta-learning approach
  */
 
-import type { TriggerCategory } from '../../types/triggers';
-import { logger } from '../../utils/Logger';
+import type { TriggerCategory } from '../types/triggers';
+import { logger } from '../utils/Logger';
 
 /**
  * Support example (for meta-learning)

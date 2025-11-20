@@ -13,8 +13,8 @@
  * Equal Treatment: All 28 categories benefit from same community learning and validation
  */
 
-import type { TriggerCategory } from '../../types/triggers';
-import { logger } from '../../utils/Logger';
+import type { TriggerCategory } from '../types/triggers';
+import { logger } from '../utils/Logger';
 
 /**
  * Detection sources
@@ -805,13 +805,11 @@ export class UnifiedContributionPipeline {
     logger.info('[UnifiedPipeline] 🔄 Preloading approved triggers...');
 
     const categories: TriggerCategory[] = [
-      'blood', 'gore', 'violence', 'murder', 'torture', 'child-abuse',
-      'sexual-content', 'sexual-assault', 'incest', 'pedophilia',
-      'death', 'suicide', 'self-harm', 'eating-disorders',
-      'animal-abuse', 'natural-disasters', 'medical', 'vomit',
-      'phobias', 'claustrophobia', 'pregnancy-childbirth', 'miscarriage',
-      'racial-slurs', 'hate-speech', 'substance-abuse', 'addiction',
-      'gunshots', 'extreme-sounds'
+      'blood', 'gore', 'violence', 'murder', 'torture', 'child_abuse',
+      'sex', 'sexual_assault', 'death_dying', 'suicide', 'self_harm', 'eating_disorders',
+      'animal_cruelty', 'natural_disasters', 'medical_procedures', 'vomit',
+      'claustrophobia_triggers', 'pregnancy_childbirth', 'slurs', 'hate_speech',
+      'gunshots', 'explosions'
     ];
 
     // Load all in parallel

@@ -10,9 +10,9 @@
  * Equal Treatment: All 28 categories tracked and synced equally
  */
 
-import type { TriggerCategory } from '../../types/triggers';
+import type { TriggerCategory } from '../types/triggers';
 import type { LearningStateSnapshot, ThresholdData, FewShotExample } from './ProgressiveLearningState';
-import { logger } from '../../utils/Logger';
+import { logger } from '../utils/Logger';
 
 /**
  * Sync configuration

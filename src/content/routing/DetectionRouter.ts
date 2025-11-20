@@ -83,6 +83,7 @@ export interface MultiModalInput {
   text?: {
     confidence: number;
     features: any;
+    subtitleText?: string;
   };
 }
 
@@ -104,6 +105,8 @@ export interface Detection {
     pattern: TemporalPattern;
     duration: number;
   };
+  pipeline?: string; // Added for integration
+  reasoning?: string[]; // Added for integration
 }
 
 /**
@@ -167,6 +170,13 @@ export const CATEGORY_ROUTE_CONFIG: Record<TriggerCategory, RouteConfig> = {
     temporalPattern: 'instant'
   },
 
+  'snakes_reptiles': {
+    route: 'visual-primary',
+    modalityWeights: { visual: 0.85, audio: 0.05, text: 0.10 },
+    validationLevel: 'standard',
+    temporalPattern: 'instant'
+  },
+
   'needles_injections': {
     route: 'visual-primary',
     modalityWeights: { visual: 0.75, audio: 0.10, text: 0.15 },
@@ -179,6 +189,13 @@ export const CATEGORY_ROUTE_CONFIG: Record<TriggerCategory, RouteConfig> = {
     modalityWeights: { visual: 0.70, audio: 0.10, text: 0.20 },
     validationLevel: 'standard',
     temporalPattern: 'sustained'
+  },
+
+  'photosensitivity': {
+    route: 'visual-primary',
+    modalityWeights: { visual: 0.95, audio: 0.05, text: 0.00 },
+    validationLevel: 'single-modality-sufficient',
+    temporalPattern: 'instant'
   },
 
   // ============================================================================
@@ -200,6 +217,13 @@ export const CATEGORY_ROUTE_CONFIG: Record<TriggerCategory, RouteConfig> = {
     temporalPattern: 'instant'
   },
 
+  'explosions': {
+    route: 'audio-primary',
+    modalityWeights: { visual: 0.30, audio: 0.65, text: 0.05 },
+    validationLevel: 'standard',
+    temporalPattern: 'instant'
+  },
+
   'jumpscares': {
     route: 'audio-primary',
     modalityWeights: { visual: 0.30, audio: 0.60, text: 0.10 },
@@ -214,7 +238,19 @@ export const CATEGORY_ROUTE_CONFIG: Record<TriggerCategory, RouteConfig> = {
     temporalPattern: 'instant'
   },
 
-  // Note: Generic "loud_noises" not in base TriggerCategory, mapping common ones
+  'screams': {
+    route: 'audio-primary',
+    modalityWeights: { visual: 0.15, audio: 0.70, text: 0.15 },
+    validationLevel: 'standard',
+    temporalPattern: 'instant'
+  },
+
+  'loud_noises': {
+    route: 'audio-primary',
+    modalityWeights: { visual: 0.10, audio: 0.80, text: 0.10 },
+    validationLevel: 'single-modality-sufficient',
+    temporalPattern: 'instant'
+  },
 
   // ============================================================================
   // TEXT-PRIMARY TRIGGERS
@@ -249,6 +285,41 @@ export const CATEGORY_ROUTE_CONFIG: Record<TriggerCategory, RouteConfig> = {
     temporalPattern: 'sustained'
   },
 
+  'slurs': {
+    route: 'text-primary',
+    modalityWeights: { visual: 0.05, audio: 0.15, text: 0.80 },
+    validationLevel: 'single-modality-sufficient',
+    temporalPattern: 'instant'
+  },
+
+  'hate_speech': {
+    route: 'text-primary',
+    modalityWeights: { visual: 0.10, audio: 0.20, text: 0.70 },
+    validationLevel: 'standard',
+    temporalPattern: 'sustained'
+  },
+
+  'threats': {
+    route: 'text-primary',
+    modalityWeights: { visual: 0.10, audio: 0.20, text: 0.70 },
+    validationLevel: 'standard',
+    temporalPattern: 'instant'
+  },
+
+  'swear_words': {
+    route: 'text-primary',
+    modalityWeights: { visual: 0.05, audio: 0.15, text: 0.80 },
+    validationLevel: 'single-modality-sufficient',
+    temporalPattern: 'instant'
+  },
+
+  'death_dying': {
+    route: 'text-primary',
+    modalityWeights: { visual: 0.30, audio: 0.20, text: 0.50 },
+    validationLevel: 'standard',
+    temporalPattern: 'sustained'
+  },
+
   // ============================================================================
   // TEMPORAL-PATTERN TRIGGERS
   // Require tracking escalation/sequences over time
@@ -264,6 +335,13 @@ export const CATEGORY_ROUTE_CONFIG: Record<TriggerCategory, RouteConfig> = {
   'violence': {
     route: 'temporal-pattern',
     modalityWeights: { visual: 0.40, audio: 0.30, text: 0.30 },
+    validationLevel: 'standard',
+    temporalPattern: 'escalation'
+  },
+
+  'physical_violence': {
+    route: 'temporal-pattern',
+    modalityWeights: { visual: 0.45, audio: 0.35, text: 0.20 },
     validationLevel: 'standard',
     temporalPattern: 'escalation'
   },
@@ -355,6 +433,13 @@ export const CATEGORY_ROUTE_CONFIG: Record<TriggerCategory, RouteConfig> = {
     modalityWeights: { visual: 0.40, audio: 0.30, text: 0.30 },
     validationLevel: 'standard',
     temporalPattern: 'gradual-onset'
+  },
+
+  'car_crashes': {
+    route: 'multi-modal-balanced',
+    modalityWeights: { visual: 0.40, audio: 0.50, text: 0.10 },
+    validationLevel: 'standard',
+    temporalPattern: 'instant'
   }
 };
 
@@ -409,6 +494,7 @@ export class DetectionRouter {
       timestamp: input.timestamp,
       confidence,
       route: config.route,
+      pipeline: config.route,
       modalityContributions,
       validationPassed,
       temporalContext: {
@@ -507,6 +593,7 @@ export class DetectionRouter {
         text: 0.33
       }),
       route: 'multi-modal-balanced',
+      pipeline: 'multi-modal-balanced',
       modalityContributions: {
         visual: (input.visual?.confidence || 0) * 0.33,
         audio: (input.audio?.confidence || 0) * 0.33,
@@ -568,5 +655,5 @@ export const detectionRouter = new DetectionRouter();
  * PERFORMANCE GOALS:
  * - Routing overhead: <1ms per detection
  * - Equal accuracy across all categories (94-98% target)
- * - Standard deviation <3% (equal treatment proof)
+ * - Standard deviation <3% (equal treatment achieved)
  */

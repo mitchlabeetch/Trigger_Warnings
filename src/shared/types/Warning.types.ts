@@ -30,7 +30,23 @@ export type TriggerCategory =
   | 'jumpscares'
   | 'murder'
   | 'lgbtq_phobia'
-  | 'cannibalism';
+  | 'cannibalism'
+  | 'gunshots'
+  | 'explosions'
+  | 'screams'
+  | 'slurs'
+  | 'hate_speech'
+  | 'threats'
+  | 'photosensitivity'
+  | 'loud_noises'
+  | 'insects_spiders'
+  | 'needles_injections'
+  | 'pregnancy_childbirth'
+  | 'death_dying'
+  | 'claustrophobia_triggers'
+  | 'physical_violence'
+  | 'car_crashes'
+  | 'snakes_reptiles';
 
 export type WarningAction = 'warn' | 'mute' | 'hide' | 'mute-and-hide';
 

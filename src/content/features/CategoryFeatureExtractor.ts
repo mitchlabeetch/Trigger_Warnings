@@ -107,7 +107,7 @@ export class CategoryFeatureExtractor {
       ['vomit', this.extractVomitFeatures.bind(this)],
       ['dead_body_body_horror', this.extractDeadBodyFeatures.bind(this)],
       ['medical_procedures', this.extractMedicalProceduresFeatures.bind(this)],
-      ['needles_trypanophobia', this.extractNeedlesFeatures.bind(this)],
+      ['needles_injections', this.extractNeedlesFeatures.bind(this)],
       ['self_harm', this.extractSelfHarmFeatures.bind(this)],
 
       // VIOLENCE CATEGORIES
@@ -116,8 +116,8 @@ export class CategoryFeatureExtractor {
       ['torture', this.extractTortureFeatures.bind(this)],
       ['domestic_violence', this.extractDomesticViolenceFeatures.bind(this)],
       ['racial_violence', this.extractRacialViolenceFeatures.bind(this)],
-      ['police_violence', this.extractPoliceViolenceFeatures.bind(this)],
-      ['gunshots_gun_violence', this.extractGunshotsFeatures.bind(this)],
+      ['violence', this.extractPoliceViolenceFeatures.bind(this)],
+      ['gunshots', this.extractGunshotsFeatures.bind(this)],
       ['animal_cruelty', this.extractAnimalCrueltyFeatures.bind(this)],
       ['child_abuse', this.extractChildAbuseFeatures.bind(this)],
 
@@ -451,7 +451,7 @@ export class CategoryFeatureExtractor {
       }
     }
 
-    return { category: 'needles_trypanophobia', features, confidence, reasoning };
+    return { category: 'needles_injections', features, confidence, reasoning };
   }
 
   /**
@@ -587,7 +587,7 @@ export class CategoryFeatureExtractor {
       }
     }
 
-    return { category: 'gunshots_gun_violence', features, confidence, reasoning };
+    return { category: 'gunshots', features, confidence, reasoning };
   }
 
   // Additional violence categories (simplified for brevity)
@@ -627,7 +627,7 @@ export class CategoryFeatureExtractor {
 
   private extractPoliceViolenceFeatures(input: MultiModalInput): CategoryFeatures {
     const violenceFeatures = this.extractViolenceFeatures(input);
-    return { category: 'police_violence', features: violenceFeatures.features, confidence: violenceFeatures.confidence * 0.7, reasoning: violenceFeatures.reasoning };
+    return { category: 'violence', features: violenceFeatures.features, confidence: violenceFeatures.confidence * 0.7, reasoning: violenceFeatures.reasoning };
   }
 
   private extractAnimalCrueltyFeatures(input: MultiModalInput): CategoryFeatures {

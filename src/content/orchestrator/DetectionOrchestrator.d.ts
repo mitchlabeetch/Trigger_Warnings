@@ -37,6 +37,8 @@ interface OrchestratorConfig {
     deduplicationStrategy: DeduplicationStrategy;
     enablePerformanceOptimization: boolean;
     enableHealthMonitoring: boolean;
+    enableAlgorithm3: boolean;
+    useLegacyFusion: boolean;
 }
 interface DetectionStats {
     subtitle: ReturnType<SubtitleAnalyzerV2['getStats']> | null;
@@ -63,6 +65,7 @@ export declare class DetectionOrchestrator {
     private deduplicator;
     private performanceOptimizer;
     private healthMonitor;
+    private algorithm3Integrator;
     private provider;
     private profile;
     private config;
@@ -92,7 +95,9 @@ export declare class DetectionOrchestrator {
     /**
      * Get comprehensive statistics from all systems
      */
-    getComprehensiveStats(): DetectionStats;
+    getComprehensiveStats(): DetectionStats & {
+        algorithm3?: any;
+    };
     /**
      * Log comprehensive statistics
      */
@@ -118,6 +123,7 @@ export declare class DetectionOrchestrator {
         deduplication: boolean;
         performance: boolean;
         healthMonitoring: boolean;
+        algorithm3: boolean;
     };
 }
 export {};

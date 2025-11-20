@@ -10,8 +10,8 @@
  * Equal Treatment: All 28 categories benefit from aligned embedding space
  */
 
-import type { TriggerCategory } from '../../types/triggers';
-import { logger } from '../../utils/Logger';
+import type { TriggerCategory } from '../types/triggers';
+import { logger } from '../utils/Logger';
 
 /**
  * Multi-modal embeddings for contrastive learning

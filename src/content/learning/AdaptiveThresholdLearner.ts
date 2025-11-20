@@ -94,49 +94,65 @@ export interface ThresholdAdjustment {
 export class AdaptiveThresholdLearner {
   // Default thresholds for each category (starting point)
   private readonly DEFAULT_THRESHOLDS: Record<TriggerCategory, number> = {
-    // BODILY HARM (higher thresholds - more specific)
+    // BODILY HARM
     'blood': 65,
     'gore': 70,
     'vomit': 65,
     'dead_body_body_horror': 70,
     'medical_procedures': 60,
-    'needles_trypanophobia': 65,
+    'needles_injections': 65,
     'self_harm': 75,
 
-    // VIOLENCE (medium-high thresholds)
+    // VIOLENCE
     'violence': 65,
     'murder': 70,
     'torture': 75,
     'domestic_violence': 70,
     'racial_violence': 70,
-    'police_violence': 70,
-    'gunshots_gun_violence': 70,
     'animal_cruelty': 70,
     'child_abuse': 75,
+    'physical_violence': 65, // Added
+    'car_crashes': 65, // Added
 
-    // SEXUAL CONTENT (high thresholds - be more certain)
+    // SEXUAL CONTENT
     'sex': 70,
     'sexual_assault': 80,
 
-    // SOCIAL/PSYCHOLOGICAL (lower thresholds - easier to detect)
+    // SOCIAL/PSYCHOLOGICAL
     'slurs': 50,
     'hate_speech': 55,
     'eating_disorders': 60,
+    'religious_trauma': 60, // Added
+    'lgbtq_phobia': 60, // Added
+    'suicide': 75, // Added
+    'drugs': 60, // Added
+    'threats': 65, // Added
+    'death_dying': 65, // Added
+    'pregnancy_childbirth': 60, // Added
 
-    // DISASTER/DANGER (medium thresholds)
+    // DISASTER/DANGER
     'detonations_bombs': 65,
-    'car_crashes': 65,
     'natural_disasters': 60,
+    'explosions': 65, // Added
 
-    // PHOBIA/SENSORY (medium thresholds)
+    // PHOBIA/SENSORY
     'spiders_snakes': 60,
-    'flashing_lights': 50,  // Lower - photosensitivity is critical
+    'flashing_lights': 50,
+    'insects_spiders': 60, // Added
+    'snakes_reptiles': 60, // Added
+    'claustrophobia_triggers': 60, // Added
+    'photosensitivity': 50, // Added
+    'loud_noises': 60, // Added
+    'jumpscares': 65, // Added
+    'children_screaming': 65, // Added
+    'screams': 65, // Added
 
-    // EXTREME CONTENT (very high threshold - be very certain)
+    // EXTREME CONTENT
     'cannibalism': 80,
 
-    // SUBSTANCES (low threshold - easy to detect)
-    'swear_words': 45
+    // SUBSTANCES/LANGUAGE
+    'swear_words': 45,
+    'gunshots': 70
   };
 
   // Learning parameters

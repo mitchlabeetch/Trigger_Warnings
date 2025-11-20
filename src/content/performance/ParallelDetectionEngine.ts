@@ -10,8 +10,8 @@
  * Equal Treatment: All 28 categories processed in parallel with same resources
  */
 
-import type { TriggerCategory } from '../../types/triggers';
-import { logger } from '../../utils/Logger';
+import type { TriggerCategory } from '../types/triggers';
+import { logger } from '../utils/Logger';
 
 /**
  * Detection task for parallel processing
@@ -62,7 +62,7 @@ interface WorkerStats {
 /**
  * Engine statistics
  */
-interface EngineStats {
+export interface EngineStats {
   // Throughput
   totalTasksProcessed: number;
   tasksPerSecond: number;
@@ -147,13 +147,11 @@ export class ParallelDetectionEngine {
 
   // All 28 categories
   private readonly CATEGORIES: TriggerCategory[] = [
-    'blood', 'gore', 'violence', 'murder', 'torture', 'child-abuse',
-    'sexual-content', 'sexual-assault', 'incest', 'pedophilia',
-    'death', 'suicide', 'self-harm', 'eating-disorders',
-    'animal-abuse', 'natural-disasters', 'medical', 'vomit',
-    'phobias', 'claustrophobia', 'pregnancy-childbirth', 'miscarriage',
-    'racial-slurs', 'hate-speech', 'substance-abuse', 'addiction',
-    'gunshots', 'extreme-sounds'
+    'blood', 'gore', 'violence', 'murder', 'torture', 'child_abuse',
+    'sex', 'sexual_assault', 'death_dying', 'suicide', 'self_harm', 'eating_disorders',
+    'animal_cruelty', 'natural_disasters', 'medical_procedures', 'vomit',
+    'claustrophobia_triggers', 'pregnancy_childbirth', 'slurs', 'hate_speech',
+    'gunshots', 'explosions'
   ];
 
   constructor(workerCount: number = navigator.hardwareConcurrency || 4) {
@@ -446,7 +444,7 @@ export class ParallelDetectionEngine {
       case 'gore':
         return avgRed * 0.8 + (1 - avgGreen) * 0.2;
 
-      case 'medical':
+      case 'medical_procedures':
         return (avgRed + avgGreen + avgBlue) / 3 > 0.7 ? 0.6 : 0.3; // White/bright
 
       default:
@@ -468,7 +466,7 @@ export class ParallelDetectionEngine {
     // Category-specific heuristics
     switch (category) {
       case 'gunshots':
-      case 'extreme-sounds':
+      case 'explosions':
         return Math.min(1, loudness * 2);
 
       case 'violence':
@@ -490,7 +488,7 @@ export class ParallelDetectionEngine {
       'blood': ['blood', 'bleeding'],
       'violence': ['violence', 'attack', 'fight'],
       'murder': ['murder', 'kill'],
-      'sexual-assault': ['assault', 'rape'],
+      'sexual_assault': ['assault', 'rape'],
       // ... (simplified for demo)
     };
 

@@ -140,6 +140,9 @@ export class VisualCNN {
 
     try {
       logger.info('[VisualCNN] 🔄 Loading CNN model...');
+      if (modelUrl) {
+        logger.info(`[VisualCNN] Loading model from: ${modelUrl}`);
+      }
 
       // TODO: In production, load actual TensorFlow.js or ONNX model
       // For now, simulate model loading
@@ -266,7 +269,7 @@ export class VisualCNN {
    * - TensorFlow.js: model.predict(tensor)
    * - ONNX Runtime: session.run(feeds)
    */
-  private async runInference(preprocessed: Float32Array): Promise<CategoryConfidences> {
+  private async runInference(_preprocessed: Float32Array): Promise<CategoryConfidences> {
     // TODO: Replace with actual CNN inference
     // For now, simulate inference with random outputs
 
@@ -303,7 +306,7 @@ export class VisualCNN {
   /**
    * Resize image to target dimensions
    */
-  private resizeImage(imageData: ImageData, targetWidth: number, targetHeight: number): ImageData {
+  private resizeImage(imageData: ImageData, _targetWidth: number, _targetHeight: number): ImageData {
     // Simplified resize (in production, use canvas or image library)
     // For now, return original image data
     // TODO: Implement proper image resizing
@@ -331,7 +334,9 @@ export class VisualCNN {
     if (this.frameCache.size >= this.MAX_CACHE_SIZE) {
       // Remove oldest entry
       const firstKey = this.frameCache.keys().next().value;
-      this.frameCache.delete(firstKey);
+      if (firstKey !== undefined) {
+        this.frameCache.delete(firstKey);
+      }
     }
 
     this.frameCache.set(key, result);

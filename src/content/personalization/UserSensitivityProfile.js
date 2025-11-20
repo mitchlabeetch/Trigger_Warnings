@@ -51,32 +51,44 @@ export const DEFAULT_SENSITIVITY_PROFILE = {
         'insects_spiders': 'high',
         'needles_injections': 'high',
         'claustrophobia_triggers': 'high',
+        'snakes_reptiles': 'high',
         // Audio triggers
         'gunshots': 'high',
         'detonations_bombs': 'high',
         'jumpscares': 'high',
         'children_screaming': 'high',
+        'explosions': 'high',
+        'screams': 'high',
+        'loud_noises': 'high',
         // Text triggers
         'lgbtq_phobia': 'high',
         'racial_violence': 'high',
         'eating_disorders': 'high',
         'religious_trauma': 'high',
+        'slurs': 'high',
+        'hate_speech': 'high',
+        'threats': 'high',
+        'swear_words': 'high',
         // Temporal triggers
         'animal_cruelty': 'high',
         'violence': 'high',
         'torture': 'high',
         'murder': 'high',
+        'physical_violence': 'high',
+        'car_crashes': 'high',
         // Multi-modal balanced triggers
         'self_harm': 'high',
         'suicide': 'high',
         'sexual_assault': 'high',
         'domestic_violence': 'high',
         'child_abuse': 'high',
-        'sex': 'medium', // Many users OK with implied/non-graphic
+        'sex': 'medium',
         'drugs': 'medium',
         'pregnancy_childbirth': 'medium',
         'natural_disasters': 'medium',
-        'cannibalism': 'high'
+        'cannibalism': 'high',
+        'photosensitivity': 'high',
+        'death_dying': 'high'
     },
     advancedSettings: {
         nighttimeMode: false,
@@ -119,7 +131,7 @@ export class UserSensitivityProfileManager {
             if (stored && stored[`sensitivity_profile_${userId}`]) {
                 this.currentProfile = stored[`sensitivity_profile_${userId}`];
                 logger.info(`[UserSensitivityProfile] Loaded profile for user ${userId}`);
-                return this.currentProfile;
+                return this.currentProfile; // Non-null assertion as we just assigned it
             }
         }
         catch (error) {
@@ -178,7 +190,7 @@ export class UserSensitivityProfileManager {
         // Apply context-specific overrides if available
         if (context && this.currentProfile.contextualSettings?.[category]) {
             const contextual = this.currentProfile.contextualSettings[category];
-            sensitivity = contextual[context] || sensitivity;
+            sensitivity = contextual ? (contextual[context] || sensitivity) : sensitivity;
             this.stats.contextAdjustments++;
         }
         // Get base threshold

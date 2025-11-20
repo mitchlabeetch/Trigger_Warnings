@@ -13,8 +13,8 @@
  * Equal Treatment: All 28 categories benefit from same online learning framework
  */
 
-import type { TriggerCategory } from '../../types/triggers';
-import { logger } from '../../utils/Logger';
+import type { TriggerCategory } from '../types/triggers';
+import { logger } from '../utils/Logger';
 
 /**
  * Training example for online learning

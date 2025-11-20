@@ -12,8 +12,8 @@
  * Equal Treatment: All 28 categories benefit from same uncertainty quantification
  */
 
-import type { TriggerCategory } from '../../types/triggers';
-import { logger } from '../../utils/Logger';
+import type { TriggerCategory } from '../types/triggers';
+import { logger } from '../utils/Logger';
 
 /**
  * Prediction with uncertainty
@@ -36,9 +36,7 @@ export interface UncertaintyPrediction {
 /**
  * Monte Carlo sample
  */
-interface MCDrop
-
-outSample {
+interface MCDropoutSample {
   prediction: number;
   dropout: number[];
 }

@@ -126,11 +126,11 @@ export class CategoryDependencyGraph {
     this.addEdge('dead_body_body_horror', 'blood', 0.4, 'Dead bodies may show blood');
     this.addEdge('dead_body_body_horror', 'murder', 0.6, 'Dead bodies often linked to murder');
 
-    this.addEdge('medical_procedures', 'needles_trypanophobia', 0.7, 'Medical procedures often involve needles');
+    this.addEdge('medical_procedures', 'needles_injections', 0.7, 'Medical procedures often involve needles');
     this.addEdge('medical_procedures', 'blood', 0.4, 'Medical procedures may show blood');
 
-    this.addEdge('needles_trypanophobia', 'medical_procedures', 0.8, 'Needles primarily appear in medical contexts');
-    this.addEdge('needles_trypanophobia', 'blood', 0.3, 'Needles may draw blood');
+    this.addEdge('needles_injections', 'medical_procedures', 0.8, 'Needles primarily appear in medical contexts');
+    this.addEdge('needles_injections', 'blood', 0.3, 'Needles may draw blood');
 
     this.addEdge('self_harm', 'blood', 0.6, 'Self-harm often involves blood');
     this.addEdge('self_harm', 'medical_procedures', 0.2, 'Self-harm may require medical attention');
@@ -138,12 +138,12 @@ export class CategoryDependencyGraph {
     // VIOLENCE CLUSTER
     this.addEdge('violence', 'blood', 0.5, 'Violence often causes bleeding');
     this.addEdge('violence', 'gore', 0.4, 'Violence may result in gore');
-    this.addEdge('violence', 'gunshots_gun_violence', 0.4, 'Gun violence is a form of violence');
+    this.addEdge('violence', 'gunshots', 0.4, 'Gun violence is a form of violence');
     this.addEdge('violence', 'murder', 0.5, 'Murder is extreme violence');
     this.addEdge('violence', 'torture', 0.6, 'Torture is extreme violence');
     this.addEdge('violence', 'domestic_violence', 0.7, 'Domestic violence is violence');
     this.addEdge('violence', 'racial_violence', 0.7, 'Racial violence is violence');
-    this.addEdge('violence', 'police_violence', 0.7, 'Police violence is violence');
+    this.addEdge('violence', 'violence', 0.7, 'Police violence is violence');
     this.addEdge('violence', 'child_abuse', 0.5, 'Child abuse often involves violence');
     this.addEdge('violence', 'animal_cruelty', 0.5, 'Animal cruelty often involves violence');
 
@@ -151,7 +151,7 @@ export class CategoryDependencyGraph {
     this.addEdge('murder', 'blood', 0.6, 'Murder often involves blood');
     this.addEdge('murder', 'gore', 0.4, 'Murder may result in gore');
     this.addEdge('murder', 'dead_body_body_horror', 0.7, 'Murder results in dead body');
-    this.addEdge('murder', 'gunshots_gun_violence', 0.3, 'Murder may involve gunshots');
+    this.addEdge('murder', 'gunshots', 0.3, 'Murder may involve gunshots');
 
     this.addEdge('torture', 'violence', 0.8, 'Torture is extreme violence');
     this.addEdge('torture', 'blood', 0.5, 'Torture often causes bleeding');
@@ -163,13 +163,13 @@ export class CategoryDependencyGraph {
     this.addEdge('racial_violence', 'violence', 0.9, 'Racial violence is violence');
     this.addEdge('racial_violence', 'hate_speech', 0.5, 'Racial violence often accompanied by hate speech');
 
-    this.addEdge('police_violence', 'violence', 0.9, 'Police violence is violence');
-    this.addEdge('police_violence', 'gunshots_gun_violence', 0.4, 'Police violence may involve guns');
+    this.addEdge('violence', 'violence', 0.9, 'Police violence is violence');
+    this.addEdge('violence', 'gunshots', 0.4, 'Police violence may involve guns');
 
-    this.addEdge('gunshots_gun_violence', 'violence', 0.8, 'Gun violence is violence');
-    this.addEdge('gunshots_gun_violence', 'murder', 0.5, 'Gunshots may result in murder');
-    this.addEdge('gunshots_gun_violence', 'blood', 0.4, 'Gunshots cause bleeding');
-    this.addEdge('gunshots_gun_violence', 'detonations_bombs', 0.3, 'Similar loud explosive sounds');
+    this.addEdge('gunshots', 'violence', 0.8, 'Gun violence is violence');
+    this.addEdge('gunshots', 'murder', 0.5, 'Gunshots may result in murder');
+    this.addEdge('gunshots', 'blood', 0.4, 'Gunshots cause bleeding');
+    this.addEdge('gunshots', 'detonations_bombs', 0.3, 'Similar loud explosive sounds');
 
     this.addEdge('animal_cruelty', 'violence', 0.7, 'Animal cruelty involves violence');
     this.addEdge('animal_cruelty', 'blood', 0.4, 'Animal cruelty may involve blood');
@@ -198,7 +198,7 @@ export class CategoryDependencyGraph {
     this.addEdge('detonations_bombs', 'blood', 0.4, 'Explosions cause casualties');
     this.addEdge('detonations_bombs', 'gore', 0.4, 'Explosions may result in gore');
     this.addEdge('detonations_bombs', 'dead_body_body_horror', 0.4, 'Explosions may result in deaths');
-    this.addEdge('detonations_bombs', 'gunshots_gun_violence', 0.3, 'Similar explosive sounds');
+    this.addEdge('detonations_bombs', 'gunshots', 0.3, 'Similar explosive sounds');
 
     this.addEdge('car_crashes', 'violence', 0.3, 'Car crashes are violent events');
     this.addEdge('car_crashes', 'blood', 0.4, 'Car crashes may cause injuries');

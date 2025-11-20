@@ -124,7 +124,7 @@ export class PersonalizedDetector {
      * If user frequently dismisses warnings for a category → increase threshold (less sensitive)
      * If user reports misses for a category → decrease threshold (more sensitive)
      */
-    calculateAdaptiveAdjustment(category, currentConfidence) {
+    calculateAdaptiveAdjustment(category, _currentConfidence) {
         const history = this.feedbackHistory.get(category);
         if (!history || history.length < 5) {
             // Need at least 5 feedback instances to learn
@@ -138,7 +138,8 @@ export class PersonalizedDetector {
         const recentFeedback = history.slice(-20);
         // Count feedback types
         const dismissed = recentFeedback.filter(f => f.action === 'dismissed').length;
-        const confirmed = recentFeedback.filter(f => f.action === 'confirmed-helpful').length;
+        // confirmed is declared but never used, so I'm commenting it out to fix TS6133
+        // const confirmed = recentFeedback.filter(f => f.action === 'confirmed-helpful').length;
         const misses = recentFeedback.filter(f => f.action === 'reported-miss').length;
         // Calculate dismissal rate
         const dismissalRate = dismissed / recentFeedback.length;
@@ -302,6 +303,6 @@ export const personalizedDetector = new PersonalizedDetector();
  * - User enables stress mode → All thresholds reduced by 20%
  * - Nighttime (11pm) → All thresholds reduced by 10%
  *
- * **LEARNING SYSTEM THAT RESPECTS EACH USER'S UNIQUE NEEDS**
+ * **LEARNING SYSTEM THAT RESPECTS EACH USER'S UNIQUE UNIQUE**
  */
 //# sourceMappingURL=PersonalizedDetector.js.map

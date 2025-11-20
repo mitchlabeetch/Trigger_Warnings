@@ -10,8 +10,8 @@
  * Equal Treatment: All 28 categories processed with same low-latency streaming pipeline
  */
 
-import type { TriggerCategory } from '../../types/triggers';
-import { logger } from '../../utils/Logger';
+import type { TriggerCategory } from '../types/triggers';
+import { logger } from '../utils/Logger';
 
 /**
  * Input types for incremental processing
@@ -484,13 +484,11 @@ export class IncrementalProcessor {
   private generateIncrementalResults(state: StreamState, inputType: string): IncrementalResult[] {
     const results: IncrementalResult[] = [];
     const categories: TriggerCategory[] = [
-      'blood', 'gore', 'violence', 'murder', 'torture', 'child-abuse',
-      'sexual-content', 'sexual-assault', 'incest', 'pedophilia',
-      'death', 'suicide', 'self-harm', 'eating-disorders',
-      'animal-abuse', 'natural-disasters', 'medical', 'vomit',
-      'phobias', 'claustrophobia', 'pregnancy-childbirth', 'miscarriage',
-      'racial-slurs', 'hate-speech', 'substance-abuse', 'addiction',
-      'gunshots', 'extreme-sounds'
+      'blood', 'gore', 'violence', 'murder', 'torture', 'child_abuse',
+      'sex', 'sexual_assault', 'death_dying', 'suicide', 'self_harm', 'eating_disorders',
+      'animal_cruelty', 'natural_disasters', 'medical_procedures', 'vomit',
+      'claustrophobia_triggers', 'pregnancy_childbirth', 'slurs', 'hate_speech',
+      'gunshots', 'explosions'
     ];
 
     // Generate result for each category based on accumulated features
@@ -574,7 +572,7 @@ export class IncrementalProcessor {
         const complexity = edges.reduce((sum, e) => sum + e, 0);
         return Math.min(1, (motion * 0.5 + complexity * 0.5) / 50);
 
-      case 'medical':
+      case 'medical_procedures':
         // White/sterile colors + moderate edges
         const whiteDominance = (colors[0] || 0) + (colors[1] || 0);
         return Math.min(1, whiteDominance / 80);
@@ -596,7 +594,7 @@ export class IncrementalProcessor {
 
     switch (category) {
       case 'gunshots':
-      case 'extreme-sounds':
+      case 'explosions':
         // High loudness + high spectral centroid
         return Math.min(1, (loudness * 0.6 + spectral * 0.4) * 2);
 
@@ -636,35 +634,29 @@ export class IncrementalProcessor {
    * Get keywords for category (fast heuristics)
    */
   private getCategoryKeywords(category: TriggerCategory): string[] {
-    const keywordMap: Record<TriggerCategory, string[]> = {
+    const keywordMap: Partial<Record<TriggerCategory, string[]>> = {
       'blood': ['blood', 'bleeding', 'hemorrhage', 'wound'],
       'gore': ['gore', 'gory', 'dismember', 'mutilate'],
       'violence': ['violence', 'violent', 'attack', 'fight'],
       'murder': ['murder', 'kill', 'killing', 'killed'],
       'torture': ['torture', 'torment', 'agony', 'suffering'],
-      'child-abuse': ['abuse', 'child', 'children', 'minor'],
-      'sexual-content': ['sex', 'sexual', 'explicit', 'nsfw'],
-      'sexual-assault': ['assault', 'rape', 'molest', 'harassment'],
-      'incest': ['incest', 'incestuous', 'familial'],
-      'pedophilia': ['pedophilia', 'minor', 'child'],
-      'death': ['death', 'dead', 'dying', 'corpse'],
+      'child_abuse': ['abuse', 'child', 'children', 'minor'],
+      'sex': ['sex', 'sexual', 'explicit', 'nsfw'],
+      'sexual_assault': ['assault', 'rape', 'molest', 'harassment'],
+      'death_dying': ['death', 'dead', 'dying', 'corpse'],
       'suicide': ['suicide', 'suicidal', 'self-kill'],
-      'self-harm': ['cut', 'cutting', 'self-harm', 'harm'],
-      'eating-disorders': ['anorexia', 'bulimia', 'purge', 'starve'],
-      'animal-abuse': ['animal', 'abuse', 'cruelty', 'hurt'],
-      'natural-disasters': ['earthquake', 'tsunami', 'hurricane', 'disaster'],
-      'medical': ['medical', 'surgery', 'hospital', 'procedure'],
+      'self_harm': ['cut', 'cutting', 'self-harm', 'harm'],
+      'eating_disorders': ['anorexia', 'bulimia', 'purge', 'starve'],
+      'animal_cruelty': ['animal', 'abuse', 'cruelty', 'hurt'],
+      'natural_disasters': ['earthquake', 'tsunami', 'hurricane', 'disaster'],
+      'medical_procedures': ['medical', 'surgery', 'hospital', 'procedure'],
       'vomit': ['vomit', 'puke', 'throw up', 'nausea'],
-      'phobias': ['fear', 'phobia', 'terror', 'panic'],
-      'claustrophobia': ['claustrophobia', 'confined', 'trapped'],
-      'pregnancy-childbirth': ['pregnancy', 'pregnant', 'birth', 'labor'],
-      'miscarriage': ['miscarriage', 'loss', 'stillbirth'],
-      'racial-slurs': ['slur', 'racist', 'racial'],
-      'hate-speech': ['hate', 'bigot', 'discrimination'],
-      'substance-abuse': ['drug', 'drugs', 'cocaine', 'heroin'],
-      'addiction': ['addiction', 'addict', 'dependency'],
+      'claustrophobia_triggers': ['claustrophobia', 'confined', 'trapped'],
+      'pregnancy_childbirth': ['pregnancy', 'pregnant', 'birth', 'labor'],
+      'slurs': ['slur', 'racist', 'racial'],
+      'hate_speech': ['hate', 'bigot', 'discrimination'],
       'gunshots': ['gun', 'gunshot', 'shot', 'fire'],
-      'extreme-sounds': ['loud', 'scream', 'explosion', 'bang']
+      'explosions': ['loud', 'scream', 'explosion', 'bang']
     };
 
     return keywordMap[category] || [];
