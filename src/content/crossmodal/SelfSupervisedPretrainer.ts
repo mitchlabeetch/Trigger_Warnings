@@ -724,7 +724,10 @@ export class SelfSupervisedPretrainer {
     // Limit cache size
     if (this.pretrainedEmbeddings.size > 10000) {
       const firstKey = this.pretrainedEmbeddings.keys().next().value;
-      this.pretrainedEmbeddings.delete(firstKey);
+      // Check if firstKey is defined before deleting
+      if (firstKey !== undefined) {
+        this.pretrainedEmbeddings.delete(firstKey);
+      }
     }
   }
 

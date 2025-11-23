@@ -332,6 +332,13 @@ export const CATEGORY_ROUTE_CONFIG: Record<TriggerCategory, RouteConfig> = {
     temporalPattern: 'escalation'
   },
 
+  'news-documentary': {
+      route: 'text-primary',
+      modalityWeights: { visual: 0.10, audio: 0.10, text: 0.80 },
+      validationLevel: 'standard',
+      temporalPattern: 'sustained'
+  } as any,
+
   'violence': {
     route: 'temporal-pattern',
     modalityWeights: { visual: 0.40, audio: 0.30, text: 0.30 },

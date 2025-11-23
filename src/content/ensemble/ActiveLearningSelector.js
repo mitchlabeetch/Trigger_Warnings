@@ -61,11 +61,12 @@ export class ActiveLearningSelector {
             const score = uncertaintyScore * 0.6 + diversityScore * 0.4;
             // Select strategy based on highest individual score
             let strategy;
-            if (uncertaintyScore > diversityScore) {
-                strategy = 'uncertainty';
+            // Simple logic for strategy assignment to match types
+            if (diversityScore > uncertaintyScore) {
+                strategy = 'diversity';
             }
             else {
-                strategy = 'diversity';
+                strategy = 'uncertainty';
             }
             // Priority based on score
             const priority = score > 0.7 ? 'high' : score > 0.4 ? 'medium' : 'low';

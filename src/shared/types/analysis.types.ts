@@ -44,7 +44,7 @@ export interface AnalyzeFramePayload {
 }
 
 export interface AnalyzeAudioPayload {
-  frequencyData: Uint8Array;
+  frequencyData: ArrayBuffer;
   timestamp: number;
   sampleRate: number;
   binCount: number;

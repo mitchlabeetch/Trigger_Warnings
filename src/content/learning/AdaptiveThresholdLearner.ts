@@ -199,25 +199,42 @@ export class AdaptiveThresholdLearner {
   /**
    * Process user feedback and update threshold
    */
-  processFeedback(feedback: UserFeedback): ThresholdAdjustment | null {
+  processFeedback(feedback: {
+      category: TriggerCategory;
+      action?: string; // Add action for compatibility
+      feedbackType?: FeedbackType; // Optional if derived
+      confidence?: number;
+      detectionConfidence?: number;
+      timestamp: number;
+  } | UserFeedback): ThresholdAdjustment | null {
+    // Normalize feedback object
+    const normalizedFeedback: UserFeedback = {
+        category: feedback.category,
+        timestamp: feedback.timestamp,
+        feedbackType: (feedback as any).feedbackType ||
+                     ((feedback as any).action === 'confirmed-helpful' ? 'confirmed_correct' :
+                      (feedback as any).action === 'dismissed' ? 'dismissed' : 'watched_through'),
+        detectionConfidence: (feedback as any).detectionConfidence || (feedback as any).confidence || 0
+    };
+
     this.stats.totalFeedback++;
 
     // Update feedback statistics
-    const typeCount = this.stats.feedbackByType.get(feedback.feedbackType) || 0;
-    this.stats.feedbackByType.set(feedback.feedbackType, typeCount + 1);
+    const typeCount = this.stats.feedbackByType.get(normalizedFeedback.feedbackType) || 0;
+    this.stats.feedbackByType.set(normalizedFeedback.feedbackType, typeCount + 1);
 
     const categoryCount = this.stats.feedbackByCategory.get(feedback.category) || 0;
     this.stats.feedbackByCategory.set(feedback.category, categoryCount + 1);
 
     // Get current threshold
-    const thresholdData = this.thresholds.get(feedback.category);
+    const thresholdData = this.thresholds.get(normalizedFeedback.category);
     if (!thresholdData) {
-      logger.warn(`[AdaptiveThresholdLearner] Unknown category: ${feedback.category}`);
+      logger.warn(`[AdaptiveThresholdLearner] Unknown category: ${normalizedFeedback.category}`);
       return null;
     }
 
     // Calculate threshold adjustment based on feedback type
-    const adjustment = this.calculateAdjustment(feedback, thresholdData);
+    const adjustment = this.calculateAdjustment(normalizedFeedback, thresholdData);
     if (adjustment === 0) {
       return null; // No adjustment needed
     }
@@ -234,13 +251,13 @@ export class AdaptiveThresholdLearner {
     // Update threshold
     thresholdData.currentThreshold = newThreshold;
     thresholdData.learningCount++;
-    thresholdData.lastUpdated = feedback.timestamp;
+    thresholdData.lastUpdated = normalizedFeedback.timestamp;
 
     // Track recent adjustments for convergence detection
-    this.trackAdjustment(feedback.category, Math.abs(weightedAdjustment));
+    this.trackAdjustment(normalizedFeedback.category, Math.abs(weightedAdjustment));
 
     // Check convergence
-    thresholdData.converged = this.checkConvergence(feedback.category);
+    thresholdData.converged = this.checkConvergence(normalizedFeedback.category);
     if (thresholdData.converged) {
       this.stats.convergedCategories++;
     }
@@ -250,11 +267,11 @@ export class AdaptiveThresholdLearner {
     this.updateAvgAdjustment(Math.abs(weightedAdjustment));
 
     const result: ThresholdAdjustment = {
-      category: feedback.category,
+      category: normalizedFeedback.category,
       oldThreshold,
       newThreshold,
       adjustment: weightedAdjustment,
-      reasoning: this.getAdjustmentReasoning(feedback, oldThreshold, newThreshold)
+      reasoning: this.getAdjustmentReasoning(normalizedFeedback, oldThreshold, newThreshold)
     };
 
     logger.info(

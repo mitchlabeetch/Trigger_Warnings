@@ -83,13 +83,14 @@ export class VisualColorAnalyzer {
           // Ensure dates are Date objects
           createdAt: new Date(payload.createdAt),
           updatedAt: new Date(payload.updatedAt),
-          categoryKey: payload.categoryKey as any
+          categoryKey: payload.categoryKey as any,
+          status: payload.status as any
       };
 
       // Update stats based on category (simple approximation)
       if (warning.categoryKey === 'blood') this.stats.bloodDetections++;
       else if (warning.categoryKey === 'gore') this.stats.goreDetections++;
-      else if (warning.categoryKey === 'violence' && warning.description.includes('Fire')) this.stats.fireDetections++;
+      else if (warning.categoryKey === 'violence' && warning.description && warning.description.includes('Fire')) this.stats.fireDetections++;
       // ... update other stats based on category/description if needed for precise tracking
 
       this.onWarningDetected?.(warning);

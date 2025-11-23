@@ -80,7 +80,8 @@ export class AudioFrequencyAnalyzer {
           ...payload,
           createdAt: new Date(payload.createdAt),
           updatedAt: new Date(payload.updatedAt),
-          categoryKey: payload.categoryKey as any
+          categoryKey: payload.categoryKey as any,
+          status: payload.status as any
       };
 
       if (warning.categoryKey === 'children_screaming') this.stats.screamDetections++;
@@ -183,8 +184,11 @@ export class AudioFrequencyAnalyzer {
     this.analyser.getByteFrequencyData(this.frequencyData);
 
     // Send to worker
+    // Copy the frequency data to a regular array buffer to avoid SharedArrayBuffer issues
+    const dataCopy = new Uint8Array(this.frequencyData);
+
     const payload: AnalyzeAudioPayload = {
-      frequencyData: this.frequencyData, // Cloned automatically
+      frequencyData: dataCopy.buffer as ArrayBuffer, // Convert to ArrayBuffer
       timestamp: this.video.currentTime,
       sampleRate: this.analyser.context.sampleRate,
       binCount: this.analyser.frequencyBinCount

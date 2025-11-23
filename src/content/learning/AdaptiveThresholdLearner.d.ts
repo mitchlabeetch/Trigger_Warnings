@@ -90,7 +90,14 @@ export declare class AdaptiveThresholdLearner {
     /**
      * Process user feedback and update threshold
      */
-    processFeedback(feedback: UserFeedback): ThresholdAdjustment | null;
+    processFeedback(feedback: {
+        category: TriggerCategory;
+        action?: string;
+        feedbackType?: FeedbackType;
+        confidence?: number;
+        detectionConfidence?: number;
+        timestamp: number;
+    } | UserFeedback): ThresholdAdjustment | null;
     /**
      * Calculate threshold adjustment based on feedback
      */

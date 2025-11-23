@@ -416,16 +416,20 @@ export class MultiTaskLearner {
         for (const [group, data] of Object.entries(weights.encoders)) {
             const encoder = this.sharedEncoders.get(group);
             if (encoder) {
-                encoder.weights = data.weights;
-                encoder.bias = data.bias;
+                // Assert types since data is 'any'
+                const typedData = data;
+                encoder.weights = typedData.weights;
+                encoder.bias = typedData.bias;
             }
         }
         // Import head weights
         for (const [category, data] of Object.entries(weights.heads)) {
             const head = this.taskHeads.get(category);
             if (head) {
-                head.weights = data.weights;
-                head.bias = data.bias;
+                // Assert types since data is 'any'
+                const typedData = data;
+                head.weights = typedData.weights;
+                head.bias = typedData.bias;
             }
         }
         logger.info('[MultiTaskLearner] Model weights imported');

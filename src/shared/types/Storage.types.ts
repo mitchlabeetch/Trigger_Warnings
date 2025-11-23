@@ -4,6 +4,8 @@
 
 import type { Profile } from './Profile.types';
 import type { Warning } from './Warning.types';
+// import type { UserSensitivityProfile } from '../../content/personalization/UserSensitivityProfile'; // Removed to avoid circular dependency
+import type { UserSensitivityProfile } from './UserSensitivityProfile.types';
 
 export interface StorageSchema {
   // Active profile
@@ -40,6 +42,9 @@ export interface StorageSchema {
     timestamp: number;
     savedAt: number;
   };
+
+  // Note: Dynamic keys like `sensitivity_profile_${string}` are handled via casting in usage
+  // as strict TypeScript interfaces do not support template literal keys mixed with static keys.
 }
 
 export type StorageKey = keyof StorageSchema;

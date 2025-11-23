@@ -52,6 +52,7 @@ export const DEFAULT_SENSITIVITY_PROFILE = {
         'needles_injections': 'high',
         'claustrophobia_triggers': 'high',
         'snakes_reptiles': 'high',
+        'photosensitivity': 'high',
         // Audio triggers
         'gunshots': 'high',
         'detonations_bombs': 'high',
@@ -190,7 +191,15 @@ export class UserSensitivityProfileManager {
         // Apply context-specific overrides if available
         if (context && this.currentProfile.contextualSettings?.[category]) {
             const contextual = this.currentProfile.contextualSettings[category];
-            sensitivity = contextual ? (contextual[context] || sensitivity) : sensitivity;
+            // Map context string to property name (handling potential mismatches like news-documentary -> newsDocumentary)
+            if (contextual) {
+                if (context === 'news-documentary') {
+                    sensitivity = contextual.newsDocumentary || sensitivity;
+                }
+                else {
+                    sensitivity = contextual[context] || sensitivity;
+                }
+            }
             this.stats.contextAdjustments++;
         }
         // Get base threshold

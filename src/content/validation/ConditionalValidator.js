@@ -74,9 +74,6 @@ export const CATEGORY_VALIDATION_LEVEL = {
     'threats': 'standard',
     'death_dying': 'standard',
     'pregnancy_childbirth': 'standard',
-    'substance-abuse': 'standard', // Mapped to drugs in types? No, need to match TriggerCategory
-    'addiction': 'standard', // Mapped to drugs in types?
-    'extreme-sounds': 'standard', // Mapped to loud_noises?
     'loud_noises': 'standard',
     'insects_spiders': 'standard',
     'snakes_reptiles': 'standard',

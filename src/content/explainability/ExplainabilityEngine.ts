@@ -381,7 +381,7 @@ export class ExplainabilityEngine {
 
     weightedConfidences.sort((a, b) => b.weighted - a.weighted);
 
-    return weightedConfidences[0].modality;
+    return weightedConfidences[0].modality as 'visual' | 'audio' | 'text';
   }
 
   /**

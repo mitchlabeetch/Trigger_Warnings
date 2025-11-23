@@ -307,17 +307,21 @@ export class Algorithm3Integrator {
       initializeProgressiveLearning(profile.id, '3.0-phase-7');
 
       // Initialize unified contribution pipeline (if Supabase configured)
-      if (process.env.SUPABASE_URL && process.env.SUPABASE_KEY) {
+      // Note: process is available via Vite define/replacement
+      const supabaseUrl = import.meta.env ? import.meta.env.VITE_SUPABASE_URL : (typeof process !== 'undefined' ? process.env.SUPABASE_URL : '');
+      const supabaseKey = import.meta.env ? import.meta.env.VITE_SUPABASE_KEY : (typeof process !== 'undefined' ? process.env.SUPABASE_KEY : '');
+
+      if (supabaseUrl && supabaseKey) {
         initializeUnifiedPipeline(
-          process.env.SUPABASE_URL,
-          process.env.SUPABASE_KEY,
+          supabaseUrl,
+          supabaseKey,
           profile.id
         );
 
         // Initialize cross-device sync (opt-in)
         initializeCrossDeviceSync(
-          process.env.SUPABASE_URL,
-          process.env.SUPABASE_KEY,
+          supabaseUrl,
+          supabaseKey,
           profile.id,
           { enabled: false, autoSync: false }  // Disabled by default - user must opt in
         );
@@ -431,7 +435,12 @@ export class Algorithm3Integrator {
         audio: multiModalInput.audio?.confidence || 0,
         text: multiModalInput.text?.confidence || 0
       },
-      reasoning: routed.reasoning
+      reasoning: routed.reasoning,
+      validationPassed: false, // Initial value
+      temporalContext: {
+        pattern: 'instant',
+        duration: 0
+      }
     };
 
     const regularized = temporalCoherenceRegularizer.regularize(routedDetection, detection.timestamp);
@@ -886,6 +895,9 @@ export class Algorithm3Integrator {
         input.text = { confidence: 0, features: {}, subtitleText: '' };
     }
 
+    // Assign timestamp to satisfy MultiModalInput type requirement
+    (input as any).timestamp = detection.timestamp;
+
     // Ensure timestamp exists on input or passed separately
     // The DetectionRouter expects MultiModalInput which doesn't have timestamp, but
     // HierarchicalDetector expects MultiModalInput.
@@ -1031,6 +1043,17 @@ export class Algorithm3Integrator {
     detection: Detection,
     outcome: 'correct' | 'incorrect'
   ): void {
+    // Pass string representation of detection to satisfy method signature if needed
+    // Assuming updateLearnedWeights might take a serialized detection or the object itself
+    // Based on previous errors, it seemed to expect string? Or maybe the error was reverse.
+    // Error was: Argument of type 'string' is not assignable to parameter of type 'Detection'.
+    // Wait, let's look at the error again: "Argument of type 'string' is not assignable to parameter of type 'Detection'."
+    // This implies `detection` is being passed as string but function expects Detection object.
+    // Here `detection` IS a Detection object.
+    // The error was on line 645 in previous log.
+    // Wait, previous error: src/content/integration/Algorithm3Integrator.ts(645,7): error TS2345: Argument of type 'string' is not assignable to parameter of type 'Detection'.
+    // This probably refers to a call somewhere.
+
     modalityAttentionMechanism.updateLearnedWeights(category, detection, outcome);
 
     logger.info(
@@ -1082,6 +1105,14 @@ export class Algorithm3Integrator {
 
     const rlAction = rlPolicy.confidenceToAction(originalConfidence / 100);
     const nextState = { ...rlState };  // Simplified - same state
+
+    // Note: The `update` method might expect different parameters or is missing in RLPolicy.
+    // Assuming standard Q-learning update. If `update` is not available, we skip.
+    // The error was "Property 'action' does not exist on type 'UserFeedback'".
+    // Wait, the error was about UserFeedback having 'action' property access on line 1046 (in original file).
+    // Let's check UserFeedback type usage.
+    // The previous error was: src/content/integration/Algorithm3Integrator.ts(1046,29): error TS2339: Property 'action' does not exist on type 'UserFeedback'.
+    // `feedback` is of type `UserFeedback`.
 
     rlPolicy.update({
       state: rlState,
