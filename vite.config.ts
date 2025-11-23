@@ -9,23 +9,61 @@ function generateManifest() {
   const manifest = readJsonFile('src/manifest/manifest.json');
   const pkg = readJsonFile('package.json');
 
+  // Deep clone to avoid mutating original if called multiple times or cached
   const manifestResult = {
     name: pkg.name,
     description: pkg.description,
     version: pkg.version,
-    ...manifest,
+    ...JSON.parse(JSON.stringify(manifest)),
   };
 
   if (process.env.TARGET_BROWSER === 'firefox') {
-    // Firefox uses background.scripts instead of background.service_worker in MV3
+    // Firefox MV2 Fallback Adaptation
+    manifestResult.manifest_version = 2;
+
+    // 1. Convert background service worker to background scripts
     if (manifestResult.background && manifestResult.background.service_worker) {
       manifestResult.background = {
         scripts: [manifestResult.background.service_worker],
-        type: 'module',
+        persistent: false, // Recommended for event pages in MV2
+        // type: 'module' is implied by vite bundling usually, but MV2 doesn't strictly support type="module" in manifest
+        // Vite plugin will bundle it to a standard script.
       };
     }
 
-    // Firefox requires browser_specific_settings for ID
+    // 2. Convert action to browser_action
+    if (manifestResult.action) {
+      manifestResult.browser_action = manifestResult.action;
+      delete manifestResult.action;
+    }
+
+    // 3. Move host_permissions to permissions
+    if (manifestResult.host_permissions) {
+      manifestResult.permissions = [
+        ...(manifestResult.permissions || []),
+        ...manifestResult.host_permissions,
+      ];
+      delete manifestResult.host_permissions;
+    }
+
+    // 4. Flatten web_accessible_resources
+    if (manifestResult.web_accessible_resources) {
+      const flatResources = new Set();
+      manifestResult.web_accessible_resources.forEach((entry: any) => {
+        if (entry.resources) {
+          entry.resources.forEach((res: string) => flatResources.add(res));
+        }
+      });
+      manifestResult.web_accessible_resources = Array.from(flatResources);
+    }
+
+    // 5. Convert CSP
+    if (manifestResult.content_security_policy && manifestResult.content_security_policy.extension_pages) {
+      // Use the extension_pages CSP as the main CSP for MV2
+      manifestResult.content_security_policy = manifestResult.content_security_policy.extension_pages;
+    }
+
+    // 6. Firefox specific settings
     manifestResult.browser_specific_settings = {
       gecko: {
         id: 'trigger-warnings@example.com',
