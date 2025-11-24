@@ -16,7 +16,7 @@
  */
 import type { TriggerCategory } from '@shared/types/Warning.types';
 import type { Detection } from '../routing/DetectionRouter';
-import type { ContentContext } from './UserSensitivityProfile';
+import type { ContentContext, UserSensitivityProfile } from './UserSensitivityProfile';
 /**
  * User feedback on a detection
  */
@@ -41,6 +41,12 @@ export interface PersonalizedDecision {
         stressAdjustment?: string;
         adaptiveAdjustment?: string;
     };
+}
+/**
+ * User Profile Interface
+ * Exported for use in other modules
+ */
+export interface UserProfile extends UserSensitivityProfile {
 }
 /**
  * Personalized Detector
@@ -132,6 +138,6 @@ export declare const personalizedDetector: PersonalizedDetector;
  * - User enables stress mode → All thresholds reduced by 20%
  * - Nighttime (11pm) → All thresholds reduced by 10%
  *
- * **LEARNING SYSTEM THAT RESPECTS EACH USER'S UNIQUE NEEDS**
+ * **LEARNING SYSTEM THAT RESPECTS EACH USER'S UNIQUE UNIQUE**
  */
 //# sourceMappingURL=PersonalizedDetector.d.ts.map

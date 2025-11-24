@@ -141,6 +141,10 @@ export declare class HybridFusionPipeline {
      */
     lateFusion(detections: Detection[]): Detection;
     /**
+     * Public alias for lateFusion to satisfy interface requirements
+     */
+    fuse(detections: Detection[]): Detection;
+    /**
      * Calculate modality agreement
      */
     private calculateModalityAgreement;

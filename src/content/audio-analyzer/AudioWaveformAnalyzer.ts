@@ -93,6 +93,7 @@ export class AudioWaveformAnalyzer {
       this.analyser.connect(this.audioContext.destination);
 
       // Allocate data array
+      // Note: getByteTimeDomainData requires an array of size fftSize (not frequencyBinCount)
       this.dataArray = new Uint8Array(this.analyser.fftSize);
 
       logger.info('[TW AudioWaveformAnalyzer] ✅ Initialized with Web Audio API');
@@ -146,7 +147,8 @@ export class AudioWaveformAnalyzer {
     this.analyser.getByteTimeDomainData(this.dataArray);
 
     // Calculate RMS (Root Mean Square) amplitude
-    const rms = this.calculateRMS(this.dataArray);
+    // Ensure we are working with a standard Uint8Array to avoid SharedArrayBuffer type issues
+    const rms = this.calculateRMS(new Uint8Array(this.dataArray));
 
     // Current timestamp
     const currentTime = this.video.currentTime;

@@ -286,11 +286,13 @@ export class WarningDeduplicator {
     if (warning.id.includes('database')) return 'database';
 
     // Check submittedBy field
-    if (warning.submittedBy.includes('subtitle')) return 'subtitle';
-    if (warning.submittedBy.includes('audio')) return 'audio';
-    if (warning.submittedBy.includes('visual')) return 'visual';
-    if (warning.submittedBy.includes('photo')) return 'photosensitivity';
-    if (warning.submittedBy.includes('fusion')) return 'fusion';
+    if (warning.submittedBy) {
+      if (warning.submittedBy.includes('subtitle')) return 'subtitle';
+      if (warning.submittedBy.includes('audio')) return 'audio';
+      if (warning.submittedBy.includes('visual')) return 'visual';
+      if (warning.submittedBy.includes('photo')) return 'photosensitivity';
+      if (warning.submittedBy.includes('fusion')) return 'fusion';
+    }
 
     return null;
   }

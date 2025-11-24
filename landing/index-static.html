@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trigger Warnings - Take Control of Your Streaming (HTML Version)</title>
+    <meta name="description" content="Get 5-10 seconds advance warning before sensitive content appears. 28 categories, 96% accuracy, 100% private. Your safety. Your choice. Free forever. HTML-only version without interactive demos.">
+
+    <style>
+        /* ═══════════════════════════════════════════════════════════════ */
+        /* RESET & FOUNDATIONS */
+        /* ═══════════════════════════════════════════════════════════════ */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #8b5cf6;
+            --primary-dark: #7c3aed;
+            --primary-light: #a78bfa;
+            --secondary: #6366f1;
+            --accent: #c026d3;
+            --accent-dark: #a21caf;
+            --text-dark: #1e1b4b;
+            --text-light: #64748b;
+            --bg-light: #f8f9ff;
+            --bg-white: #ffffff;
+            --success: #10b981;
+            --gradient-hero: linear-gradient(135deg, #8b5cf6 0%, #a855f7 50%, #c026d3 100%);
+            --gradient-light: linear-gradient(135deg, #faf5ff 0%, #f8f9ff 100%);
+            --shadow-sm: 0 2px 8px rgba(139, 92, 246, 0.1);
+            --shadow-md: 0 4px 16px rgba(139, 92, 246, 0.15);
+            --shadow-lg: 0 8px 32px rgba(139, 92, 246, 0.2);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            background: var(--bg-white);
+        }
+
+        /* ═══════════════════════════════════════════════════════════════ */
+        /* LAYOUT */
+        /* ═══════════════════════════════════════════════════════════════ */
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .section {
+            padding: 80px 0;
+        }
+
+        .section-alt {
+            background: var(--bg-light);
+        }
+
+        .section-header {
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto 60px;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 16px;
+            line-height: 1.2;
+        }
+
+        .section-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            line-height: 1.7;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════ */
+        /* HERO SECTION */
+        /* ═══════════════════════════════════════════════════════════════ */
+
+        .hero {
+            background: var(--gradient-hero);
+            color: white;
+            padding: 100px 24px 80px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 24px;
+            line-height: 1.15;
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            margin: 24px auto;
+            max-width: 700px;
+            line-height: 1.7;
+            opacity: 0.95;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 24px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 24px;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .hero-platforms {
+            margin: 32px 0;
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+
+        .free-forever-box {
+            max-width: 600px;
+            margin: 32px auto;
+            padding: 20px 24px;
+            background: rgba(255, 255, 255, 0.15);
+            border-left: 4px solid white;
+            border-radius: 12px;
+            text-align: left;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 16px 40px;
+            background: white;
+            color: var(--primary);
+            text-decoration: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin: 24px 8px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .cta-button:hover {
+            background: var(--bg-light);
+        }
+
+        /* ═══════════════════════════════════════════════════════════════ */
+        /* STATS */
+        /* ═══════════════════════════════════════════════════════════════ */
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+            text-align: center;
+            padding: 60px 0;
+        }
+
+        .stat-large {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 12px;
+        }
+
+        .stat-label-large {
+            font-size: 1rem;
+            color: var(--text-light);
+        }
+
+        /* ═══════════════════════════════════════════════════════════════ */
+        /* FEATURE CARDS */
+        /* ═══════════════════════════════════════════════════════════════ */
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 32px;
+            margin-top: 60px;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 32px;
+            border-radius: 20px;
+            box-shadow: var(--shadow-md);
+            border: 2px solid transparent;
+        }
+
+        .feature-card:hover {
+            border-color: var(--accent);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .feature-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 12px;
+        }
+
+        .feature-description {
+            font-size: 1rem;
+            color: var(--text-light);
+            line-height: 1.7;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════ */
+        /* PRIVACY CARDS */
+        /* ═══════════════════════════════════════════════════════════════ */
+
+        .privacy-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 32px;
+        }
+
+        .privacy-card {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .privacy-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .privacy-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 16px;
+        }
+
+        .privacy-description {
+            font-size: 1rem;
+            color: var(--text-light);
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+
+        .privacy-features {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .privacy-feature-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.95rem;
+            color: var(--text-dark);
+        }
+
+        .privacy-feature-item::before {
+            content: '✓';
+            color: var(--success);
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════ */
+        /* CATEGORIES LIST */
+        /* ═══════════════════════════════════════════════════════════════ */
+
+        .categories-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 16px;
+            margin-top: 60px;
+        }
+
+        .category-item {
+            padding: 16px 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .category-icon {
+            font-size: 1.5rem;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════ */
+        /* FOOTER */
+        /* ═══════════════════════════════════════════════════════════════ */
+
+        .footer {
+            background: var(--text-dark);
+            color: white;
+            padding: 60px 0 40px;
+            text-align: center;
+        }
+
+        .footer-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .footer h3 {
+            font-size: 1.5rem;
+            margin-bottom: 16px;
+        }
+
+        .footer p {
+            font-size: 1rem;
+            opacity: 0.9;
+            line-height: 1.8;
+            margin-bottom: 12px;
+        }
+
+        .footer-links {
+            margin: 32px 0;
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .footer-link {
+            color: white;
+            text-decoration: none;
+            opacity: 0.8;
+            font-weight: 500;
+        }
+
+        .footer-link:hover {
+            opacity: 1;
+            text-decoration: underline;
+        }
+
+        .version-note {
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        .interactive-version-link {
+            display: inline-block;
+            margin-top: 16px;
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .interactive-version-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* ═══════════════════════════════════════════════════════════════ */
+        /* RESPONSIVE */
+        /* ═══════════════════════════════════════════════════════════════ */
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1rem;
+            }
+
+            .section-title {
+                font-size: 1.8rem;
+            }
+
+            .section-subtitle {
+                font-size: 1rem;
+            }
+
+            .features-grid,
+            .privacy-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .categories-list {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- HERO SECTION -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <section class="hero" role="banner">
+        <div class="container">
+            <div class="hero-badge" role="status" aria-label="Key features">
+                Real-Time Protection • 100% Private • Free Forever
+            </div>
+            <h1>Take Control of Your Streaming</h1>
+            <p class="hero-subtitle">
+                Block what you don't want to see. Enjoy what you do. Get 5-10 seconds of advance warning before sensitive content appears. <strong>Your safety. Your choice. Always private, always free.</strong>
+            </p>
+            <p class="hero-platforms">
+                <strong>Works on:</strong> Netflix • Disney+ • Prime Video • Hulu • HBO Max • YouTube • Apple TV+<br>
+                <em>in Chrome, Edge, Brave</em>
+            </p>
+
+            <div class="free-forever-box">
+                <strong style="font-size: 1.1rem;">No one should have to pay to feel safe.</strong><br>
+                This extension is completely free, forever. No trials, no premium tiers, no hidden costs.
+            </div>
+
+            <a href="#install" class="cta-button">Get Protected - 100% Free Forever</a>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- STATS SECTION -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <section class="section">
+        <div class="container">
+            <div class="stats-grid">
+                <div>
+                    <div class="stat-large">28</div>
+                    <div class="stat-label-large">Types of Content Protected</div>
+                </div>
+                <div>
+                    <div class="stat-large">96%</div>
+                    <div class="stat-label-large">Detection Accuracy</div>
+                </div>
+                <div>
+                    <div class="stat-large">7</div>
+                    <div class="stat-label-large">Streaming Platforms</div>
+                </div>
+                <div>
+                    <div class="stat-large">100%</div>
+                    <div class="stat-label-large">Private & Local</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- HOW IT WORKS -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <section class="section section-alt">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Your Invisible Guardian</h2>
+                <p class="section-subtitle">
+                    Our technology analyzes content in real-time, giving you advance warning before sensitive moments appear. Here's how we keep you safe.
+                </p>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <span class="feature-icon" aria-hidden="true">🧠</span>
+                    <h3 class="feature-title">It Sees, Hears, and Understands</h3>
+                    <p class="feature-description">
+                        Our algorithm doesn't just read subtitles. It analyzes visuals for concerning content, listens for audio cues, and reads text—ensuring 96% accuracy even without subtitles.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <span class="feature-icon" aria-hidden="true">⚖️</span>
+                    <h3 class="feature-title">All Sensitivities Respected</h3>
+                    <p class="feature-description">
+                        Each of the 28 categories receives the same level of care and protection. What makes you uncomfortable is valid, and our algorithm treats it that way—no exceptions, no hierarchy.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <span class="feature-icon" aria-hidden="true">🎚️</span>
+                    <h3 class="feature-title">You're Always in Control</h3>
+                    <p class="feature-description">
+                        Adjust each category to your comfort level—from "off" to "very sensitive." The system learns your preferences and adapts automatically. Your protection, your rules.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- PRIVACY & ENVIRONMENT -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <section class="section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Privacy & Sustainability Matter</h2>
+                <p class="section-subtitle">
+                    Critical concerns answered upfront. Your data stays yours. Our impact stays minimal.
+                </p>
+            </div>
+
+            <div class="privacy-grid">
+                <div class="privacy-card">
+                    <div class="privacy-icon">🔒</div>
+                    <h3 class="privacy-title">100% Private</h3>
+                    <p class="privacy-description">
+                        Everything happens on your device. We never see what you watch. No data is ever sent to our servers. Your viewing habits are your business. Zero tracking, zero collection, zero exceptions.
+                    </p>
+                    <div class="privacy-features">
+                        <div class="privacy-feature-item">No cloud processing</div>
+                        <div class="privacy-feature-item">No data collection</div>
+                        <div class="privacy-feature-item">No third-party sharing</div>
+                    </div>
+                </div>
+
+                <div class="privacy-card">
+                    <div class="privacy-icon">🌱</div>
+                    <h3 class="privacy-title">Almost Zero Environmental Cost</h3>
+                    <p class="privacy-description">
+                        Unlike cloud AI that consumes massive energy, our efficient algorithm runs entirely on your device with minimal power usage. This saves the energy equivalent of thousands of trees per year. Protecting you shouldn't cost the planet.
+                    </p>
+                    <div class="privacy-features">
+                        <div class="privacy-feature-item">Local processing only</div>
+                        <div class="privacy-feature-item">No server infrastructure</div>
+                        <div class="privacy-feature-item">Sustainable by design</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- ALL CATEGORIES -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <section class="section section-alt" id="categories">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">All 28 Protected Categories</h2>
+                <p class="section-subtitle">
+                    Whatever makes you uncomfortable is valid. We protect you from all of these content types with the same care and attention.
+                </p>
+            </div>
+
+            <div class="categories-list">
+                <div class="category-item"><span class="category-icon">🩸</span> Blood & Gore</div>
+                <div class="category-item"><span class="category-icon">🔪</span> Violence</div>
+                <div class="category-item"><span class="category-icon">🕷️</span> Spiders & Insects</div>
+                <div class="category-item"><span class="category-icon">🐍</span> Snakes</div>
+                <div class="category-item"><span class="category-icon">💉</span> Needles & Medical</div>
+                <div class="category-item"><span class="category-icon">💡</span> Flashing Lights</div>
+                <div class="category-item"><span class="category-icon">😱</span> Jump Scares</div>
+                <div class="category-item"><span class="category-icon">🔞</span> Sexual Content</div>
+                <div class="category-item"><span class="category-icon">🗣️</span> Strong Language</div>
+                <div class="category-item"><span class="category-icon">🚗</span> Car Accidents</div>
+                <div class="category-item"><span class="category-icon">🔥</span> Fire & Burning</div>
+                <div class="category-item"><span class="category-icon">💧</span> Drowning</div>
+                <div class="category-item"><span class="category-icon">🧠</span> Self-Harm</div>
+                <div class="category-item"><span class="category-icon">💔</span> Suicide</div>
+                <div class="category-item"><span class="category-icon">🍔</span> Eating Disorders</div>
+                <div class="category-item"><span class="category-icon">🍷</span> Substance Abuse</div>
+                <div class="category-item"><span class="category-icon">👥</span> Sexual Assault</div>
+                <div class="category-item"><span class="category-icon">⚖️</span> Domestic Violence</div>
+                <div class="category-item"><span class="category-icon">👶</span> Child Abuse</div>
+                <div class="category-item"><span class="category-icon">🐾</span> Animal Cruelty</div>
+                <div class="category-item"><span class="category-icon">💀</span> Death & Dying</div>
+                <div class="category-item"><span class="category-icon">⚰️</span> Funerals & Bodies</div>
+                <div class="category-item"><span class="category-icon">🦷</span> Dental & Teeth</div>
+                <div class="category-item"><span class="category-icon">🤮</span> Vomiting</div>
+                <div class="category-item"><span class="category-icon">🕳️</span> Tight Spaces</div>
+                <div class="category-item"><span class="category-icon">⛰️</span> Heights</div>
+                <div class="category-item"><span class="category-icon">🌊</span> Deep Water</div>
+                <div class="category-item"><span class="category-icon">➕</span> And More...</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- HELPER MODE EXPLANATION -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <section class="section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Optional: Help Improve Detection</h2>
+                <p class="section-subtitle">
+                    Helper Mode (entirely optional) shows smooth, discreet questions <em>only for content you're monitoring</em>. Your answers help improve the algorithm for everyone.
+                </p>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <span class="feature-icon">🤝</span>
+                    <h3 class="feature-title">What Gets Stored?</h3>
+                    <p class="feature-description">
+                        When you contribute via Helper Mode, only the content ID is stored (anonymous & encrypted). Your viewing data never is. Your privacy remains absolute.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <span class="feature-icon">💡</span>
+                    <h3 class="feature-title">Easily Add Triggers</h3>
+                    <p class="feature-description">
+                        Spotted something we missed? Click the extension icon to report a new trigger. Only the content ID is stored (anonymous & encrypted) to improve detection.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <span class="feature-icon">🌐</span>
+                    <h3 class="feature-title">Better Together</h3>
+                    <p class="feature-description">
+                        89,000+ users helping each other. Every contribution makes the system better for everyone. It's a cycle of collective care.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- FINAL CTA -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <section class="section section-alt" id="install">
+        <div class="container" style="text-align: center;">
+            <h2 class="section-title">Ready to Stream with Confidence?</h2>
+            <p class="section-subtitle" style="max-width: 600px; margin: 24px auto;">
+                100% free. Not "free trial," not "freemium." Actually free. We're committed to accessibility—everyone deserves protection, regardless of income.
+            </p>
+
+            <div style="margin: 40px 0;">
+                <a href="https://chrome.google.com/webstore" class="cta-button" style="background: var(--gradient-hero); color: white;">
+                    Install for Chrome
+                </a>
+                <a href="https://microsoftedge.microsoft.com/addons" class="cta-button" style="background: var(--gradient-hero); color: white;">
+                    Install for Edge
+                </a>
+            </div>
+
+            <p style="font-size: 0.95rem; color: var(--text-light); margin-top: 24px;">
+                <strong>Why local processing matters:</strong> By running entirely on your device, we save thousands of gigawatt-hours annually compared to cloud AI. That's energy equivalent to powering 1,000+ homes.
+            </p>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- FOOTER -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <h3>Trigger Warnings</h3>
+                <p>Take control of your streaming. Your safety. Your choice. Always free.</p>
+
+                <div class="footer-links">
+                    <a href="/privacy.html" class="footer-link">Privacy Policy</a>
+                    <a href="/technical.html" class="footer-link">How It Works</a>
+                    <a href="https://github.com/lightmyfireadmin/triggerwarnings" class="footer-link">GitHub</a>
+                    <a href="#categories" class="footer-link">All Categories</a>
+                </div>
+
+                <div class="version-note">
+                    <p>📄 <strong>HTML-Only Version</strong> - This page contains all the same information without interactive demos.</p>
+                    <a href="/landing/index.html" class="interactive-version-link">
+                        ✨ View Interactive Version (with demos)
+                    </a>
+                </div>
+
+                <p style="margin-top: 32px; font-size: 0.85rem;">
+                    © 2026 Trigger Warnings. 100% Free Forever. No one should have to pay to feel safe.
+                </p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

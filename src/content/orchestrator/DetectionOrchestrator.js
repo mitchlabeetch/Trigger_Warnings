@@ -25,6 +25,8 @@ import { ConfidenceFusionSystem } from '../fusion/ConfidenceFusionSystem';
 import { WarningDeduplicator } from '../optimization/WarningDeduplicator';
 import { PerformanceOptimizer } from '../optimization/PerformanceOptimizer';
 import { SystemHealthMonitor } from '../monitoring/SystemHealthMonitor';
+// Algorithm 3.0 Integration
+import { Algorithm3Integrator } from '../integration/Algorithm3Integrator';
 const logger = new Logger('DetectionOrchestrator');
 export class DetectionOrchestrator {
     // Detection systems
@@ -37,6 +39,8 @@ export class DetectionOrchestrator {
     deduplicator = null;
     performanceOptimizer = null;
     healthMonitor = null;
+    // Algorithm 3.0 Integration
+    algorithm3Integrator = null;
     // State
     provider;
     profile;
@@ -46,7 +50,7 @@ export class DetectionOrchestrator {
     constructor(provider, profile, config) {
         this.provider = provider;
         this.profile = profile;
-        // Default config: enable all systems
+        // Default config: enable all systems INCLUDING Algorithm 3.0
         this.config = {
             enableSubtitleAnalysis: true,
             enableAudioWaveform: true,
@@ -59,8 +63,16 @@ export class DetectionOrchestrator {
             deduplicationStrategy: 'merge-all',
             enablePerformanceOptimization: true,
             enableHealthMonitoring: true,
+            // Algorithm 3.0 ENABLED by default (revolutionary upgrade!)
+            enableAlgorithm3: true,
+            useLegacyFusion: false,
             ...config
         };
+        // Initialize Algorithm 3.0 Integrator
+        if (this.config.enableAlgorithm3) {
+            this.algorithm3Integrator = new Algorithm3Integrator(profile);
+            logger.info('[TW DetectionOrchestrator] 🚀 Algorithm 3.0 Integration ENABLED');
+        }
         logger.info('[TW DetectionOrchestrator] 🎭 Initializing Detection Orchestrator...');
         logger.info(`[TW DetectionOrchestrator] Configuration: ${JSON.stringify(this.config)}`);
     }
@@ -271,7 +283,7 @@ export class DetectionOrchestrator {
     /**
      * Handle detection from any system
      */
-    handleDetection(warning, source) {
+    async handleDetection(warning, source) {
         // Filter by profile enabled categories
         if (!this.profile.enabledCategories.includes(warning.categoryKey)) {
             logger.debug(`[TW DetectionOrchestrator] ⏭️ Detection filtered (category not enabled): ${warning.categoryKey}`);
@@ -282,8 +294,35 @@ export class DetectionOrchestrator {
             `Confidence: ${warning.confidenceLevel}%`);
         // Add to all warnings
         this.allWarnings.push(warning);
-        // If fusion is enabled, add to fusion system
-        if (this.fusionSystem) {
+        // ALGORITHM 3.0 INTEGRATION PATH
+        if (this.algorithm3Integrator && this.config.enableAlgorithm3) {
+            // Create legacy detection format
+            const legacyDetection = {
+                source: source,
+                category: warning.categoryKey,
+                timestamp: warning.startTime,
+                confidence: warning.confidenceLevel,
+                warning,
+                metadata: {}
+            };
+            // Process through Algorithm 3.0 (routing, attention, temporal, fusion, personalization)
+            const enhanced = await this.algorithm3Integrator.processDetection(legacyDetection);
+            if (enhanced && enhanced.shouldWarn) {
+                logger.info(`[TW DetectionOrchestrator] ✅ ALGORITHM 3.0 WARNING | ` +
+                    `${enhanced.category} at ${enhanced.timestamp.toFixed(1)}s | ` +
+                    `Original: ${enhanced.originalConfidence}% → Final: ${enhanced.fusedConfidence.toFixed(1)}% | ` +
+                    `Pipeline: ${enhanced.routedPipeline}`);
+                this.allWarnings.push(enhanced.warning);
+                this.emitWarning(enhanced.warning);
+            }
+            else if (!enhanced) {
+                logger.debug(`[TW DetectionOrchestrator] ⏭️  ALGORITHM 3.0 SUPPRESSED | ` +
+                    `${warning.categoryKey} (below user sensitivity threshold)`);
+            }
+            return;
+        }
+        // LEGACY FUSION PATH (backward compatibility)
+        if (this.fusionSystem && this.config.useLegacyFusion) {
             this.fusionSystem.addDetection({
                 source: source,
                 category: warning.categoryKey,
@@ -298,11 +337,10 @@ export class DetectionOrchestrator {
                 const key = `${fusedWarning.categoryKey}-${Math.floor(fusedWarning.startTime)}`;
                 // Check if we've already emitted this fused warning
                 if (!this.allWarnings.some(w => w.id === fusedWarning.id)) {
-                    logger.info(`[TW DetectionOrchestrator] 🧠 FUSED WARNING | ` +
+                    logger.info(`[TW DetectionOrchestrator] 🧠 FUSED WARNING (Legacy) | ` +
                         `${fusedWarning.categoryKey} at ${fusedWarning.startTime.toFixed(1)}s | ` +
                         `Fused Confidence: ${fusedWarning.confidenceLevel}%`);
                     this.allWarnings.push(fusedWarning);
-                    // Emit fused warning (through deduplicator if enabled)
                     this.emitWarning(fusedWarning);
                 }
             }
@@ -372,6 +410,8 @@ export class DetectionOrchestrator {
         const deduplicationStats = this.deduplicator?.getStats() || null;
         const performanceStats = this.performanceOptimizer?.getStats() || null;
         const healthStats = this.healthMonitor?.getStats() || null;
+        // Algorithm 3.0 stats
+        const algorithm3Stats = this.algorithm3Integrator?.getStats() || null;
         return {
             subtitle: subtitleStats,
             audioWaveform: audioWaveformStats,
@@ -382,6 +422,7 @@ export class DetectionOrchestrator {
             deduplication: deduplicationStats,
             performance: performanceStats,
             health: healthStats,
+            algorithm3: algorithm3Stats,
             totalWarnings: this.allWarnings.length,
             activeSystems
         };
@@ -471,6 +512,31 @@ export class DetectionOrchestrator {
             logger.info(`  - Cascade Failures Prevented: ${stats.health.cascadeFailuresPrevented}`);
             logger.info('');
         }
+        if (stats.algorithm3) {
+            logger.info('🚀 ALGORITHM 3.0 INTEGRATION (Phase 1 + Phase 2):');
+            logger.info(`  - Total Detections: ${stats.algorithm3.totalDetections}`);
+            logger.info(`  - Hierarchical Early Exits: ${stats.algorithm3.hierarchicalEarlyExits} (Phase 2)`);
+            logger.info(`  - Routed Through Pipelines: ${stats.algorithm3.routedDetections}`);
+            logger.info(`  - Attention Adjustments: ${stats.algorithm3.attentionAdjustments}`);
+            logger.info(`  - Temporal Regularizations: ${stats.algorithm3.temporalRegularizations}`);
+            logger.info(`  - Fusion Operations: ${stats.algorithm3.fusionOperations}`);
+            logger.info(`  - Validation Checks: ${stats.algorithm3.validationChecks} (Phase 2)`);
+            logger.info(`  - Validation Failures: ${stats.algorithm3.validationFailures} (Phase 2)`);
+            logger.info(`  - Personalization Applied: ${stats.algorithm3.personalizationApplied}`);
+            logger.info(`  - Warnings Emitted: ${stats.algorithm3.warningsEmitted}`);
+            logger.info(`  - Warnings Suppressed: ${stats.algorithm3.warningsSuppressed}`);
+            logger.info(`  - Avg Confidence Boost: +${stats.algorithm3.avgConfidenceBoost.toFixed(1)}%`);
+            logger.info(`  - Avg False Positive Reduction: -${stats.algorithm3.avgFalsePositiveReduction.toFixed(1)}%`);
+            if (stats.algorithm3.hierarchical) {
+                logger.info(`  - Hierarchical Performance: ${stats.algorithm3.hierarchical.performanceGain} faster (Phase 2)`);
+                logger.info(`  - Early Exit Rate: ${stats.algorithm3.hierarchical.earlyExitRate.toFixed(1)}% (Phase 2)`);
+            }
+            if (stats.algorithm3.validation) {
+                logger.info(`  - Validation Pass Rate: ${stats.algorithm3.validation.passRate.toFixed(1)}% (Phase 2)`);
+                logger.info(`  - Multi-Modal Detection Rate: ${stats.algorithm3.validation.multiModalRate.toFixed(1)}% (Phase 2)`);
+            }
+            logger.info('');
+        }
         logger.info('═══════════════════════════════════════════════════════════');
     }
     /**
@@ -484,6 +550,7 @@ export class DetectionOrchestrator {
         this.photosensitivityDetector?.clear();
         this.fusionSystem?.clear();
         this.deduplicator?.clear();
+        this.algorithm3Integrator?.clear();
         this.allWarnings = [];
     }
     /**
@@ -501,6 +568,7 @@ export class DetectionOrchestrator {
         this.photosensitivityDetector?.dispose();
         this.fusionSystem?.clear();
         this.deduplicator?.clear();
+        this.algorithm3Integrator?.dispose();
         this.subtitleAnalyzer = null;
         this.audioWaveformAnalyzer = null;
         this.audioFrequencyAnalyzer = null;
@@ -510,6 +578,7 @@ export class DetectionOrchestrator {
         this.deduplicator = null;
         this.performanceOptimizer = null;
         this.healthMonitor = null;
+        this.algorithm3Integrator = null;
         this.allWarnings = [];
         this.onWarningCallback = null;
         logger.info('[TW DetectionOrchestrator] ✅ All systems disposed');
@@ -527,7 +596,8 @@ export class DetectionOrchestrator {
             fusion: this.fusionSystem !== null,
             deduplication: this.deduplicator !== null,
             performance: this.performanceOptimizer !== null,
-            healthMonitoring: this.healthMonitor !== null
+            healthMonitoring: this.healthMonitor !== null,
+            algorithm3: this.algorithm3Integrator !== null
         };
     }
 }

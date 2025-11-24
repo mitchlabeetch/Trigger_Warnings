@@ -50,6 +50,22 @@ export const CATEGORY_ICON_FILES: Record<TriggerCategory, string> = {
   religious_trauma: 'religious_trauma',
   detonations_bombs: 'explosions_bombs',
   natural_disasters: 'natural_disasters',
+  gunshots: 'gunshots',
+  explosions: 'explosions',
+  screams: 'screams',
+  slurs: 'slurs',
+  hate_speech: 'hate_speech',
+  threats: 'threats',
+  photosensitivity: 'photosensitivity',
+  loud_noises: 'loud_noises',
+  insects_spiders: 'insects_spiders',
+  snakes_reptiles: 'snakes_reptiles',
+  needles_injections: 'needles_injections',
+  pregnancy_childbirth: 'pregnancy_childbirth',
+  death_dying: 'death_dying',
+  claustrophobia_triggers: 'claustrophobia_triggers',
+  physical_violence: 'physical_violence',
+  car_crashes: 'car_crashes'
 };
 
 /**

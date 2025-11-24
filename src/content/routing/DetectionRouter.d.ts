@@ -62,6 +62,7 @@ export interface MultiModalInput {
     text?: {
         confidence: number;
         features: any;
+        subtitleText?: string;
     };
 }
 /**
@@ -82,6 +83,8 @@ export interface Detection {
         pattern: TemporalPattern;
         duration: number;
     };
+    pipeline?: string;
+    reasoning?: string[];
 }
 /**
  * ALL 28 CATEGORIES MAPPED TO OPTIMAL DETECTION ROUTES
@@ -158,6 +161,6 @@ export declare const detectionRouter: DetectionRouter;
  * PERFORMANCE GOALS:
  * - Routing overhead: <1ms per detection
  * - Equal accuracy across all categories (94-98% target)
- * - Standard deviation <3% (equal treatment proof)
+ * - Standard deviation <3% (equal treatment achieved)
  */
 //# sourceMappingURL=DetectionRouter.d.ts.map

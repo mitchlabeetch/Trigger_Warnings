@@ -489,6 +489,13 @@ export class HybridFusionPipeline {
   }
 
   /**
+   * Public alias for lateFusion to satisfy interface requirements
+   */
+  fuse(detections: Detection[]): Detection {
+    return this.lateFusion(detections);
+  }
+
+  /**
    * Calculate modality agreement
    */
   private calculateModalityAgreement(detections: Detection[]): number {

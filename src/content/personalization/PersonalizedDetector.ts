@@ -15,7 +15,7 @@
  * Date: 2025-11-11
  */
 
-import type { TriggerCategory, Warning } from '@shared/types/Warning.types';
+import type { TriggerCategory } from '@shared/types/Warning.types';
 import type { Detection } from '../routing/DetectionRouter';
 import type { ContentContext, UserSensitivityProfile } from './UserSensitivityProfile';
 import { userSensitivityProfileManager, SENSITIVITY_THRESHOLDS } from './UserSensitivityProfile';
@@ -48,6 +48,14 @@ export interface PersonalizedDecision {
     stressAdjustment?: string;
     adaptiveAdjustment?: string;
   };
+}
+
+/**
+ * User Profile Interface
+ * Exported for use in other modules
+ */
+export interface UserProfile extends UserSensitivityProfile {
+  // Extend with any detector-specific profile needs if necessary
 }
 
 /**
@@ -188,7 +196,7 @@ export class PersonalizedDetector {
    */
   private calculateAdaptiveAdjustment(
     category: TriggerCategory,
-    currentConfidence: number
+    _currentConfidence: number
   ): number {
     const history = this.feedbackHistory.get(category);
     if (!history || history.length < 5) {
@@ -206,7 +214,8 @@ export class PersonalizedDetector {
 
     // Count feedback types
     const dismissed = recentFeedback.filter(f => f.action === 'dismissed').length;
-    const confirmed = recentFeedback.filter(f => f.action === 'confirmed-helpful').length;
+    // confirmed is declared but never used, so I'm commenting it out to fix TS6133
+    // const confirmed = recentFeedback.filter(f => f.action === 'confirmed-helpful').length;
     const misses = recentFeedback.filter(f => f.action === 'reported-miss').length;
 
     // Calculate dismissal rate
@@ -403,5 +412,5 @@ export const personalizedDetector = new PersonalizedDetector();
  * - User enables stress mode → All thresholds reduced by 20%
  * - Nighttime (11pm) → All thresholds reduced by 10%
  *
- * **LEARNING SYSTEM THAT RESPECTS EACH USER'S UNIQUE NEEDS**
+ * **LEARNING SYSTEM THAT RESPECTS EACH USER'S UNIQUE UNIQUE**
  */
