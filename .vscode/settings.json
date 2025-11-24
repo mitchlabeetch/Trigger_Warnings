@@ -1,0 +1,41 @@
+{
+  // Svelte
+  "svelte.enable-ts-plugin": true,
+  "svelte.plugin.svelte.compilerWarnings": {
+    "a11y-label-has-associated-control": "ignore"
+  },
+  
+  // TypeScript
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  
+  // Formatting
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "[svelte]": {
+    "editor.defaultFormatter": "svelte.svelte-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  
+  // ESLint
+  "eslint.validate": [
+    "javascript",
+    "typescript",
+    "svelte"
+  ],
+  
+  // Tailwind
+  "tailwindCSS.experimental.classRegex": [
+    ["class:\\s*['\"`]([^'\"`]*)['\"`]", "([^'\"`]*)"]
+  ],
+  
+  // Files
+  "files.associations": {
+    "*.svelte": "svelte"
+  }
+}
