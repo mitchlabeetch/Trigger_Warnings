@@ -298,8 +298,15 @@ export class BayesianVotingEngine {
     // Update consensus agreement rate (exponential moving average)
     const alpha = 0.1;  // Learning rate
     const newAgreement = votedWithConsensus ? 1 : 0;
+
+    // Handle missing or invalid consensus rate
+    let currentAgreement = updated.consensusAgreementRate;
+    if (currentAgreement === undefined || currentAgreement === null || Number.isNaN(currentAgreement)) {
+      currentAgreement = 0.5;
+    }
+
     updated.consensusAgreementRate =
-      alpha * newAgreement + (1 - alpha) * updated.consensusAgreementRate;
+      alpha * newAgreement + (1 - alpha) * currentAgreement;
 
     // Update category expertise
     if (votedWithConsensus) {
