@@ -36,7 +36,7 @@ jobs:
         run: ./scripts/package-extension.sh
 
       - name: Upload Extension Package
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: extension-package
           path: trigger-warnings-*.zip
