@@ -45,6 +45,9 @@ export interface StorageSchema {
 
   // Note: Dynamic keys like `sensitivity_profile_${string}` are handled via casting in usage
   // as strict TypeScript interfaces do not support template literal keys mixed with static keys.
+
+  // Position of the Unified Control Center
+  unifiedControlCenterPosition: { top: number; left: number };
 }
 
 export type StorageKey = keyof StorageSchema;

@@ -7,7 +7,7 @@
   export let warningDescription: string = '';
 
   let visible = false;
-  let fadeIn = false;
+  let isPeeking = false;
 
   $: showBlackout = protectionType === 'blackout' || protectionType === 'both';
 
@@ -15,11 +15,16 @@
     // Slight delay for smooth transition
     setTimeout(() => {
       visible = true;
-      setTimeout(() => {
-        fadeIn = true;
-      }, 50);
     }, 100);
   });
+
+  function handlePeekStart() {
+    isPeeking = true;
+  }
+
+  function handlePeekEnd() {
+    isPeeking = false;
+  }
 
   function handleClick(event: MouseEvent) {
     // Prevent clicks from passing through to video player
@@ -31,7 +36,7 @@
   <div
     class="tw-protection-overlay"
     class:visible={visible}
-    class:fade-in={fadeIn}
+    class:peeking={isPeeking}
     on:click={handleClick}
     role="presentation"
   >
@@ -52,6 +57,16 @@
           <p class="tw-protection-description">{warningDescription}</p>
         {/if}
       </div>
+
+      <button
+        class="tw-peek-button"
+        on:mousedown={handlePeekStart}
+        on:mouseup={handlePeekEnd}
+        on:touchstart={handlePeekStart}
+        on:touchend={handlePeekEnd}
+      >
+        Hold to Peek
+      </button>
     </div>
   </div>
 {/if}
@@ -68,17 +83,24 @@
     align-items: center;
     justify-content: center;
     z-index: 999999;
-    opacity: 0;
-    transition: opacity 0.3s ease-in-out;
     pointer-events: all;
+
+    /* Curtain Effect */
+    --mask-size: 0%;
+    mask-image: radial-gradient(circle at center, black var(--mask-size), transparent var(--mask-size));
+    mask-size: 100% 100%;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    transition: --mask-size 0.5s cubic-bezier(0.25, 1, 0.5, 1);
   }
 
   .tw-protection-overlay.visible {
-    opacity: 1;
+    --mask-size: 200%; /* Large enough to cover the screen */
   }
 
-  .tw-protection-overlay.fade-in {
-    opacity: 1;
+  .tw-protection-overlay.peeking {
+    opacity: 0.1;
+    transition: opacity 0.2s ease-in-out;
   }
 
   .tw-protection-content {
@@ -155,5 +177,20 @@
     .tw-protection-description {
       font-size: 13px;
     }
+  }
+
+  .tw-peek-button {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-top: 20px;
+  }
+
+  .tw-peek-button:hover {
+    background-color: rgba(255, 255, 255, 0.2);
   }
 </style>
