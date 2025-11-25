@@ -3,6 +3,7 @@
  */
 
 import type { IStreamingProvider, MediaInfo } from '@shared/types/Provider.types';
+import { DOMObserver } from './DOMObserver';
 
 export abstract class BaseProvider implements IStreamingProvider {
   abstract readonly name: string;
@@ -21,6 +22,9 @@ export abstract class BaseProvider implements IStreamingProvider {
   };
 
   protected currentMedia: MediaInfo | null = null;
+  protected videoElement: HTMLVideoElement | null = null;
+  protected readonly videoElementSelector: string = 'video';
+  private videoElementObserver: DOMObserver | null = null;
   protected observers: MutationObserver[] = [];
   protected eventListeners: Array<{
     element: EventTarget;
@@ -29,12 +33,16 @@ export abstract class BaseProvider implements IStreamingProvider {
   }> = [];
 
   async initialize(): Promise<void> {
-    // Override in subclasses
+    this.startVideoObserver();
   }
 
   abstract getCurrentMedia(): Promise<MediaInfo | null>;
-  abstract getVideoElement(): HTMLVideoElement | null;
   abstract getInjectionPoint(): HTMLElement | null;
+  protected abstract setupVideoListeners(): void;
+
+  getVideoElement(): HTMLVideoElement | null {
+    return this.videoElement;
+  }
 
   onPlay(callback: () => void): void {
     this.callbacks.onPlay.push(callback);
@@ -78,6 +86,28 @@ export abstract class BaseProvider implements IStreamingProvider {
   ): void {
     element.addEventListener(event, handler);
     this.eventListeners.push({ element, event, handler });
+  }
+
+  private onVideoElementChanged(element: Element | null): void {
+    if (element === this.videoElement) {
+      return;
+    }
+
+    this.cleanupEventListeners();
+
+    if (element instanceof HTMLVideoElement) {
+      this.videoElement = element;
+      this.setupVideoListeners();
+    } else {
+      this.videoElement = null;
+    }
+  }
+
+  private startVideoObserver(): void {
+    this.videoElementObserver = new DOMObserver(this.videoElementSelector, (element) => {
+      this.onVideoElementChanged(element);
+    });
+    this.videoElementObserver.start(document.body);
   }
 
   protected observeDOM(target: Node, options: MutationObserverInit): MutationObserver {
@@ -124,16 +154,21 @@ export abstract class BaseProvider implements IStreamingProvider {
     });
   }
 
-  dispose(): void {
-    // Clean up observers
-    this.observers.forEach((observer) => observer.disconnect());
-    this.observers = [];
-
-    // Clean up event listeners
+  private cleanupEventListeners(): void {
     this.eventListeners.forEach(({ element, event, handler }) => {
       element.removeEventListener(event, handler);
     });
     this.eventListeners = [];
+  }
+
+  dispose(): void {
+    // Clean up observers
+    this.observers.forEach((observer) => observer.disconnect());
+    this.observers = [];
+    this.videoElementObserver?.stop();
+
+    // Clean up event listeners
+    this.cleanupEventListeners();
 
     // Clear callbacks
     this.callbacks = {
