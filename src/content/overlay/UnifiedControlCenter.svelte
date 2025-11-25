@@ -7,6 +7,11 @@
   let isVertical = false;
   let isHovered = false;
 
+  export let nextTriggerText: string = 'Next Trigger: [Category] in [Time]';
+  export let upcomingText: string = 'Upcoming';
+  export let reportText: string = 'Report';
+  export let settingsText: string = 'Settings';
+
   let dragOffset = { x: 0, y: 0 };
   let initialDragState = { startOffsetX: 0, startOffsetY: 0, startMouseX: 0, startMouseY: 0 };
 
@@ -15,7 +20,12 @@
   onMount(() => {
     const savedOffset = localStorage.getItem('unified-control-center-offset');
     if (savedOffset) {
-      dragOffset = JSON.parse(savedOffset);
+      try {
+        dragOffset = JSON.parse(savedOffset);
+      } catch (e) {
+        console.error('Failed to parse saved offset for unified control center:', e);
+        localStorage.removeItem('unified-control-center-offset');
+      }
     }
   });
 
@@ -77,13 +87,13 @@
   <div class="glass-pill" class:expanded={isExpanded} class:vertical={isVertical} class:hovered={isHovered}>
     {#if !isExpanded}
       <div class="drag-handle"></div>
-      <span class="trigger-text">Next Trigger: [Category] in [Time]</span>
+      <span class="trigger-text">{nextTriggerText}</span>
     {:else}
       <div class="dashboard-panel">
         <div class="tabs">
-          <button>Upcoming</button>
-          <button>Report</button>
-          <button>Settings</button>
+          <button>{upcomingText}</button>
+          <button>{reportText}</button>
+          <button>{settingsText}</button>
         </div>
         <div class="tab-content">
           <!-- Content for tabs goes here -->

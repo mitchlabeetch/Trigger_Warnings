@@ -2,6 +2,7 @@
   import { onMount, onDestroy } from 'svelte';
   import type { ActiveWarning } from '@shared/types/Warning.types';
   import { IStreamingProvider } from '@shared/types/Provider.types';
+  import { CATEGORY_COLORS } from '@shared/config/colors';
 
   export let provider: IStreamingProvider;
   export let warnings: ActiveWarning[] = [];
@@ -12,18 +13,16 @@
 
   let observer: MutationObserver | null = null;
 
+  $: if (canvas) draw();
+
   onMount(() => {
-    const progressBar = provider.getProgressBar();
-    if (progressBar) {
-      progressBar.appendChild(canvas);
-      progressBar.appendChild(tooltip);
-      draw();
-    }
+    draw();
 
     // Observe for changes in the progress bar to redraw
-    observer = new MutationObserver(draw);
+    const progressBar = provider.getProgressBar();
     if (progressBar) {
-      observer.observe(progressBar, { attributes: true, childList: true, subtree: true });
+        observer = new MutationObserver(draw);
+        observer.observe(progressBar, { attributes: true, childList: true, subtree: true });
     }
   });
 
@@ -85,16 +84,7 @@
   }
 
   function getCategoryColor(category: string): string {
-    // Basic color mapping - can be expanded
-    const colors: { [key: string]: string } = {
-        'violence': '#ff4d4d',
-        'gore': '#b30000',
-        'nudity': '#ffc107',
-        'sexual_content': '#e91e63',
-        'profanity': '#9c27b0',
-        'drug_use': '#4caf50',
-    };
-    return colors[category] || '#ffffff';
+    return CATEGORY_COLORS[category] || CATEGORY_COLORS['default'];
   }
 </script>
 

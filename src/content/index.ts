@@ -120,10 +120,6 @@ class TriggerWarningsContent {
         this.updateIndicatorWarnings();
       });
 
-      this.provider.onMediaChange(media => {
-        this.themeExtractor?.onMediaChange(media);
-      });
-
       // Set up banner callbacks
       this.bannerManager.onIgnoreThisTime((warningId: string) => {
         this.warningManager?.ignoreThisTime(warningId);
@@ -293,18 +289,18 @@ class TriggerWarningsContent {
     }
 
     if (this.layoutEngine) {
-        this.layoutEngine.dispose();
-        this.layoutEngine = null;
+      this.layoutEngine.dispose();
+      this.layoutEngine = null;
     }
 
     if (this.themeExtractor) {
-        this.themeExtractor.dispose();
-        this.themeExtractor = null;
+      this.themeExtractor.dispose();
+      this.themeExtractor = null;
     }
 
     if (this.timelineManager) {
-        this.timelineManager.dispose();
-        this.timelineManager = null;
+      this.timelineManager.dispose();
+      this.timelineManager = null;
     }
 
     if (this.provider) {

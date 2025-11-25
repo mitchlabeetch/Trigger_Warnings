@@ -121,7 +121,7 @@
   }
 
   .tw-protection-overlay.peeking .tw-content {
-    opacity: 0 !important;
+    opacity: 0;
   }
 
   .tw-icon {
@@ -157,5 +157,29 @@
 
   .tw-peek-button:hover {
     background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  @media (max-width: 768px) {
+    .tw-content {
+      padding: 24px;
+      gap: 16px;
+    }
+
+    .tw-icon svg {
+      width: 40px;
+      height: 40px;
+    }
+
+    .tw-message h3 {
+      font-size: 20px;
+    }
+
+    .tw-category {
+      font-size: 14px;
+    }
+
+    .tw-description {
+      font-size: 13px;
+    }
   }
 </style>
