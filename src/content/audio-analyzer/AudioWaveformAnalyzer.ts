@@ -110,7 +110,11 @@ export class AudioWaveformAnalyzer {
   /**
    * Start monitoring audio waveform
    */
-  private startMonitoring(): void {
+  public startMonitoring(): void {
+    if (this.monitoringInterval !== null) {
+       return; // Already running
+    }
+
     const checkInterval = 50;  // Check every 50ms (20 Hz)
 
     this.monitoringInterval = window.setInterval(() => {
@@ -123,7 +127,7 @@ export class AudioWaveformAnalyzer {
   /**
    * Stop monitoring
    */
-  private stopMonitoring(): void {
+  public stopMonitoring(): void {
     if (this.monitoringInterval !== null) {
       clearInterval(this.monitoringInterval);
       this.monitoringInterval = null;

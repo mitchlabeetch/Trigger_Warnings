@@ -120,7 +120,10 @@ export class VisualColorAnalyzer {
   /**
    * Start monitoring video frames
    */
-  private startMonitoring(): void {
+  public startMonitoring(): void {
+    if (this.rafId !== null) {
+        return; // Already running
+    }
     this.lastCheckTime = Date.now();
 
     const checkLoop = () => {
@@ -142,7 +145,7 @@ export class VisualColorAnalyzer {
   /**
    * Stop monitoring
    */
-  private stopMonitoring(): void {
+  public stopMonitoring(): void {
     if (this.rafId !== null) {
       cancelAnimationFrame(this.rafId);
       this.rafId = null;
