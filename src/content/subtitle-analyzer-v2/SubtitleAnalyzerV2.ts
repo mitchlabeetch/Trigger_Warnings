@@ -42,6 +42,7 @@ export class SubtitleAnalyzerV2 {
   private textTrack: TextTrack | null = null;
   private detectedTriggers: Map<string, Warning> = new Map();
   private onTriggerDetected: ((warning: Warning) => void) | null = null;
+  private onWakeSignal: (() => void) | null = null;
   private translator: SubtitleTranslator;
   private contextAnalyzer: ContextAnalyzer;
   private temporalDetector: TemporalPatternDetector;
@@ -250,6 +251,12 @@ export class SubtitleAnalyzerV2 {
           continue;
         }
 
+        // WAKE SIGNAL: Emit detection hint on ANY keyword match, BEFORE context filtering.
+        // This ensures audio/visual analyzers wake up to check ambiguous situations.
+        if (this.onWakeSignal) {
+             this.onWakeSignal();
+        }
+
         // Context-aware analysis
         const analysis = this.contextAnalyzer.analyze(
           text,
@@ -330,6 +337,13 @@ export class SubtitleAnalyzerV2 {
    */
   onDetection(callback: (warning: Warning) => void): void {
     this.onTriggerDetected = callback;
+  }
+
+  /**
+   * Register callback for wake signal
+   */
+  onWake(callback: () => void): void {
+    this.onWakeSignal = callback;
   }
 
   /**

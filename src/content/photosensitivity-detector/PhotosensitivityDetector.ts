@@ -96,11 +96,35 @@ export class PhotosensitivityDetector {
   /**
    * Stop monitoring
    */
-  private stopMonitoring(): void {
+  public stopMonitoring(): void {
     if (this.rafId !== null) {
       cancelAnimationFrame(this.rafId);
       this.rafId = null;
     }
+  }
+
+  /**
+   * Start monitoring - public alias for startMonitoring
+   */
+  public startMonitoring(): void {
+    if (this.rafId !== null) {
+      this.stopMonitoring();
+    }
+
+    this.lastCheckTime = Date.now();
+
+    const checkLoop = () => {
+      const now = Date.now();
+
+      if (now - this.lastCheckTime >= this.checkInterval) {
+        this.analyzeFrame();
+        this.lastCheckTime = now;
+      }
+
+      this.rafId = requestAnimationFrame(checkLoop);
+    };
+
+    this.rafId = requestAnimationFrame(checkLoop);
   }
 
   /**

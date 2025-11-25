@@ -149,7 +149,10 @@ export class AudioFrequencyAnalyzer {
   /**
    * Start monitoring frequency spectrum
    */
-  private startMonitoring(): void {
+  public startMonitoring(): void {
+    if (this.monitoringInterval !== null) {
+        return; // Already running
+    }
     this.monitoringInterval = window.setInterval(() => {
       this.analyzeFrequencies();
     }, this.currentCheckInterval);
@@ -160,7 +163,7 @@ export class AudioFrequencyAnalyzer {
   /**
    * Stop monitoring
    */
-  private stopMonitoring(): void {
+  public stopMonitoring(): void {
     if (this.monitoringInterval !== null) {
       clearInterval(this.monitoringInterval);
       this.monitoringInterval = null;
