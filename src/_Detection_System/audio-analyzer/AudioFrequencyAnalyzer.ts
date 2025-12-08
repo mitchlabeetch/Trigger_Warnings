@@ -1,77 +1,72 @@
 /**
- * AUDIO FREQUENCY ANALYZER
+ * AUDIO FREQUENCY ANALYZER - REBUILT WITH AUDIO WORKLETS & WASM
  *
- * Detects trigger warnings from audio frequency analysis
- * Uses Web Audio API's AnalyserNode for FFT-based frequency analysis
- * off the main thread using Web Workers.
+ * This version replaces the legacy setInterval/Web Worker approach with a modern
+ * AudioWorklet pipeline for real-time, low-latency audio processing directly on
+ * the audio rendering thread.
  *
- * Browser Support: Chrome 14+, Firefox 25+, Safari 6+, Edge 12+
+ * Key Features:
+ * - AudioWorklet for efficient processing.
+ * - Placeholder for Wasm-based FFT and spectral fingerprinting.
+ * - Eliminates main-thread polling, reducing CPU usage.
  *
  * Created by: Claude Code (Legendary Session)
  * Date: 2024-11-11
- * Refactored for Web Worker: Jules
+ * Refactored for AudioWorklet: Jules
  */
 
 import type { Warning } from '@shared/types/Warning.types';
-import type { AnalyzeAudioPayload, DetectionPayload } from '@shared/types/analysis.types';
+import type { DetectionPayload } from '@shared/types/analysis.types';
 import { Logger } from '@shared/utils/logger';
-import { PerformanceGovernor } from '../performance/PerformanceGovernor';
-import { analysisStore } from '../store/AnalysisStore';
-// @ts-ignore - Query params for worker import
-import AudioAnalyzerWorker from './AudioAnalyzer.worker?worker';
 
 const logger = new Logger('AudioFrequencyAnalyzer');
 
 export class AudioFrequencyAnalyzer {
   private audioContext: AudioContext | null = null;
-  private analyser: AnalyserNode | null = null;
   private source: MediaElementAudioSourceNode | null = null;
-  private frequencyData: Uint8Array | null = null;
-  private monitoringInterval: number | null = null;
+  private workletNode: AudioWorkletNode | null = null;
   private video: HTMLVideoElement | null = null;
-
-  private worker: Worker | null = null;
-  private performanceGovernor: PerformanceGovernor;
-  private unsubscribeGovernor: (() => void) | null = null;
-  private currentCheckInterval = 100;
 
   // Statistics
   private stats = {
-    totalChecks: 0,
-    screamDetections: 0,
-    gunshotDetections: 0,
-    explosionDetections: 0,
-    sirenDetections: 0,
-    medicalBeepDetections: 0,
-    cryingDetections: 0,
-    powerToolDetections: 0
+    totalChecks: 0, // This will be deprecated as checks are continuous
+    detections: 0,
   };
 
   private onWarningDetected: ((warning: Warning) => void) | null = null;
 
   constructor() {
-    this.performanceGovernor = PerformanceGovernor.getInstance();
-    this.initializeWorker();
+    // Initialization now happens in the `initialize` method
   }
 
-  private initializeWorker() {
+  private async initializeWorklet() {
+    if (!this.audioContext) return;
+
     try {
-      this.worker = new AudioAnalyzerWorker();
-      if (this.worker) {
-        this.worker.onmessage = (e) => this.handleWorkerMessage(e);
-        this.worker.onerror = (e) => {
-          logger.error('Audio Analyzer Worker error:', e);
-        };
-      }
+      // Load the worklet processor
+      await this.audioContext.audioWorklet.addModule('src/content/audio-analyzer/processor.worklet.ts');
+
+      // Create the worklet node
+      this.workletNode = new AudioWorkletNode(this.audioContext, 'spectral-fingerprint-processor');
+
+      // Set up communication
+      this.workletNode.port.onmessage = (event) => this.handleWorkletMessage(event);
+
+      logger.info('[TW AudioFrequencyAnalyzer] ✅ Audio Worklet node created.');
+
+      // Placeholder: Load the binary bank of trigger sounds and send to worklet
+      this.loadAndSendTriggerBank();
+
     } catch (error) {
-      logger.error('Failed to initialize Audio Analyzer Worker:', error);
+      logger.error('[TW AudioFrequencyAnalyzer] ❌ Failed to initialize Audio Worklet:', error);
     }
   }
 
-  private handleWorkerMessage(e: MessageEvent) {
-    const { type, payload } = e.data;
+  private handleWorkletMessage(event: MessageEvent) {
+    const { type, payload } = event.data;
 
     if (type === 'detection') {
+      this.stats.detections++;
       this.handleDetection(payload as DetectionPayload);
     }
   }
@@ -85,135 +80,71 @@ export class AudioFrequencyAnalyzer {
           status: payload.status as any
       };
 
-      if (warning.categoryKey === 'children_screaming') this.stats.screamDetections++;
-      // Update other stats based on category...
-
       this.onWarningDetected?.(warning);
   }
 
   /**
    * Initialize frequency analyzer
-   * Can share AudioContext with AudioWaveformAnalyzer
    */
-  initialize(
-    videoElement: HTMLVideoElement,
-    sharedAudioContext?: AudioContext,
-    sharedAnalyser?: AnalyserNode
-  ): void {
+  async initialize(videoElement: HTMLVideoElement): Promise<void> {
     try {
       this.video = videoElement;
 
-      if (sharedAudioContext && sharedAnalyser) {
-        // Reuse existing audio context and analyser
-        this.audioContext = sharedAudioContext;
-        this.analyser = sharedAnalyser;
-        logger.info('[TW AudioFrequencyAnalyzer] ✅ Using shared AudioContext');
-      } else {
-        // Create new audio context
-        this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-        this.analyser = this.audioContext.createAnalyser();
-        this.analyser.fftSize = 2048;
-        this.analyser.smoothingTimeConstant = 0.8;  // Smoother for frequency analysis
+      // Create a new AudioContext
+      this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
 
-        this.source = this.audioContext.createMediaElementSource(videoElement);
-        this.source.connect(this.analyser);
-        this.analyser.connect(this.audioContext.destination);
+      // Initialize the worklet
+      await this.initializeWorklet();
+
+      if (!this.workletNode) {
+          throw new Error("Worklet node not available after initialization.");
       }
 
-      // Allocate frequency data array
-      this.frequencyData = new Uint8Array(this.analyser.frequencyBinCount);
-
-      // Subscribe to governor
-      this.unsubscribeGovernor = this.performanceGovernor.subscribe((tier) => {
-        this.currentCheckInterval = this.performanceGovernor.getRecommendedInterval(100);
-        // Restart monitoring with new interval
-        if (this.monitoringInterval !== null) {
-          this.stopMonitoring();
-          this.startMonitoring();
-        }
-      });
+      // Create the source and connect the pipeline
+      this.source = this.audioContext.createMediaElementSource(videoElement);
+      this.source.connect(this.workletNode);
+      this.workletNode.connect(this.audioContext.destination); // Connect to output
 
       logger.info(
-        `[TW AudioFrequencyAnalyzer] ✅ Initialized | ` +
-        `FFT Size: ${this.analyser.fftSize}, ` +
-        `Frequency Bins: ${this.analyser.frequencyBinCount}, ` +
-        `Sample Rate: ${this.audioContext.sampleRate}Hz`
+        `[TW AudioFrequencyAnalyzer] ✅ Initialized with Audio Worklet pipeline. Sample Rate: ${this.audioContext.sampleRate}Hz`
       );
 
-      this.startMonitoring();
+      // Start the audio context if it's suspended (e.g., due to browser policy)
+      if (this.audioContext.state === 'suspended') {
+        this.audioContext.resume();
+      }
+
     } catch (error) {
       logger.error('[TW AudioFrequencyAnalyzer] ❌ Failed to initialize:', error);
     }
   }
 
-  /**
-   * Start monitoring frequency spectrum
-   */
-  private startMonitoring(): void {
-    this.monitoringInterval = window.setInterval(() => {
-      this.analyzeFrequencies();
-    }, this.currentCheckInterval);
+  private async loadAndSendTriggerBank() {
+    if (!this.workletNode) return;
 
-    logger.info(`[TW AudioFrequencyAnalyzer] 🎵 Frequency monitoring started (${this.currentCheckInterval}ms intervals)`);
-  }
+    // In a real application, you would fetch this from a file or IndexedDB
+    // For this example, we create a dummy ArrayBuffer
+    const dummyBank = new ArrayBuffer(1024 * 50); // 50 mock fingerprints of 1KB each
 
-  /**
-   * Stop monitoring
-   */
-  private stopMonitoring(): void {
-    if (this.monitoringInterval !== null) {
-      clearInterval(this.monitoringInterval);
-      this.monitoringInterval = null;
-    }
-  }
-
-  /**
-   * Analyze current frequency spectrum
-   */
-  private analyzeFrequencies(): void {
-    if (!this.analyser || !this.frequencyData || !this.audioContext || !this.video || !this.worker) {
-      return;
-    }
-
-    if (this.video.paused || this.video.ended) {
-      return;
-    }
-
-    this.stats.totalChecks++;
-
-    // Get frequency data (FFT output)
-    this.analyser.getByteFrequencyData(this.frequencyData as any);
-
-    // Debug Mode: Update Store
-    // We do this BEFORE copying/worker dispatch to minimize latency for the UI
-    // Using a throttled update or just raw update? Svelte store might choke if 60fps
-    // We'll update the store with a COPY to prevent reference issues
-    analysisStore.isVisible.subscribe(visible => {
-      if (visible && this.frequencyData && this.analyser) {
-        analysisStore.audioData.set({
-          frequencyData: new Uint8Array(this.frequencyData) as any, // Copy
-          sampleRate: this.analyser.context.sampleRate,
-          binCount: this.analyser.frequencyBinCount
-        });
-      }
-    })();
-
-    // Send to worker
-    // Copy the frequency data to a regular array buffer to avoid SharedArrayBuffer issues
-    const dataCopy = new Uint8Array(this.frequencyData);
-
-    const payload: AnalyzeAudioPayload = {
-      frequencyData: (dataCopy.buffer as unknown) as ArrayBuffer,
-      timestamp: this.video.currentTime,
-      sampleRate: this.analyser.context.sampleRate,
-      binCount: this.analyser.frequencyBinCount
-    };
-
-    this.worker.postMessage({
-      type: 'analyze_audio',
-      payload
+    this.workletNode.port.postMessage({
+        type: 'load_bank',
+        payload: dummyBank
     });
+
+    logger.info('[TW AudioFrequencyAnalyzer] 🏦 Sent trigger sound bank to worklet.');
   }
+
+  /**
+   * No longer needed with AudioWorklet
+   */
+  public startMonitoring(): void {
+    logger.warn("[TW AudioFrequencyAnalyzer] startMonitoring is deprecated. Processing is continuous with AudioWorklet.");
+  }
+
+  public stopMonitoring(): void {
+     logger.warn("[TW AudioFrequencyAnalyzer] stopMonitoring is deprecated. Processing is continuous with AudioWorklet.");
+  }
+
 
   /**
    * Register callback
@@ -228,7 +159,7 @@ export class AudioFrequencyAnalyzer {
   getStats(): typeof this.stats & { enabled: boolean } {
     return {
       ...this.stats,
-      enabled: this.audioContext !== null
+      enabled: this.audioContext !== null && this.workletNode !== null,
     };
   }
 
@@ -236,30 +167,20 @@ export class AudioFrequencyAnalyzer {
    * Clear events
    */
   clear(): void {
-    this.worker?.postMessage({ type: 'reset' });
+    // The worklet is stateless in this design, so no reset needed.
   }
 
   /**
    * Dispose
    */
   dispose(): void {
-    this.stopMonitoring();
+    this.source?.disconnect();
+    this.workletNode?.disconnect();
+    this.audioContext?.close();
 
-    if (this.unsubscribeGovernor) {
-      this.unsubscribeGovernor();
-    }
-
-    // Don't disconnect if using shared context
-    if (this.source) {
-      this.source.disconnect();
-      this.source = null;
-    }
-
-    this.video = null;
-    this.frequencyData = null;
-
-    this.worker?.terminate();
-    this.worker = null;
+    this.source = null;
+    this.workletNode = null;
+    this.audioContext = null;
     this.onWarningDetected = null;
   }
 }

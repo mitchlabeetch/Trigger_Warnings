@@ -7,12 +7,12 @@ import type { MediaInfo } from '@shared/types/Provider.types';
 import { createLogger } from '@shared/utils/logger';
 
 const logger = createLogger('Netflix');
+import { sendHtmlToOffscreen } from '../utils/offscreen';
 
 export class NetflixProvider extends BaseProvider {
   readonly name = 'Netflix';
   readonly domains = ['netflix.com'];
 
-  private videoElement: HTMLVideoElement | null = null;
   private lastSeekTime = 0;
   private urlCheckIntervalId: ReturnType<typeof setInterval> | null = null;
 
@@ -72,7 +72,8 @@ export class NetflixProvider extends BaseProvider {
     const videoId = match[1];
 
     // Try to get title from Netflix's player API
-    const title = this.extractTitle();
+    const { timeline } = await sendHtmlToOffscreen(document.documentElement.outerHTML);
+    const title = timeline.title;
 
     return {
       id: videoId,
@@ -108,23 +109,23 @@ export class NetflixProvider extends BaseProvider {
     );
   }
 
-  private setupVideoListeners(): void {
-    const video = this.videoElement;
-    if (!video) return;
+  protected setupVideoListeners(): void {
+    if (!this.videoElement) return;
 
     // Play event
-    this.addEventListener(video, 'play', () => {
+    this.addEventListener(this.videoElement, 'play', () => {
       this.triggerPlayCallbacks();
     });
 
     // Pause event
-    this.addEventListener(video, 'pause', () => {
+    this.addEventListener(this.videoElement, 'pause', () => {
       this.triggerPauseCallbacks();
     });
 
     // Seek event
-    this.addEventListener(video, 'seeked', () => {
-      const currentTime = video.currentTime;
+    this.addEventListener(this.videoElement, 'seeked', () => {
+      if (!this.videoElement) return;
+      const currentTime = this.videoElement.currentTime;
       const timeDiff = Math.abs(currentTime - this.lastSeekTime);
 
       // Only trigger if seek was significant (> 1 second)
@@ -136,34 +137,10 @@ export class NetflixProvider extends BaseProvider {
     });
 
     // Time update for tracking
-    this.addEventListener(video, 'timeupdate', () => {
-      this.lastSeekTime = video.currentTime;
+    this.addEventListener(this.videoElement, 'timeupdate', () => {
+      if (!this.videoElement) return;
+      this.lastSeekTime = this.videoElement.currentTime;
     });
-  }
-
-  private extractTitle(): string {
-    // Try multiple selectors for Netflix title
-    const titleSelectors = [
-      '.video-title h4',
-      '.ellipsize-text h4',
-      '[data-uia="video-title"]',
-      '.title-logo',
-    ];
-
-    for (const selector of titleSelectors) {
-      const element = document.querySelector(selector);
-      if (element?.textContent) {
-        return element.textContent.trim();
-      }
-    }
-
-    // Fallback to page title
-    const pageTitle = document.title.replace(' - Netflix', '').trim();
-    if (pageTitle && pageTitle !== 'Netflix') {
-      return pageTitle;
-    }
-
-    return '';
   }
 
   private monitorURLChanges(): void {
@@ -191,17 +168,6 @@ export class NetflixProvider extends BaseProvider {
 
     // Store interval for cleanup
     this.urlCheckIntervalId = checkURL;
-  }
-
-  protected override handleDOMMutations(_mutations: MutationRecord[]): void {
-    // Check if video element changed
-    const currentVideo = document.querySelector('video');
-    if (currentVideo !== this.videoElement) {
-      this.videoElement = currentVideo as HTMLVideoElement;
-      if (this.videoElement) {
-        this.setupVideoListeners();
-      }
-    }
   }
 
   override dispose(): void {

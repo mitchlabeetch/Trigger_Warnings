@@ -1,15 +1,15 @@
 /**
  * VISUAL COLOR ANALYZER
  *
- * Detects trigger warnings from visual color analysis
- * Uses Web Workers and OffscreenCanvas for real-time frame analysis
- * off the main thread.
+ * Detects trigger warnings from visual color analysis.
  *
- * Browser Support: Universal (Canvas API, Web Workers)
+ * REFACTORED: Now integrates SceneHasher on the main thread to check a perceptual
+ * hash of the scene *before* sending the frame to the worker for analysis. This
+ * avoids unnecessary worker communication and processing for known scenes.
  *
  * Created by: Claude Code (Legendary Session)
  * Date: 2024-11-11
- * Refactored for Web Worker: Jules
+ * Refactored for Hashing Architecture: Jules
  */
 
 import type { Warning } from '@shared/types/Warning.types';
@@ -17,6 +17,7 @@ import type { AnalyzeFramePayload, DetectionPayload } from '@shared/types/analys
 import { Logger } from '@shared/utils/logger';
 import { PerformanceGovernor } from '../performance/PerformanceGovernor';
 import { analysisStore } from '../store/AnalysisStore';
+import { SceneHasher } from '../hashing/SceneHasher';
 // @ts-ignore - Query params for worker import
 import VisualAnalyzerWorker from './VisualAnalyzer.worker?worker';
 
@@ -26,40 +27,26 @@ export class VisualColorAnalyzer {
   private video: HTMLVideoElement | null = null;
   private rafId: number | null = null;
   private lastCheckTime: number = 0;
-  private checkInterval: number = 200;  // Default check every 200ms
+  private checkInterval: number = 200; // Default, will be updated by governor
 
   private worker: Worker | null = null;
   private performanceGovernor: PerformanceGovernor;
   private unsubscribeGovernor: (() => void) | null = null;
+  private sceneHasher: SceneHasher;
 
   private onWarningDetected: ((warning: Warning) => void) | null = null;
 
-  // Statistics (synced from worker)
-  private stats = {
-    totalFramesAnalyzed: 0,
-    bloodDetections: 0,
-    goreDetections: 0,
-    fireDetections: 0,
-    vomitDetections: 0,
-    medicalDetections: 0,
-    underwaterDetections: 0,
-    sceneChangeDetections: 0
-  };
-
   constructor() {
     this.performanceGovernor = PerformanceGovernor.getInstance();
+    this.sceneHasher = new SceneHasher();
     this.initializeWorker();
   }
 
   private initializeWorker() {
     try {
       this.worker = new VisualAnalyzerWorker();
-      if (this.worker) {
-        this.worker.onmessage = (e) => this.handleWorkerMessage(e);
-        this.worker.onerror = (e) => {
-            logger.error('Visual Analyzer Worker error:', e);
-        };
-      }
+      this.worker.onmessage = (e) => this.handleWorkerMessage(e);
+      this.worker.onerror = (e) => logger.error('Visual Analyzer Worker error:', e);
     } catch (error) {
       logger.error('Failed to initialize Visual Analyzer Worker:', error);
     }
@@ -69,159 +56,135 @@ export class VisualColorAnalyzer {
     const { type, payload } = e.data;
 
     if (type === 'detection') {
-        this.handleDetection(payload as DetectionPayload);
+      this.handleDetection(payload);
     } else if (type === 'analysis_result') {
-        // Store the detailed analysis for the overlay
-        analysisStore.visualData.set(payload);
-    } else if (type === 'stats') {
-        // Update local stats if worker sends them
-        // this.stats = { ...this.stats, ...payload };
+      analysisStore.visualData.set(payload);
     }
   }
 
-  private handleDetection(payload: DetectionPayload) {
-      // Convert payload to Warning type if needed or pass directly
-      // The worker sends a payload that matches Warning structure mostly
-      const warning: Warning = {
-          ...payload,
-          // Ensure dates are Date objects
-          createdAt: new Date(payload.createdAt),
-          updatedAt: new Date(payload.updatedAt),
-          categoryKey: payload.categoryKey as any,
-          status: payload.status as any
-      };
+  private handleDetection(payload: DetectionPayload & { hash?: string }) {
+    // If the worker found a trigger, store its hash
+    if (payload.hash) {
+      this.sceneHasher.storeHash(payload.hash, 'Trigger');
+    }
 
-      // Update stats based on category (simple approximation)
-      if (warning.categoryKey === 'blood') this.stats.bloodDetections++;
-      else if (warning.categoryKey === 'gore') this.stats.goreDetections++;
-      else if (warning.categoryKey === 'violence' && warning.description && warning.description.includes('Fire')) this.stats.fireDetections++;
-      // ... update other stats based on category/description if needed for precise tracking
-
-      this.onWarningDetected?.(warning);
+    const warning: Warning = {
+      ...payload,
+      createdAt: new Date(payload.createdAt),
+      updatedAt: new Date(payload.updatedAt),
+      categoryKey: payload.categoryKey as any,
+      status: payload.status as any
+    };
+    this.onWarningDetected?.(warning);
   }
 
-  /**
-   * Initialize visual analyzer for a video element
-   */
   initialize(videoElement: HTMLVideoElement): void {
     this.video = videoElement;
+    this.sceneHasher.initialize(videoElement);
+    logger.info('[TW VisualColorAnalyzer] ✅ Initialized with Web Worker and SceneHasher.');
 
-    logger.info('[TW VisualColorAnalyzer] ✅ Initialized with Web Worker');
-
-    // Subscribe to performance governor
     this.unsubscribeGovernor = this.performanceGovernor.subscribe((tier) => {
-        this.checkInterval = this.performanceGovernor.getRecommendedInterval(200);
-        logger.debug(`Adjusted check interval to ${this.checkInterval}ms (Tier: ${tier})`);
+      this.checkInterval = this.performanceGovernor.getRecommendedInterval(200);
     });
 
     this.startMonitoring();
   }
 
-  /**
-   * Start monitoring video frames
-   */
-  private startMonitoring(): void {
+  public startMonitoring(): void {
+    if (this.rafId !== null) return;
     this.lastCheckTime = Date.now();
 
     const checkLoop = () => {
-      const now = Date.now();
-
-      if (now - this.lastCheckTime >= this.checkInterval) {
-        this.captureAndSendFrame();
-        this.lastCheckTime = now;
+      if (Date.now() - this.lastCheckTime >= this.checkInterval) {
+        this.analyzeCurrentScene();
+        this.lastCheckTime = Date.now();
       }
-
       this.rafId = requestAnimationFrame(checkLoop);
     };
-
     this.rafId = requestAnimationFrame(checkLoop);
-
     logger.info('[TW VisualColorAnalyzer] 🎨 Visual monitoring started');
   }
 
-  /**
-   * Stop monitoring
-   */
-  private stopMonitoring(): void {
-    if (this.rafId !== null) {
-      cancelAnimationFrame(this.rafId);
-      this.rafId = null;
-    }
-  }
+  private async analyzeCurrentScene(): Promise<void> {
+    if (!this.video || this.video.paused || this.video.ended) return;
 
-  /**
-   * Capture current frame and send to worker
-   */
-  private async captureAndSendFrame(): Promise<void> {
-    if (!this.video || !this.worker) return;
+    // 1. Generate hash for the current frame
+    const hash = await this.sceneHasher.generateHashForCurrentFrame();
+    if (!hash) return; // Hashing failed (e.g., tainted canvas)
 
-    if (this.video.paused || this.video.ended || this.video.readyState < 2) {
+    // 2. Check the cache
+    const cacheStatus = await this.sceneHasher.checkCache(hash);
+
+    if (cacheStatus === 'Safe') {
+      // Scene is known to be safe, do nothing.
       return;
     }
 
+    if (cacheStatus === 'Trigger') {
+      // Scene is a known trigger, dispatch a warning immediately without re-analyzing.
+      this.handleDetection({
+        id: `cached-${hash}`,
+        videoId: 'visual-hash-detected',
+        categoryKey: 'violence', // Generic, would need to store more context in DB
+        startTime: this.video.currentTime,
+        endTime: this.video.currentTime + 3,
+        submittedBy: 'scene-hasher',
+        status: 'approved',
+        score: 0,
+        confidenceLevel: 99,
+        requiresModeration: false,
+        description: 'Previously identified trigger scene detected via perceptual hash.',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      });
+      return;
+    }
+
+    // 3. If unknown, send to worker for full analysis
+    this.captureAndSendFrame(hash);
+  }
+
+  private async captureAndSendFrame(hash: string): Promise<void> {
+    if (!this.video || !this.worker || this.video.readyState < 2) return;
+
     try {
-      // Create ImageBitmap from video (efficient, async, off-main-thread friendly)
-      // We use a smaller resolution for analysis to save performance
       const bitmap = await createImageBitmap(this.video, {
-          resizeWidth: 320,
-          resizeHeight: 180,
-          resizeQuality: 'low'
+        resizeWidth: 320,
+        resizeHeight: 180,
+        resizeQuality: 'low'
       });
 
-      this.stats.totalFramesAnalyzed++;
-
-      // Transfer the bitmap to the worker (zero-copy)
-      const payload: AnalyzeFramePayload = {
+      const payload: AnalyzeFramePayload & { hash: string } = {
         timestamp: this.video.currentTime,
-        bitmap: bitmap
+        bitmap: bitmap,
+        hash: hash // Pass the hash to the worker
       };
 
-      this.worker.postMessage({
-        type: 'analyze_frame',
-        payload
-      }, [bitmap]);
-
+      this.worker.postMessage({ type: 'analyze_frame', payload }, [bitmap]);
     } catch (error) {
-      // Can fail if video is tainted (CORS) or closed
-      // logger.debug('[TW VisualColorAnalyzer] Frame capture failed:', error);
+      // Frame capture can fail
     }
   }
 
-  /**
-   * Register callback
-   */
   onDetection(callback: (warning: Warning) => void): void {
     this.onWarningDetected = callback;
   }
 
-  /**
-   * Get statistics
-   */
-  getStats(): typeof this.stats & { enabled: boolean } {
-    return {
-      ...this.stats,
-      enabled: true
-    };
+  getStats(): any {
+    return { enabled: true };
   }
 
-  /**
-   * Clear events
-   */
   clear(): void {
     this.worker?.postMessage({ type: 'reset' });
   }
 
-  /**
-   * Dispose
-   */
   dispose(): void {
-    this.stopMonitoring();
-    if (this.unsubscribeGovernor) {
-        this.unsubscribeGovernor();
-    }
+    if (this.rafId !== null) cancelAnimationFrame(this.rafId);
+    this.unsubscribeGovernor?.();
     this.video = null;
     this.worker?.terminate();
     this.worker = null;
+    this.sceneHasher.dispose();
     this.onWarningDetected = null;
   }
 }

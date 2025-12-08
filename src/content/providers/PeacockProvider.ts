@@ -12,7 +12,6 @@ export class PeacockProvider extends BaseProvider {
   readonly name = 'Peacock';
   readonly domains = ['peacocktv.com'];
 
-  private videoElement: HTMLVideoElement | null = null;
   private lastSeekTime = 0;
   private urlCheckIntervalId: ReturnType<typeof setInterval> | null = null;
 
@@ -51,15 +50,6 @@ export class PeacockProvider extends BaseProvider {
     };
   }
 
-  getVideoElement(): HTMLVideoElement | null {
-    if (this.videoElement && document.contains(this.videoElement)) {
-      return this.videoElement;
-    }
-
-    this.videoElement = document.querySelector('video');
-    return this.videoElement;
-  }
-
   getInjectionPoint(): HTMLElement | null {
     return (
       document.querySelector('[class*="player-container"]') ||
@@ -69,28 +59,29 @@ export class PeacockProvider extends BaseProvider {
     );
   }
 
-  private setupVideoListeners(): void {
-    const video = this.videoElement;
-    if (!video) return;
+  protected setupVideoListeners(): void {
+    if (!this.videoElement) return;
 
-    this.addEventListener(video, 'play', () => {
+    this.addEventListener(this.videoElement, 'play', () => {
       this.triggerPlayCallbacks();
     });
 
-    this.addEventListener(video, 'pause', () => {
+    this.addEventListener(this.videoElement, 'pause', () => {
       this.triggerPauseCallbacks();
     });
 
-    this.addEventListener(video, 'seeked', () => {
-      const currentTime = video.currentTime;
+    this.addEventListener(this.videoElement, 'seeked', () => {
+      if (!this.videoElement) return;
+      const currentTime = this.videoElement.currentTime;
       if (Math.abs(currentTime - this.lastSeekTime) > 1) {
         this.triggerSeekCallbacks(currentTime);
       }
       this.lastSeekTime = currentTime;
     });
 
-    this.addEventListener(video, 'timeupdate', () => {
-      this.lastSeekTime = video.currentTime;
+    this.addEventListener(this.videoElement, 'timeupdate', () => {
+      if (!this.videoElement) return;
+      this.lastSeekTime = this.videoElement.currentTime;
     });
   }
 
