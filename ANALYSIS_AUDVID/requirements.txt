@@ -1,0 +1,38 @@
+# Core dependencies
+opencv-python>=4.8.0
+pillow>=10.0.0
+numpy>=1.24.0
+pandas>=2.0.0
+PyYAML>=6.0
+
+# Screen capture
+mss>=9.0.0
+keyboard>=0.13.0
+
+# Audio capture (use appropriate one for your OS)
+# Windows: pip install pyaudiowpatch
+# Mac/Linux: pip install pyaudio
+pyaudio>=0.2.14; sys_platform != 'win32'
+
+# ML Models - Vision
+sentence-transformers>=2.2.0  # CLIP
+ultralytics>=8.0.0            # YOLOv8
+torch>=2.0.0
+torchvision>=0.15.0
+
+# ML Models - Audio
+transformers>=4.35.0
+librosa>=0.10.0
+soundfile>=0.12.0
+
+# API calls
+requests>=2.31.0
+aiohttp>=3.9.0
+
+# Utilities
+tqdm>=4.66.0
+python-dotenv>=1.0.0
+colorama>=0.4.6
+
+# Optional: GPU acceleration
+# pip install torch --index-url https://download.pytorch.org/whl/cu118

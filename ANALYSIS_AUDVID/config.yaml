@@ -1,0 +1,73 @@
+# Media Trigger Analysis Configuration
+
+# Media Metadata
+media:
+  name: 'MyShowS01E01' # Format: ShowNameSxxExx for TV, MovieName for films
+  imdb_id: 'tt0000000' # IMDb ID for database matching
+
+# Capture Settings
+capture:
+  fps: 2 # Frames per second to capture
+  monitor_index: 1 # 1 = primary monitor
+  use_scene_detection: true # Skip similar consecutive frames
+  scene_threshold: 0.95 # Similarity threshold (0-1, lower = more sensitive)
+
+  # Audio Settings
+  audio_enabled: true
+  audio_chunk_seconds: 2
+  sample_rate: 48000
+
+# Output Paths
+paths:
+  raw_screenshots: './raw_screenshots'
+  raw_audio: './raw_audio'
+  intermediate_csv: './media_analysis_log.csv'
+  final_csv: './final_database_upload.csv'
+  state_file: './analysis_state.json' # For resume capability
+
+# Analysis Settings
+analysis:
+  # Device selection: "cpu", "cuda", "mps" (Apple Silicon), or "auto"
+  device: 'auto'
+  batch_size: 8 # Images per batch for CLIP
+
+  # Cascade thresholds
+  clip_threshold: 0.25 # Trigger deep analysis if above this
+  vlm_threshold: 0.60 # Confirm positive if VLM above this
+  yolo_confidence: 0.50 # Object detection confidence
+
+  # Ollama settings (for VLM deep analysis)
+  ollama_url: 'http://localhost:11434/api/generate'
+  vlm_model: 'moondream'
+  vlm_timeout: 30 # Seconds
+
+# Post-Processing Settings
+processing:
+  padding_seconds: 2 # Safety margin before/after triggers
+  min_gap_seconds: 4 # Merge intervals closer than this
+
+# Trigger Category Overrides (optional per-category thresholds)
+# Higher = fewer false positives, Lower = fewer false negatives
+trigger_thresholds:
+  Violence: 0.28
+  Blood/Gore: 0.30
+  Self-Harm/Suicide: 0.20 # Safety-critical: lower threshold
+  Sexual_Assault/Rape: 0.18 # Safety-critical: lower threshold
+  Medical_Context/Hospitals: 0.26
+  Spiders: 0.50 # Uses YOLO, this is confidence
+  Spitting/Vomiting: 0.22 # Fusion: uses both audio + visual
+  Alcohol: 0.28
+  Drugs/Smoking: 0.27
+
+# Logging
+logging:
+  level: 'INFO' # DEBUG, INFO, WARNING, ERROR
+  save_debug_images: false # Save images that triggered analysis
+  debug_output: './debug'
+
+# AnythingLLM Integration (for post-analysis chat)
+anythingllm:
+  enabled: false # Set to true to enable AnythingLLM API
+  api_url: 'http://localhost:3001/api/v1'
+  api_key: '6DD8HP0-SP04WWW-JDZ4WHY-6ZFX7NB'
+  workspace: 'trigger-analysis' # Workspace name for embedding analysis logs
