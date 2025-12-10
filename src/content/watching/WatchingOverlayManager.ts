@@ -72,6 +72,7 @@ export class WatchingOverlayManager {
   private protectionType: ProtectionType = 'warn';
   private helperMode = false;
   private warningLeadTime = 10; // seconds before trigger to show warning
+  private fadeOutDelay = 5000; // 5 seconds before overlay hides
 
   // Position (persisted)
   private position: OverlayPosition = { x: 20, y: 20 };
@@ -230,6 +231,7 @@ export class WatchingOverlayManager {
         helperMode: this.helperMode,
         playerBounds: this.playerBounds,
         isFullscreen: this.isFullscreen,
+        fadeOutDelay: this.fadeOutDelay,
         onAddTrigger: () => this.handleAddTrigger(),
         onIgnoreThisTime: (id: string) => this.handleIgnoreThisTime(id),
         onIgnoreAllVideo: (cat: TriggerCategory) => this.handleIgnoreForVideo(cat),
@@ -246,7 +248,59 @@ export class WatchingOverlayManager {
     this.component.$on('positionChange', (e) => this.savePosition(e.detail));
     this.component.$on('protectionStart', () => this.applyProtection());
 
+    // AGGRESSIVE: Add capture-phase event listeners to ensure our overlay receives events
+    // before the streaming player can intercept them
+    this.addEventCapture();
+
     logger.info('Watching overlay component mounted');
+  }
+
+  /**
+   * Add capture-phase event listeners to ensure overlay receives events
+   * This prevents streaming players from capturing/blocking our events
+   */
+  private addEventCapture(): void {
+    if (!this.container) return;
+
+    // Block events from propagating to player when they hit our interactive elements
+    const captureEvents = [
+      'click',
+      'mousedown',
+      'mouseup',
+      'pointerdown',
+      'pointerup',
+      'touchstart',
+      'touchend',
+    ];
+
+    captureEvents.forEach((eventType) => {
+      this.container!.addEventListener(
+        eventType,
+        (e: Event) => {
+          const target = e.target as HTMLElement;
+          // Only stop propagation if clicking on an interactive element within our overlay
+          if (
+            target.closest('.watching-overlay, .warning-banner, .action-btn, .quick-action-btn')
+          ) {
+            e.stopPropagation();
+          }
+        },
+        { capture: true }
+      );
+    });
+
+    // Ensure pointer events reach our elements by capturing at document level
+    // and re-dispatching to our overlay if they're within bounds
+    const overlayElement = this.container.querySelector('.watching-overlay');
+    if (overlayElement) {
+      // Force pointer-events on the overlay element directly via JS
+      (overlayElement as HTMLElement).style.setProperty('pointer-events', 'auto', 'important');
+      (overlayElement as HTMLElement).style.setProperty(
+        'touch-action',
+        'manipulation',
+        'important'
+      );
+    }
   }
 
   /**

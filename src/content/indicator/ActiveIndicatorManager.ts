@@ -4,7 +4,6 @@
  */
 
 import type { IStreamingProvider } from '@shared/types/Provider.types';
-import type { ActiveWarning } from '@shared/types/Warning.types';
 import { createContainer, injectContainer } from '@shared/utils/dom';
 import { createLogger } from '@shared/utils/logger';
 import { ProfileManager } from '@core/profiles/ProfileManager';
@@ -16,7 +15,6 @@ export class ActiveIndicatorManager {
   private provider: IStreamingProvider;
   private container: HTMLDivElement | null = null;
   private indicatorComponent: ActiveIndicator | null = null;
-  private activeWarnings: ActiveWarning[] = [];
 
   private onQuickAddCallback: (() => void) | null = null;
 
@@ -35,7 +33,10 @@ export class ActiveIndicatorManager {
     const buttonColor = overlaySettings.buttonColor || '#8b5cf6';
     const buttonOpacity =
       overlaySettings.buttonOpacity !== undefined ? overlaySettings.buttonOpacity : 0.45;
-    const appearingMode = overlaySettings.appearingMode || 'always';
+    // Map profile settings to component's expected type ('always' | 'hover')
+    const profileAppearingMode = overlaySettings.appearingMode || 'always';
+    const appearingMode: 'always' | 'hover' =
+      profileAppearingMode === 'onMove' || profileAppearingMode === 'onHover' ? 'hover' : 'always';
     const fadeOutDelay = overlaySettings.fadeOutDelay || 3000;
 
     logger.info('Overlay customization:', {
@@ -70,10 +71,9 @@ export class ActiveIndicatorManager {
         target: this.container,
         props: {
           onQuickAdd: () => this.handleQuickAdd(),
-          activeWarnings: this.activeWarnings || [],
           buttonColor: buttonColor || '#8b5cf6',
           buttonOpacity: buttonOpacity !== undefined ? buttonOpacity : 0.45,
-          appearingMode: appearingMode || 'always',
+          appearingMode: appearingMode,
           fadeOutDelay: fadeOutDelay || 3000,
         },
       });
@@ -83,16 +83,6 @@ export class ActiveIndicatorManager {
     }
 
     logger.info('Active indicator initialized with custom settings');
-  }
-
-  /**
-   * Update active warnings display
-   */
-  updateActiveWarnings(warnings: ActiveWarning[]): void {
-    this.activeWarnings = warnings;
-    if (this.indicatorComponent) {
-      this.indicatorComponent.$set({ activeWarnings: warnings });
-    }
   }
 
   private handleQuickAdd(): void {

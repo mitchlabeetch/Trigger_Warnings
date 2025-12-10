@@ -62,7 +62,8 @@ export function getFullscreenElement(): Element | null {
 }
 
 /**
- * Create a container for injecting Svelte components
+ * Create a container for injecting Svelte components (non-blocking overlay)
+ * Use createBlockingContainer for full-screen modal overlays like pre-watch
  */
 export function createContainer(id: string, className?: string): HTMLDivElement {
   const container = document.createElement('div');
@@ -71,7 +72,8 @@ export function createContainer(id: string, className?: string): HTMLDivElement 
     container.className = className;
   }
 
-  // AGGRESSIVE: Make container immune to player interference
+  // Non-blocking container: pointer-events:none lets clicks pass through
+  // Child elements with pointer-events:auto will still receive events
   container.style.cssText = `
     position: absolute !important;
     top: 0 !important;
@@ -80,17 +82,66 @@ export function createContainer(id: string, className?: string): HTMLDivElement 
     height: 100% !important;
     pointer-events: none !important;
     z-index: 2147483647 !important;
+    isolation: isolate !important;
+    overflow: visible !important;
   `;
 
   // Prevent player from modifying our container
   Object.defineProperty(container.style, 'display', {
     set: () => {}, // Ignore attempts to hide
-    get: () => 'block'
+    get: () => 'block',
+    configurable: true,
   });
 
   Object.defineProperty(container.style, 'visibility', {
     set: () => {}, // Ignore attempts to hide
-    get: () => 'visible'
+    get: () => 'visible',
+    configurable: true,
+  });
+
+  return container;
+}
+
+/**
+ * Create a blocking container for modal overlays (like pre-watch screen)
+ * This container blocks all interactions with the underlying player
+ */
+export function createBlockingContainer(id: string, className?: string): HTMLDivElement {
+  const container = document.createElement('div');
+  container.id = id;
+  if (className) {
+    container.className = className;
+  }
+
+  // Blocking container: covers parent completely and blocks all events
+  container.style.cssText = `
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    pointer-events: auto !important;
+    z-index: 2147483647 !important;
+    isolation: isolate !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    overflow: hidden !important;
+  `;
+
+  // Prevent player from modifying our container
+  Object.defineProperty(container.style, 'display', {
+    set: () => {}, // Ignore attempts to hide
+    get: () => 'flex',
+    configurable: true,
+  });
+
+  Object.defineProperty(container.style, 'visibility', {
+    set: () => {}, // Ignore attempts to hide
+    get: () => 'visible',
+    configurable: true,
   });
 
   return container;
@@ -127,7 +178,7 @@ export function injectContainer(container: HTMLElement, parent?: HTMLElement): v
 
   containerObserver.observe(targetParent, {
     childList: true,
-    subtree: false
+    subtree: false,
   });
 
   // Also set up periodic check to ensure container is still in DOM

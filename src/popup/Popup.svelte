@@ -200,13 +200,13 @@
           <div class="profile-actions">
             <button
               class="btn-icon-small"
-              on:click={() => openRenameProfile(activeProfile)}
+              on:click={() => activeProfile && openRenameProfile(activeProfile)}
               title="Rename">✏️</button
             >
             {#if allProfiles.length > 1}
               <button
                 class="btn-icon-small"
-                on:click={() => openDeleteProfile(activeProfile)}
+                on:click={() => activeProfile && openDeleteProfile(activeProfile)}
                 title="Delete">🗑️</button
               >
             {/if}

@@ -20,8 +20,8 @@
   export let playerBounds: DOMRect | null = null;
   export let isFullscreen: boolean = false;
 
-  // Mouse activity visibility settings
-  export let fadeOutDelay: number = 3000;
+  // Mouse activity visibility settings - 5 seconds
+  export let fadeOutDelay: number = 5000;
   export let buttonColor: string = '#8b5cf6';
   export let buttonOpacity: number = 0.45;
 
@@ -42,7 +42,7 @@
   let showWarningBanner = false;
   let isProtectionActive = false;
 
-  // Mouse activity visibility state (merged from ActiveIndicator)
+  // Mouse activity visibility state
   let isMouseActive = true;
   let mouseActivityTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -50,7 +50,6 @@
   $: statusText = getStatusText(status);
   $: statusIcon = getStatusIcon(status);
   $: shouldShowExpanded = isExpanded || isHovering;
-  $: expandDirection = getExpandDirection();
   $: categoryInfo = activeWarning ? TRIGGER_CATEGORIES[activeWarning.categoryKey] : null;
 
   // Visibility: show when mouse active, hovering, or warning banner visible
@@ -72,11 +71,11 @@
       case 'protected':
         return 'Protected';
       case 'overall-only':
-        return 'Limited Protection';
+        return 'Limited';
       case 'unprotected':
         return 'Not Covered';
       case 'reviewing':
-        return 'Helper Mode';
+        return 'Helper';
       default:
         return '';
     }
@@ -97,22 +96,7 @@
     }
   }
 
-  function getExpandDirection(): 'horizontal' | 'vertical' {
-    // Expand horizontally if on left/right edge, vertically if top/bottom
-    // Use player bounds if available for embed-aware calculations
-    const containerWidth = playerBounds ? playerBounds.width : window.innerWidth;
-    const containerHeight = playerBounds ? playerBounds.height : window.innerHeight;
-
-    const nearLeft = position.x < containerWidth / 3;
-    const nearRight = position.x > (containerWidth * 2) / 3;
-
-    if (nearLeft || nearRight) {
-      return 'horizontal';
-    }
-    return 'vertical';
-  }
-
-  // Mouse activity handlers (merged from ActiveIndicator)
+  // Mouse activity handlers - work in both embedded and fullscreen
   function handleMouseActivity() {
     isMouseActive = true;
     resetMouseActivityTimer();
@@ -127,6 +111,26 @@
         isMouseActive = false;
       }
     }, fadeOutDelay);
+  }
+
+  // Attach mouse listeners to multiple targets for robust fullscreen detection
+  function attachMouseListeners() {
+    const targets = [window, document, document.documentElement];
+    targets.forEach((target) => {
+      target.addEventListener('mousemove', handleMouseActivity, { passive: true, capture: true });
+      target.addEventListener('pointermove', handleMouseActivity, { passive: true, capture: true });
+    });
+    // Also listen for keyboard activity
+    document.addEventListener('keydown', handleMouseActivity, { passive: true, capture: true });
+  }
+
+  function detachMouseListeners() {
+    const targets = [window, document, document.documentElement];
+    targets.forEach((target) => {
+      target.removeEventListener('mousemove', handleMouseActivity);
+      target.removeEventListener('pointermove', handleMouseActivity);
+    });
+    document.removeEventListener('keydown', handleMouseActivity);
   }
 
   function handleOverlayMouseEnter() {
@@ -168,7 +172,7 @@
 
     // Constrain to viewport
     const maxX = window.innerWidth - 60;
-    const maxY = window.innerHeight - 60;
+    const maxY = window.innerHeight - 40;
 
     position = {
       x: Math.max(10, Math.min(newX, maxX)),
@@ -225,10 +229,8 @@
     window.addEventListener('touchmove', handleDragMove);
     window.addEventListener('touchend', handleDragEnd);
 
-    // Mouse activity listeners for visibility (with capture to intercept before player)
-    window.addEventListener('mousemove', handleMouseActivity, { passive: true, capture: true });
-    window.addEventListener('keydown', handleMouseActivity, { passive: true, capture: true });
-    window.addEventListener('scroll', handleMouseActivity, { passive: true, capture: true });
+    // Mouse activity listeners for visibility - robust detection for fullscreen
+    attachMouseListeners();
 
     // Start initial activity timer
     handleMouseActivity();
@@ -242,9 +244,7 @@
     window.removeEventListener('touchend', handleDragEnd);
 
     // Clean up mouse activity listeners
-    window.removeEventListener('mousemove', handleMouseActivity);
-    window.removeEventListener('keydown', handleMouseActivity);
-    window.removeEventListener('scroll', handleMouseActivity);
+    detachMouseListeners();
 
     // Clear any pending timers
     if (mouseActivityTimeout) {
@@ -253,7 +253,7 @@
   });
 </script>
 
-<!-- Main Overlay Container - Only visible when mouse is active or hovering -->
+<!-- Main Overlay Container - Flat Island Design -->
 {#if isOverlayVisible}
   <div
     class="watching-overlay"
@@ -262,7 +262,7 @@
     class:helper-mode={helperMode}
     class:fullscreen={isFullscreen}
     style="left: {position.x}px; top: {position.y}px; opacity: {overlayOpacity}; --tw-button-color: {buttonColor};"
-    transition:fade={{ duration: 200 }}
+    transition:fade={{ duration: 250 }}
     bind:this={overlayRef}
     on:mouseenter={handleOverlayMouseEnter}
     on:mouseleave={handleOverlayMouseLeave}
@@ -271,56 +271,62 @@
     role="region"
     aria-label="Trigger Warnings Overlay"
   >
-    <div
-      class="compact-view"
-      on:mousedown|stopPropagation={handleDragStart}
-      on:touchstart|stopPropagation={handleDragStart}
-      on:click|stopPropagation={() => handleAddTrigger()}
-      role="button"
-      tabindex="0"
-      aria-label="Trigger Warnings Active - Click to report, drag to move"
-    >
-      <span class="status-icon">{statusIcon}</span>
-      {#if !shouldShowExpanded}
-        <span
-          class="status-dot"
-          class:protected={status === 'protected'}
-          class:partial={status === 'overall-only'}
-        ></span>
-      {/if}
-    </div>
-
-    <!-- Expanded View -->
+    <!-- Drag Handle (only on hover) -->
     {#if shouldShowExpanded}
       <div
-        class="expanded-view"
-        class:horizontal={expandDirection === 'horizontal'}
-        class:vertical={expandDirection === 'vertical'}
-        in:slide={{ duration: 200, easing: quintOut }}
-        out:slide={{ duration: 150 }}
+        class="drag-handle"
+        on:mousedown|stopPropagation={handleDragStart}
+        on:touchstart|stopPropagation={handleDragStart}
+        title="Drag to move"
+        in:fade={{ duration: 150, delay: 100 }}
       >
-        <!-- Status Display with TW Active label -->
-        <div class="status-section">
-          <span class="tw-active-label">TW Active</span>
-          <span class="status-divider">•</span>
-          <span class="status-text">{statusText}</span>
-        </div>
+        <svg viewBox="0 0 12 12" class="drag-icon">
+          <circle cx="3" cy="3" r="1.2" fill="currentColor" opacity="0.6" />
+          <circle cx="9" cy="3" r="1.2" fill="currentColor" opacity="0.6" />
+          <circle cx="3" cy="6" r="1.2" fill="currentColor" opacity="0.6" />
+          <circle cx="9" cy="6" r="1.2" fill="currentColor" opacity="0.6" />
+          <circle cx="3" cy="9" r="1.2" fill="currentColor" opacity="0.6" />
+          <circle cx="9" cy="9" r="1.2" fill="currentColor" opacity="0.6" />
+        </svg>
+      </div>
+    {/if}
 
-        <!-- Toolbox Actions -->
-        <div class="toolbox">
-          <!-- Add Trigger Button -->
-          <button
-            class="action-btn add-trigger"
-            on:click={handleAddTrigger}
-            title="Add a trigger timestamp"
-          >
-            <span class="btn-icon">+</span>
-          </button>
+    <!-- Compact State: Status Dot + TW Label -->
+    <div
+      class="island-core"
+      on:mousedown|stopPropagation={handleDragStart}
+      on:touchstart|stopPropagation={handleDragStart}
+      role="button"
+      tabindex="0"
+      aria-label="Trigger Warnings Active"
+    >
+      <span
+        class="status-dot"
+        class:protected={status === 'protected'}
+        class:partial={status === 'overall-only'}
+        class:unprotected={status === 'unprotected'}
+      ></span>
+      <span class="tw-label">TW</span>
+    </div>
 
-          {#if helperMode}
-            <span class="helper-badge">Helper</span>
-          {/if}
-        </div>
+    <!-- Expanded Toolbox (liquid expand on hover) -->
+    {#if shouldShowExpanded}
+      <div class="toolbox" in:slide={{ duration: 200, axis: 'x' }}>
+        <span class="status-divider">•</span>
+        <span class="status-text">{statusText}</span>
+
+        <!-- Add Trigger Button -->
+        <button
+          class="action-btn add-trigger"
+          on:click={handleAddTrigger}
+          title="Add a trigger timestamp"
+        >
+          <span class="btn-icon">+</span>
+        </button>
+
+        {#if helperMode}
+          <span class="helper-badge">Helper</span>
+        {/if}
       </div>
     {/if}
   </div>
@@ -330,6 +336,7 @@
 {#if showWarningBanner && activeWarning && categoryInfo}
   <div
     class="warning-banner"
+    class:fullscreen={isFullscreen}
     in:fly={{ y: -50, duration: 400, easing: backOut }}
     out:fade={{ duration: 200 }}
   >
@@ -410,7 +417,12 @@
 
 <!-- Protection Overlay (when trigger is active) -->
 {#if isProtectionActive && (protectionType === 'hide' || protectionType === 'mute-and-hide')}
-  <div class="protection-overlay" in:fade={{ duration: 300 }} out:fade={{ duration: 500 }}>
+  <div
+    class="protection-overlay"
+    class:fullscreen={isFullscreen}
+    in:fade={{ duration: 300 }}
+    out:fade={{ duration: 500 }}
+  >
     <div class="protection-content" in:scale={{ duration: 400, delay: 100, easing: elasticOut }}>
       <span class="protection-icon">🛡️</span>
       <p class="protection-text">Content temporarily hidden for your safety</p>
@@ -422,74 +434,107 @@
 {/if}
 
 <style>
-  /* Main Overlay - Uses absolute positioning for embed-awareness */
+  /* ==========================================
+     FLAT ISLAND OVERLAY - Glassmorphic Design
+     ========================================== */
   .watching-overlay {
     position: absolute !important;
     z-index: 2147483647 !important;
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 0;
+    height: 28px;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     pointer-events: auto !important;
-    transition:
-      transform 0.2s ease,
-      opacity 0.3s ease;
     user-select: none;
+
+    /* AGGRESSIVE: Ensure interaction priority over streaming players */
+    touch-action: manipulation !important;
+    cursor: pointer !important;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+
+    /* Glassmorphic styling */
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+
+    /* Liquid transition for expansion */
+    transition:
+      width 0.4s cubic-bezier(0.23, 1, 0.32, 1),
+      opacity 0.3s ease,
+      transform 0.2s ease,
+      box-shadow 0.3s ease;
   }
 
-  /* Fullscreen mode - use fixed positioning */
   .watching-overlay.fullscreen {
     position: fixed !important;
   }
 
-  .watching-overlay.dragging {
-    cursor: grabbing;
-    transform: scale(1.05);
+  .watching-overlay:hover {
+    box-shadow:
+      0 12px 40px rgba(0, 0, 0, 0.45),
+      inset 0 1px 0 rgba(255, 255, 255, 0.12),
+      0 0 20px rgba(139, 92, 246, 0.15);
   }
 
-  /* Compact View */
-  .compact-view {
+  .watching-overlay.dragging {
+    cursor: grabbing;
+    transform: scale(1.02);
+    box-shadow:
+      0 16px 48px rgba(0, 0, 0, 0.5),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  }
+
+  /* Drag Handle - 12x12px */
+  .drag-handle {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 48px;
-    height: 48px;
-    background: linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95));
-    backdrop-filter: blur(12px);
-    border-radius: 50%;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    width: 16px;
+    height: 28px;
     cursor: grab;
-    position: relative;
-    transition:
-      transform 0.2s,
-      box-shadow 0.2s;
+    padding-left: 6px;
+    color: rgba(255, 255, 255, 0.5);
+    transition: color 0.2s ease;
   }
 
-  .compact-view:hover {
-    transform: scale(1.1);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+  .drag-handle:hover {
+    color: rgba(255, 255, 255, 0.8);
   }
 
-  .status-icon {
-    font-size: 1.25rem;
-    filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.4));
+  .drag-icon {
+    width: 12px;
+    height: 12px;
+  }
+
+  /* Island Core - Compact State */
+  .island-core {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 10px;
+    height: 100%;
+    cursor: grab;
   }
 
   .status-dot {
-    position: absolute;
-    bottom: 2px;
-    right: 2px;
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
     background: #6b7280;
-    border: 2px solid rgba(15, 23, 42, 0.9);
+    transition: all 0.3s ease;
   }
 
   .status-dot.protected {
     background: #22c55e;
-    box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
+    animation: pulse-green 2s infinite;
   }
 
   .status-dot.partial {
@@ -497,77 +542,69 @@
     box-shadow: 0 0 8px rgba(251, 191, 36, 0.5);
   }
 
-  /* Expanded View */
-  .expanded-view {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.5rem 1rem;
-    background: linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95));
-    backdrop-filter: blur(12px);
-    border-radius: 24px;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    margin-left: -4px;
-    color: white;
+  .status-dot.unprotected {
+    background: #6b7280;
   }
 
-  .expanded-view.vertical {
-    flex-direction: column;
-    margin-left: 0;
-    margin-top: -4px;
+  @keyframes pulse-green {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
   }
 
-  .status-section {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .status-text {
-    font-size: 0.8rem;
-    font-weight: 500;
-    color: rgba(255, 255, 255, 0.9);
-    white-space: nowrap;
-  }
-
-  .tw-active-label {
-    font-size: 0.75rem;
+  .tw-label {
+    font-size: 11px;
     font-weight: 600;
     color: var(--tw-button-color, #8b5cf6);
-    text-shadow: 0 0 8px var(--tw-button-color, #8b5cf6);
-    white-space: nowrap;
+    text-shadow: 0 0 10px var(--tw-button-color, #8b5cf6);
+    letter-spacing: 0.02em;
   }
 
-  .status-divider {
-    font-size: 0.6rem;
-    color: rgba(255, 255, 255, 0.4);
-  }
-
+  /* Toolbox - Expanded State */
   .toolbox {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 8px;
+    padding-right: 8px;
+    height: 100%;
+  }
+
+  .status-divider {
+    font-size: 8px;
+    color: rgba(255, 255, 255, 0.3);
+  }
+
+  .status-text {
+    font-size: 10px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.8);
+    white-space: nowrap;
   }
 
   .action-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
+    width: 20px;
+    height: 20px;
     border: none;
-    border-radius: 50%;
+    border-radius: 6px;
     cursor: pointer;
-    transition:
-      transform 0.2s,
-      background 0.2s;
+    transition: all 0.2s ease;
+
+    /* AGGRESSIVE: Ensure button is always clickable */
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
   }
 
   .add-trigger {
     background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
     color: white;
-    font-size: 1.25rem;
+    font-size: 14px;
     font-weight: 600;
   }
 
@@ -581,29 +618,31 @@
   }
 
   .helper-badge {
-    font-size: 0.65rem;
+    font-size: 9px;
     background: rgba(139, 92, 246, 0.3);
     color: #c4b5fd;
-    padding: 0.125rem 0.375rem;
+    padding: 2px 6px;
     border-radius: 50px;
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
 
-  .helper-mode .compact-view {
-    border-color: rgba(139, 92, 246, 0.4);
+  .helper-mode .island-core {
+    border-left: 2px solid rgba(139, 92, 246, 0.5);
   }
 
-  /* Warning Banner */
+  /* ==========================================
+     WARNING BANNER
+     ========================================== */
   .warning-banner {
-    position: fixed;
+    position: absolute;
     top: 20px;
     left: 50%;
     transform: translateX(-50%);
     z-index: 2147483647;
     min-width: 320px;
-    max-width: 90vw;
-    background: linear-gradient(145deg, rgba(239, 68, 68, 0.95), rgba(185, 28, 28, 0.95));
+    max-width: 90%;
+    background: linear-gradient(145deg, rgba(239, 68, 68, 0.92), rgba(185, 28, 28, 0.95));
     backdrop-filter: blur(16px);
     border-radius: 16px;
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -611,6 +650,10 @@
     padding: 1rem;
     color: white;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  .warning-banner.fullscreen {
+    position: fixed;
   }
 
   .warning-content {
@@ -729,9 +772,11 @@
     opacity: 0.9;
   }
 
-  /* Protection Overlay */
+  /* ==========================================
+     PROTECTION OVERLAY
+     ========================================== */
   .protection-overlay {
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
     width: 100%;
@@ -742,6 +787,10 @@
     align-items: center;
     justify-content: center;
     pointer-events: none;
+  }
+
+  .protection-overlay.fullscreen {
+    position: fixed;
   }
 
   .protection-content {

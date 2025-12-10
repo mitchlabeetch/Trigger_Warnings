@@ -14,7 +14,7 @@ import type { IStreamingProvider } from '@shared/types/Provider.types';
 import type { MediaTriggerData, PreWatchCase } from '@shared/types/MediaContent.types';
 import type { TriggerCategory, StreamingPlatform } from '@shared/types/Warning.types';
 import type { Profile } from '@shared/types/Profile.types';
-import { createContainer, injectContainer } from '@shared/utils/dom';
+import { createBlockingContainer, injectContainer } from '@shared/utils/dom';
 import { createLogger } from '@shared/utils/logger';
 import { triggerDatabaseService } from '@database/services/TriggerDatabaseService';
 import browser from 'webextension-polyfill';
@@ -230,7 +230,7 @@ export class PreWatchManager {
    */
   private createScreen(): void {
     // Create container
-    this.container = createContainer('tw-prewatch-container', 'tw-prewatch-root');
+    this.container = createBlockingContainer('tw-prewatch-container', 'tw-prewatch-root');
 
     // Inject into PLAYER CONTAINER (not body) for embed-aware positioning
     const injectionPoint = this.provider.getInjectionPoint() || document.body;

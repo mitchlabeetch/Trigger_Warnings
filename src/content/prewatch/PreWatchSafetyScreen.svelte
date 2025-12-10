@@ -200,203 +200,182 @@
 {#if isVisible}
   <div
     class="prewatch-screen"
+    class:fullscreen={isFullscreen}
     transition:fade={{ duration: 500 }}
     role="dialog"
     aria-modal="true"
     aria-labelledby="prewatch-title"
   >
-    <!-- Background blur overlay -->
-    <div class="backdrop"></div>
+    <!-- Header with logo -->
+    <header class="header" in:fly={{ y: -30, duration: 600, delay: 200, easing: backOut }}>
+      <div class="logo">
+        <span class="logo-icon">🛡️</span>
+        <h1 id="prewatch-title" class="logo-text">Trigger Warnings</h1>
+      </div>
 
-    <!-- Content container -->
-    <div class="content-container">
-      <!-- Header with logo -->
-      <header class="header" in:fly={{ y: -30, duration: 600, delay: 200, easing: backOut }}>
-        <div class="logo">
-          <span class="logo-icon">🛡️</span>
-          <h1 id="prewatch-title" class="logo-text">Trigger Warnings</h1>
-        </div>
+      <!-- Protection level indicator -->
+      <div
+        class="protection-badge"
+        class:full={protectionLevel === 'full'}
+        class:partial={protectionLevel === 'partial'}
+      >
+        {#if protectionLevel === 'full'}
+          <span class="badge-icon">✓</span>
+          <span>Protected</span>
+        {:else if protectionLevel === 'partial'}
+          <span class="badge-icon">◐</span>
+          <span>Limited Data</span>
+        {:else}
+          <span class="badge-icon">○</span>
+          <span>Not Covered</span>
+        {/if}
+      </div>
+    </header>
 
-        <!-- Protection level indicator -->
-        <div
-          class="protection-badge"
-          class:full={protectionLevel === 'full'}
-          class:partial={protectionLevel === 'partial'}
-        >
-          {#if protectionLevel === 'full'}
-            <span class="badge-icon">✓</span>
-            <span>Protected</span>
-          {:else if protectionLevel === 'partial'}
-            <span class="badge-icon">◐</span>
-            <span>Limited Data</span>
-          {:else}
-            <span class="badge-icon">○</span>
-            <span>Not Covered</span>
-          {/if}
-        </div>
-      </header>
+    <!-- Main content area -->
+    <main class="main-content">
+      <!-- Status message -->
+      <p class="status-message" in:fly={{ y: 20, duration: 500, delay: 400 }}>
+        {statusMessage}
+      </p>
 
-      <!-- Main content area -->
-      <main class="main-content">
-        <!-- Status message -->
-        <p class="status-message" in:fly={{ y: 20, duration: 500, delay: 400 }}>
-          {statusMessage}
-        </p>
-
-        <!-- Trigger list (for overall-only and timestamps cases) -->
-        {#if preWatchCase === 'overall-only' || preWatchCase === 'timestamps'}
-          <div class="trigger-list" in:fade={{ duration: 300, delay: 600 }}>
-            {#each loadedTriggers as category, i}
-              {@const trigger = relevantTriggers.find((t) => t.category === category)}
-              {@const info = getCategoryInfo(category)}
-              {#if trigger}
-                <div
-                  class="trigger-item"
-                  in:fly={{ x: -30, duration: 400, delay: i * 100, easing: quintOut }}
-                  style="--severity-color: {getSeverityColor(trigger.severity)}"
-                >
-                  <span class="trigger-icon">{info.icon}</span>
-                  <div class="trigger-details">
-                    <span class="trigger-name">{info.name}</span>
-                    <span
-                      class="trigger-severity"
-                      style="color: {getSeverityColor(trigger.severity)}"
-                    >
-                      {getSeverityLabel(trigger.severity)}
-                    </span>
-                  </div>
-                  {#if preWatchCase === 'timestamps' && trigger.count > 0}
-                    <span class="trigger-count"
-                      >{trigger.count} occurrence{trigger.count > 1 ? 's' : ''}</span
-                    >
-                  {/if}
+      <!-- Trigger list (for overall-only and timestamps cases) -->
+      {#if preWatchCase === 'overall-only' || preWatchCase === 'timestamps'}
+        <div class="trigger-list" in:fade={{ duration: 300, delay: 600 }}>
+          {#each loadedTriggers as category, i}
+            {@const trigger = relevantTriggers.find((t) => t.category === category)}
+            {@const info = getCategoryInfo(category)}
+            {#if trigger}
+              <div
+                class="trigger-item"
+                in:fly={{ x: -30, duration: 400, delay: i * 100, easing: quintOut }}
+                style="--severity-color: {getSeverityColor(trigger.severity)}"
+              >
+                <span class="trigger-icon">{info.icon}</span>
+                <div class="trigger-details">
+                  <span class="trigger-name">{info.name}</span>
+                  <span
+                    class="trigger-severity"
+                    style="color: {getSeverityColor(trigger.severity)}"
+                  >
+                    {getSeverityLabel(trigger.severity)}
+                  </span>
                 </div>
-              {/if}
-            {/each}
-
-            <!-- Loading indicator for remaining triggers -->
-            {#if currentTriggerIndex < relevantTriggers.length}
-              <div class="loading-trigger" in:fade>
-                <div class="loading-spinner"></div>
-                <span>Loading triggers...</span>
+                {#if preWatchCase === 'timestamps' && trigger.count > 0}
+                  <span class="trigger-count"
+                    >{trigger.count} occurrence{trigger.count > 1 ? 's' : ''}</span
+                  >
+                {/if}
               </div>
             {/if}
-          </div>
-        {/if}
+          {/each}
 
-        <!-- Media info (if available) -->
-        {#if triggerData.media}
-          <div class="media-info" in:fade={{ delay: 800 }}>
-            <span class="media-title">{triggerData.media.name}</span>
-            {#if triggerData.media.year}
-              <span class="media-year">({triggerData.media.year})</span>
-            {/if}
-          </div>
-        {/if}
-      </main>
+          <!-- Loading indicator for remaining triggers -->
+          {#if currentTriggerIndex < relevantTriggers.length}
+            <div class="loading-trigger" in:fade>
+              <div class="loading-spinner"></div>
+              <span>Loading triggers...</span>
+            </div>
+          {/if}
+        </div>
+      {/if}
 
-      <!-- Footer with controls -->
-      <footer class="footer">
-        <!-- Progress bar -->
-        <div class="progress-container" in:fade={{ delay: 1000 }}>
-          <div class="progress-bar">
-            <div class="progress-fill" style="width: {progress * 100}%"></div>
-          </div>
-          <span class="progress-text">
-            {#if !isProgressStarted}
-              Loading...
-            {:else if progress < 1}
-              Starting in {Math.ceil((1 - progress) * minDuration)}s
-            {:else}
-              Starting...
-            {/if}
-          </span>
+      <!-- Media info (if available) -->
+      {#if triggerData.media}
+        <div class="media-info" in:fade={{ delay: 800 }}>
+          <span class="media-title">{triggerData.media.name}</span>
+          {#if triggerData.media.year}
+            <span class="media-year">({triggerData.media.year})</span>
+          {/if}
+        </div>
+      {/if}
+    </main>
+
+    <!-- Footer with controls -->
+    <footer class="footer">
+      <!-- Progress bar -->
+      <div class="progress-container" in:fade={{ delay: 1000 }}>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: {progress * 100}%"></div>
+        </div>
+        <span class="progress-text">
+          {#if !isProgressStarted}
+            Loading...
+          {:else if progress < 1}
+            Starting in {Math.ceil((1 - progress) * minDuration)}s
+          {:else}
+            Starting...
+          {/if}
+        </span>
+      </div>
+
+      <!-- Skip button -->
+      <button class="skip-button" on:click={handleSkip} in:fly={{ y: 20, delay: 1200 }}>
+        <span class="play-icon">▶</span>
+        <span>Play Now</span>
+      </button>
+
+      <!-- Secondary actions -->
+      <div class="secondary-actions" in:fade={{ delay: 1400 }}>
+        <!-- Current profile -->
+        <div class="profile-info">
+          <span class="profile-label">Profile:</span>
+          <span class="profile-name">{profileName}</span>
         </div>
 
-        <!-- Skip button -->
-        <button class="skip-button" on:click={handleSkip} in:fly={{ y: 20, delay: 1200 }}>
-          <span class="play-icon">▶</span>
-          <span>Play Now</span>
-        </button>
+        <!-- Settings link -->
+        <button class="settings-link" on:click={handleOpenSettings}> ⚙️ Settings </button>
+      </div>
 
-        <!-- Secondary actions -->
-        <div class="secondary-actions" in:fade={{ delay: 1400 }}>
-          <!-- Current profile -->
-          <div class="profile-info">
-            <span class="profile-label">Profile:</span>
-            <span class="profile-name">{profileName}</span>
-          </div>
-
-          <!-- Settings link -->
-          <button class="settings-link" on:click={handleOpenSettings}> ⚙️ Settings </button>
-        </div>
-
-        <!-- Contribution CTA -->
-        <div class="contribution-cta" in:slide={{ delay: 1600 }}>
-          <p>
-            {#if preWatchCase === 'no-data'}
-              🙏 Help us by contributing trigger data for this content!
-            {:else if preWatchCase === 'no-triggers'}
-              Know of any triggers? Enable Helper Mode to contribute!
-            {:else}
-              Found something we missed? Enable Helper Mode to help others!
-            {/if}
-          </p>
-          <p class="development-notice">
-            Thank you for using Trigger Warnings. The app is still in development and may be missing
-            triggers.
-          </p>
-        </div>
-      </footer>
-    </div>
+      <!-- Contribution CTA -->
+      <div class="contribution-cta" in:slide={{ delay: 1600 }}>
+        <p>
+          {#if preWatchCase === 'no-data'}
+            🙏 Help us by contributing trigger data for this content!
+          {:else if preWatchCase === 'no-triggers'}
+            Know of any triggers? Enable Helper Mode to contribute!
+          {:else}
+            Found something we missed? Enable Helper Mode to help others!
+          {/if}
+        </p>
+        <p class="development-notice">
+          Thank you for using Trigger Warnings. The app is still in development and may be missing
+          triggers.
+        </p>
+      </div>
+    </footer>
   </div>
 {/if}
 
 <style>
-  /* Use absolute positioning for embed-aware coverage */
+  /* Container centers us, so we just need to be the dialog box */
   .prewatch-screen {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    z-index: 2147483647 !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    position: relative !important;
+    width: 90% !important;
+    max-width: 600px !important;
+    max-height: 90% !important;
+    z-index: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
     color: white;
     pointer-events: auto !important;
-  }
+    box-sizing: border-box !important;
 
-  .backdrop {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.98) 100%);
-    backdrop-filter: blur(20px);
-  }
-
-  .content-container {
-    position: relative;
-    width: 90%;
-    max-width: 600px;
-    max-height: 90vh;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    padding: 2rem;
-    background: linear-gradient(
-      145deg,
-      rgba(255, 255, 255, 0.1) 0%,
-      rgba(255, 255, 255, 0.05) 100%
-    );
+    /* Glassmorphic card styling */
+    background: linear-gradient(145deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.98) 100%);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
     border-radius: 24px;
     border: 1px solid rgba(255, 255, 255, 0.15);
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    padding: 2rem;
+    gap: 1.5rem;
+    overflow-y: auto;
+  }
+
+  .prewatch-screen.fullscreen {
+    max-width: 700px;
   }
 
   /* Header */
@@ -424,6 +403,7 @@
     font-weight: 700;
     background: linear-gradient(90deg, #60a5fa, #a78bfa);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     margin: 0;
   }
@@ -701,7 +681,7 @@
 
   /* Responsive adjustments */
   @media (max-width: 480px) {
-    .content-container {
+    .prewatch-screen {
       padding: 1.5rem;
       gap: 1.25rem;
     }
