@@ -196,6 +196,8 @@ class TriggerWarningsContent {
         logger.info('Skip to end:', warning.id);
       },
       onAddTrigger: () => {
+        // Legacy support: quick add context storage
+        // The UI is now handled within WatchingOverlayManager directly
         this.handleQuickAddTrigger();
       },
     });
@@ -370,7 +372,10 @@ class TriggerWarningsContent {
    * Gets current timestamp and sends message to background to open trigger submission
    */
   async handleQuickAddTrigger(): Promise<void> {
-    logger.info('Quick add trigger requested');
+    // This is maintained for legacy support (context storage for popup)
+    // The main UI is now handled by WatchingOverlayManager directly
+
+    logger.info('Quick add trigger requested (legacy flow)');
 
     if (!this.provider) {
       logger.error('No provider available for quick add');
@@ -396,10 +401,8 @@ class TriggerWarningsContent {
 
       const videoId = mediaInfo.id;
 
-      logger.info(`Current timestamp: ${currentTime}s, Video ID: ${videoId}`);
-
       // Send message to background to store current timestamp and video info
-      // This will be used when the user opens the popup or trigger submission UI
+      // This will be used if the user opens the extension popup
       await browser.runtime
         .sendMessage({
           type: 'STORE_QUICK_ADD_CONTEXT',
@@ -415,6 +418,7 @@ class TriggerWarningsContent {
       // Since WatchingOverlay calls this, it might display the toast.
       // If we are in legacy mode, we might need a manual toast.
       logger.info(`Timestamp ${Math.floor(currentTime)}s saved. Open popup to submit trigger.`);
+      logger.info(`Context saved for popup fallback.`);
     } catch (error) {
       logger.error('Failed to get current timestamp:', error);
     }

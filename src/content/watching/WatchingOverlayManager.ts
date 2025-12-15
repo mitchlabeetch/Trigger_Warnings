@@ -22,6 +22,7 @@ import { createContainer, injectContainer } from '@shared/utils/dom';
 import { createLogger } from '@shared/utils/logger';
 import browser from 'webextension-polyfill';
 import WatchingOverlay from './WatchingOverlay.svelte';
+import TriggerSubmissionForm from './TriggerSubmissionForm.svelte';
 
 const logger = createLogger('WatchingOverlayManager');
 
@@ -61,6 +62,7 @@ export class WatchingOverlayManager {
   private provider: IStreamingProvider;
   private container: HTMLDivElement | null = null;
   private component: WatchingOverlay | null = null;
+  private submissionFormComponent: TriggerSubmissionForm | null = null;
   private isInitialized = false;
 
   // Trigger data
@@ -552,26 +554,87 @@ export class WatchingOverlayManager {
 
     const video = this.provider.getVideoElement();
     const currentTime = video?.currentTime || 0;
+    const duration = video?.duration || 0;
 
-    // Send message to background to open trigger submission
-    browser.runtime
-      .sendMessage({
-        type: 'OPEN_TRIGGER_SUBMISSION',
-        data: {
-          currentTime,
-          videoId: this.triggerData?.media?.internal_id,
-          platform: this.provider.name.toLowerCase(),
-        },
-      })
-      .catch((err) => {
-        logger.error('Failed to open trigger submission:', err);
-      });
+    // Check if we are in fullscreen and exit if needed (optional)
+    // Or just overlay the form. Since the form is in the same container,
+    // and we handle fullscreen events, it should display correctly on top.
+
+    // If form is already open, do nothing
+    if (this.submissionFormComponent) {
+        return;
+    }
+
+    if (!this.container) return;
+
+    // Mount submission form
+    this.submissionFormComponent = new TriggerSubmissionForm({
+      target: this.container,
+      props: {
+        currentTime,
+        duration,
+      },
+    });
+
+    // Handle events
+    this.submissionFormComponent.$on('submit', (e) => this.handleSubmitTrigger(e.detail));
+    this.submissionFormComponent.$on('cancel', () => this.handleCancelTrigger());
+
+    // Pause video while adding trigger
+    if (video && !video.paused) {
+      video.pause();
+    }
 
     // UI 5: Feedback Toast (Handled inside WatchingOverlay component if extended, or here)
     // For now we rely on the button animation, but we could show a toast.
     // WatchingOverlay.svelte should probably handle the toast display if triggered.
 
     this.callbacks.onAddTrigger?.();
+  }
+
+  /**
+   * Handle submission of new trigger
+   */
+  private async handleSubmitTrigger(data: any): Promise<void> {
+    logger.info('Submitting new trigger:', data);
+
+    try {
+      const { categoryKey, startTime, endTime, description } = data;
+
+      const submission = {
+          videoId: this.triggerData?.media?.internal_id || this.triggerData?.media?.id, // Use internal_id if available (UUID) or provider ID
+          platform: this.provider.name.toLowerCase(),
+          categoryKey,
+          startTime,
+          endTime,
+          description,
+          confidence: 100 // User manual submission
+      };
+
+      // Send to background
+      await browser.runtime.sendMessage({
+        type: 'SUBMIT_TRIGGER',
+        data: submission
+      });
+
+      // Show success feedback (TODO: Add toast or notification)
+      logger.info('Trigger submitted successfully');
+
+    } catch (error) {
+      logger.error('Failed to submit trigger:', error);
+    } finally {
+      this.handleCancelTrigger();
+    }
+  }
+
+  /**
+   * Close submission form
+   */
+  private handleCancelTrigger(): void {
+    if (this.submissionFormComponent) {
+      this.submissionFormComponent.$destroy();
+      this.submissionFormComponent = null;
+    }
   }
 
   /**
@@ -730,6 +793,12 @@ export class WatchingOverlayManager {
     if (this.component) {
       this.component.$destroy();
       this.component = null;
+    }
+
+    // Destroy submission form if open
+    if (this.submissionFormComponent) {
+      this.submissionFormComponent.$destroy();
+      this.submissionFormComponent = null;
     }
 
     // Remove container
