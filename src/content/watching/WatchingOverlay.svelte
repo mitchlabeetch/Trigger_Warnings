@@ -41,6 +41,10 @@
   let isHovering = false;
   let showWarningBanner = false;
   let isProtectionActive = false;
+  // UI 5: Feedback Toast State
+  let showToast = false;
+  let toastMessage = '';
+  let toastTimeout: number | null = null;
 
   // Mouse activity visibility state
   let isMouseActive = true;
@@ -53,7 +57,7 @@
   $: categoryInfo = activeWarning ? TRIGGER_CATEGORIES[activeWarning.categoryKey] : null;
 
   // Visibility: show when mouse active, hovering, or warning banner visible
-  $: isOverlayVisible = isMouseActive || isHovering || showWarningBanner || isDragging;
+  $: isOverlayVisible = isMouseActive || isHovering || showWarningBanner || isDragging || showToast;
 
   // Dynamic opacity based on hover state
   $: overlayOpacity = isHovering ? 1 : buttonOpacity;
@@ -192,6 +196,17 @@
   function handleAddTrigger() {
     dispatch('addTrigger');
     onAddTrigger();
+    // UI 5: Show feedback toast
+    showToastMessage('Timestamp saved! Open popup to finish.');
+  }
+
+  function showToastMessage(msg: string) {
+    toastMessage = msg;
+    showToast = true;
+    if (toastTimeout) clearTimeout(toastTimeout);
+    toastTimeout = window.setTimeout(() => {
+      showToast = false;
+    }, 3000);
   }
 
   function handleIgnoreThisTime() {
@@ -250,6 +265,9 @@
     if (mouseActivityTimeout) {
       clearTimeout(mouseActivityTimeout);
     }
+    if (toastTimeout) {
+      clearTimeout(toastTimeout);
+    }
   });
 </script>
 
@@ -271,7 +289,7 @@
     role="region"
     aria-label="Trigger Warnings Overlay"
   >
-    <!-- Drag Handle (only on hover) -->
+    <!-- Drag Handle (only on hover) UI 10: Always visible on hover for better affordance -->
     {#if shouldShowExpanded}
       <div
         class="drag-handle"
@@ -280,6 +298,7 @@
         title="Drag to move"
         in:fade={{ duration: 150, delay: 100 }}
       >
+        <!-- Improved drag icon (6 dots grid) -->
         <svg viewBox="0 0 12 12" class="drag-icon">
           <circle cx="3" cy="3" r="1.2" fill="currentColor" opacity="0.6" />
           <circle cx="9" cy="3" r="1.2" fill="currentColor" opacity="0.6" />
@@ -327,6 +346,13 @@
         {#if helperMode}
           <span class="helper-badge">Helper</span>
         {/if}
+      </div>
+    {/if}
+
+    <!-- UI 5: Feedback Toast inside overlay -->
+    {#if showToast}
+      <div class="mini-toast" in:fly={{ y: 10, duration: 200 }} out:fade>
+        {toastMessage}
       </div>
     {/if}
   </div>
@@ -629,6 +655,23 @@
 
   .helper-mode .island-core {
     border-left: 2px solid rgba(139, 92, 246, 0.5);
+  }
+
+  /* UI 5: Mini Toast */
+  .mini-toast {
+    position: absolute;
+    top: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(15, 23, 42, 0.9);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    color: white;
+    white-space: nowrap;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
   }
 
   /* ==========================================

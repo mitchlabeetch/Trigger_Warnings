@@ -8,8 +8,12 @@
 
   let visible = false;
   let fadeIn = false;
+  let isPeeking = false;
 
   $: showBlackout = protectionType === 'blackout' || protectionType === 'both';
+
+  // UI 1: Peek Mode logic
+  $: overlayOpacity = isPeeking ? 0.1 : 1;
 
   onMount(() => {
     // Slight delay for smooth transition
@@ -19,21 +23,73 @@
         fadeIn = true;
       }, 50);
     }, 100);
+
+    // UI 7: Keyboard shortcuts
+    window.addEventListener('keydown', handleKeydown, true);
+    window.addEventListener('keyup', handleKeyup, true);
   });
 
+  onDestroy(() => {
+    window.removeEventListener('keydown', handleKeydown, true);
+    window.removeEventListener('keyup', handleKeyup, true);
+  });
+
+  // Bug 2: Pass common media keys to underlying player, handle peek with keys
+  function handleKeydown(event: KeyboardEvent) {
+    // UI 1: Hold 'P' to peek
+    if (event.key.toLowerCase() === 'p' && !event.repeat) {
+      isPeeking = true;
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+
+    if (!visible) return;
+
+    // Allowed keys (media controls) - let them propagate
+    const allowedKeys = [' ', 'k', 'j', 'l', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'm', 'f'];
+
+    if (allowedKeys.includes(event.key)) {
+      // If we are focused on the overlay, we might need to manually trigger video controls
+      // But typically propagation is enough if we don't stop it.
+      // The issue is if the overlay captures focus.
+      return;
+    }
+  }
+
+  function handleKeyup(event: KeyboardEvent) {
+    if (event.key.toLowerCase() === 'p') {
+      isPeeking = false;
+    }
+  }
+
   function handleClick(event: MouseEvent) {
-    // Prevent clicks from passing through to video player
+    // Prevent clicks from passing through to video player unless peeking?
+    // Usually we want to block clicks to prevent accidental spoilers.
     event.stopPropagation();
+  }
+
+  function handlePeekStart() {
+    isPeeking = true;
+  }
+
+  function handlePeekEnd() {
+    isPeeking = false;
   }
 </script>
 
 {#if showBlackout}
+  <!-- UI 6: Accessibility roles -->
   <div
     class="tw-protection-overlay"
     class:visible={visible}
     class:fade-in={fadeIn}
+    style="opacity: {visible && fadeIn ? overlayOpacity : 0};"
     on:click={handleClick}
-    role="presentation"
+    role="alertdialog"
+    aria-modal="true"
+    aria-labelledby="tw-protection-title"
+    aria-describedby="tw-protection-desc"
   >
     <div class="tw-protection-content">
       <div class="tw-protection-icon">
@@ -44,14 +100,28 @@
       </div>
 
       <div class="tw-protection-message">
-        <h3>Protected Content</h3>
+        <h3 id="tw-protection-title">Protected Content</h3>
         {#if categoryName}
-          <p class="tw-protection-category">{categoryName}</p>
+          <p id="tw-protection-desc" class="tw-protection-category">{categoryName}</p>
         {/if}
         {#if warningDescription}
           <p class="tw-protection-description">{warningDescription}</p>
         {/if}
       </div>
+
+      <!-- UI 1: Peek Button -->
+      <button
+        class="tw-peek-btn"
+        on:mousedown={handlePeekStart}
+        on:mouseup={handlePeekEnd}
+        on:mouseleave={handlePeekEnd}
+        on:touchstart={handlePeekStart}
+        on:touchend={handlePeekEnd}
+        aria-label="Hold to peek at content"
+      >
+        <span>👁️ Hold to Peek</span>
+        <span class="tw-shortcut-hint">(or hold P)</span>
+      </button>
     </div>
   </div>
 {/if}
@@ -63,13 +133,16 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: #000000;
+    /* UI 2: Blur Effect + Semi-transparent black */
+    background-color: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 999999;
     opacity: 0;
-    transition: opacity 0.3s ease-in-out;
+    transition: opacity 0.2s ease-in-out;
     pointer-events: all;
   }
 
@@ -130,6 +203,33 @@
     line-height: 1.6;
     color: rgba(255, 255, 255, 0.7);
     max-width: 400px;
+  }
+
+  .tw-peek-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.9);
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .tw-peek-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  .tw-peek-btn:active {
+    transform: scale(0.98);
+  }
+
+  .tw-shortcut-hint {
+    opacity: 0.5;
+    font-size: 12px;
   }
 
   /* Responsive */

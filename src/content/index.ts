@@ -50,6 +50,8 @@ class TriggerWarningsContent {
   private preWatchManager: PreWatchManager | null = null;
   private watchingOverlayManager: WatchingOverlayManager | null = null;
   private initialized = false;
+  // Bug 3 Fix: Add explicit disposed flag to prevent race conditions
+  private isDisposed = false;
   private activeWarningsMap: Map<string, ActiveWarning> = new Map();
   private currentMediaInfo: MediaInfo | null = null;
   private triggerData: MediaTriggerData | null = null;
@@ -59,6 +61,12 @@ class TriggerWarningsContent {
   async initialize(): Promise<void> {
     if (this.initialized) {
       logger.debug('Already initialized, skipping');
+      return;
+    }
+
+    // Bug 3 Fix: check if disposed
+    if (this.isDisposed) {
+      logger.warn('Attempted to initialize disposed instance');
       return;
     }
 
@@ -82,10 +90,15 @@ class TriggerWarningsContent {
         return;
       }
 
+      // Bug 3 Fix: Double check disposed after await
+      if (this.isDisposed) return;
+
       logger.info(`Provider initialized: ${this.provider.name}`);
 
       // Initialize database service
       await triggerDatabaseService.initialize();
+
+      if (this.isDisposed) return;
 
       // Check if we should use the new workflow or fallback to legacy
       if (this.useNewWorkflow) {
@@ -99,7 +112,9 @@ class TriggerWarningsContent {
         logger.error('Error details:', { message: error.message, stack: error.stack });
       }
       // Fallback to legacy workflow on error
-      await this.initializeLegacyWorkflow();
+      if (!this.isDisposed) {
+        await this.initializeLegacyWorkflow();
+      }
     }
   }
 
@@ -111,7 +126,7 @@ class TriggerWarningsContent {
    * 4. On complete, show watching overlay and start monitoring
    */
   private async initializeNewWorkflow(): Promise<void> {
-    if (!this.provider) return;
+    if (!this.provider || this.isDisposed) return;
 
     logger.info('Initializing new database-driven workflow...');
 
@@ -152,6 +167,7 @@ class TriggerWarningsContent {
    * Called when pre-watch screen completes (countdown or skip)
    */
   private async onPreWatchComplete(): Promise<void> {
+    if (this.isDisposed) return;
     logger.info('Pre-watch completed, starting watching mode...');
 
     if (!this.provider) return;
@@ -165,6 +181,8 @@ class TriggerWarningsContent {
     if (this.triggerData) {
       await this.watchingOverlayManager.initialize(this.triggerData);
     }
+
+    if (this.isDisposed) return;
 
     // Set up watching overlay callbacks
     this.watchingOverlayManager.setCallbacks({
@@ -201,6 +219,10 @@ class TriggerWarningsContent {
 
     // Check every 250ms for upcoming warnings
     this.monitoringIntervalId = setInterval(() => {
+      if (this.isDisposed) {
+        this.stopPlaybackMonitoring();
+        return;
+      }
       if (!this.provider || !this.watchingOverlayManager) return;
 
       const video = this.provider.getVideoElement();
@@ -227,7 +249,7 @@ class TriggerWarningsContent {
    * Uses the existing WarningManager and BannerManager
    */
   private async initializeLegacyWorkflow(): Promise<void> {
-    if (!this.provider) return;
+    if (!this.provider || this.isDisposed) return;
 
     logger.info('Using legacy workflow...');
 
@@ -241,6 +263,7 @@ class TriggerWarningsContent {
 
       // Connect warning manager to banner manager and indicator
       this.warningManager.onWarning((warning: ActiveWarning) => {
+        if (this.isDisposed) return;
         this.bannerManager?.showWarning(warning);
 
         // Update active warnings for indicator
@@ -249,6 +272,7 @@ class TriggerWarningsContent {
       });
 
       this.warningManager.onWarningEnd((warningId: string) => {
+        if (this.isDisposed) return;
         this.bannerManager?.hideWarning(warningId);
 
         // Update active warnings for indicator
@@ -318,7 +342,7 @@ class TriggerWarningsContent {
    * Used by both new and legacy workflows
    */
   private async initializeLegacyBanner(): Promise<void> {
-    if (!this.provider) return;
+    if (!this.provider || this.isDisposed) return;
 
     // Initialize banner manager
     this.bannerManager = new BannerManager(this.provider);
@@ -387,7 +411,9 @@ class TriggerWarningsContent {
         });
 
       // Context stored - user can now open popup to complete submission
-      // TODO: Implement proper trigger submission UI in the content script
+      // UI 5: Feedback Toast (Handled via WatchingOverlay UI usually, but we can log/toast)
+      // Since WatchingOverlay calls this, it might display the toast.
+      // If we are in legacy mode, we might need a manual toast.
       logger.info(`Timestamp ${Math.floor(currentTime)}s saved. Open popup to submit trigger.`);
     } catch (error) {
       logger.error('Failed to get current timestamp:', error);
@@ -395,6 +421,7 @@ class TriggerWarningsContent {
   }
 
   async handleProfileChange(profileId: string): Promise<void> {
+    if (this.isDisposed) return;
     logger.info('Profile changed:', profileId);
 
     // Reinitialize warning manager with new profile
@@ -416,6 +443,7 @@ class TriggerWarningsContent {
 
   dispose(): void {
     logger.info('Disposing content script...');
+    this.isDisposed = true; // Mark as disposed first
 
     // Stop playback monitoring
     this.stopPlaybackMonitoring();

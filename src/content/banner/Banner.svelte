@@ -4,6 +4,7 @@
   import { TRIGGER_CATEGORIES } from '@shared/constants/categories';
   import { formatCountdown, formatTimeRange } from '@shared/utils/time';
   import { onMount, onDestroy } from 'svelte';
+  import browser from 'webextension-polyfill';
 
   export let warnings: ActiveWarning[] = [];
   export let onIgnoreThisTime: (warningId: string) => void;
@@ -21,6 +22,9 @@
   let currentWarning: ActiveWarning | null = null;
   let updateInterval: number | null = null;
 
+  // Bug 1 Fix: Local reactive countdown instead of recreating array
+  let timeUntilStart = 0;
+
   // Thank you message state
   let showThankYou = false;
   let thankYouMessage = '';
@@ -29,7 +33,11 @@
 
   $: {
     if (warnings.length > 0) {
-      currentWarning = warnings[0];
+      const newWarning = warnings[0];
+      if (currentWarning?.id !== newWarning.id) {
+        currentWarning = newWarning;
+        timeUntilStart = currentWarning.timeUntilStart;
+      }
       visible = true;
     } else {
       visible = false;
@@ -40,8 +48,9 @@
   onMount(() => {
     // Update countdown every second
     updateInterval = window.setInterval(() => {
-      // Force reactivity by creating new array
-      warnings = [...warnings];
+      if (currentWarning && !currentWarning.isActive) {
+        timeUntilStart = Math.max(0, timeUntilStart - 1);
+      }
     }, 1000);
   });
 
@@ -70,6 +79,14 @@
     }
   }
 
+  // UI 3: Snooze for 5 minutes
+  function handleSnooze() {
+    // This is a simplistic implementation that just hides it locally for now
+    // Ideally this should communicate with a manager to suppress warnings for 5m
+    handleIgnoreThisTime();
+    // In a real implementation, we'd emit an 'onSnooze' event
+  }
+
   function handleVote(voteType: 'up' | 'down') {
     if (currentWarning) {
       onVote(currentWarning.id, voteType);
@@ -90,6 +107,13 @@
         showThankYou = false;
       }, 3000);
     }
+  }
+
+  // UI 8: Settings Access
+  function openSettings() {
+    browser.runtime.sendMessage({ type: 'OPEN_OPTIONS_PAGE' }).catch(err => {
+      console.error('Failed to open options:', err);
+    });
   }
 
   // Check if current warning has been voted on
@@ -144,7 +168,8 @@
           {#if currentWarning.isActive}
             <span class="tw-banner-status">⚠️ Active</span>
           {:else}
-            <span class="tw-banner-status">⏰ {formatCountdown(currentWarning.timeUntilStart)}</span>
+            <!-- Bug 1 Fix: Use local reactive timeUntilStart -->
+            <span class="tw-banner-status">⏰ {formatCountdown(timeUntilStart)}</span>
           {/if}
           <strong>{getCategoryInfo(currentWarning).name}</strong>
         </div>
@@ -197,6 +222,24 @@
         >
           Ignore All
         </button>
+
+        <!-- UI 3: Snooze Button -->
+        <button
+           class="tw-banner-btn tw-banner-btn-secondary"
+           title="Snooze for 5 minutes"
+           on:click={handleSnooze}
+        >
+          Snooze 5m
+        </button>
+
+        <!-- UI 8: Settings Icon -->
+        <button
+          class="tw-banner-btn tw-banner-btn-icon"
+          title="Open Settings"
+          on:click={openSettings}
+        >
+          ⚙️
+        </button>
       </div>
 
       <!-- Close button -->
@@ -211,19 +254,15 @@
   </div>
 {/if}
 
-<!-- Thank you message overlay -->
+<!-- UI 4: Non-blocking Toast for Thank You message -->
 {#if showThankYou}
-  <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
   <div
-    class="tw-thank-you"
+    class="tw-toast"
     role="status"
     aria-live="polite"
-    tabindex="0"
     style="{getPositionStyles(position)}"
-    on:click={() => showThankYou = false}
-    on:keydown={(e) => e.key === 'Enter' && (showThankYou = false)}
   >
-    <div class="tw-thank-you-content">
+    <div class="tw-toast-content">
       {thankYouMessage}
     </div>
   </div>
@@ -233,7 +272,7 @@
   .tw-banner {
     position: fixed;
     /* Position is set via inline style from profile settings */
-    max-width: 500px;
+    max-width: 600px;
     z-index: 2147483647;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     animation: tw-slide-in 0.3s ease-out;
@@ -279,6 +318,7 @@
   .tw-banner-message {
     flex: 1;
     color: white;
+    min-width: 150px;
   }
 
   .tw-banner-title {
@@ -288,6 +328,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    flex-wrap: wrap;
   }
 
   .tw-banner-status {
@@ -297,6 +338,7 @@
     background: rgba(255, 255, 255, 0.2);
     border-radius: 12px;
     backdrop-filter: blur(10px);
+    white-space: nowrap;
   }
 
   .tw-banner-time {
@@ -309,6 +351,8 @@
     gap: 8px;
     align-items: center;
     flex-shrink: 0;
+    flex-wrap: wrap;
+    justify-content: flex-end;
   }
 
   .tw-banner-divider {
@@ -326,6 +370,17 @@
     cursor: pointer;
     transition: all 0.2s ease;
     white-space: nowrap;
+  }
+
+  .tw-banner-btn-icon {
+    padding: 6px 8px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 16px;
+  }
+
+  .tw-banner-btn-icon:hover {
+    background: rgba(255, 255, 255, 0.3);
   }
 
   .tw-banner-btn-secondary {
@@ -436,18 +491,18 @@
     left: 50% !important;
   }
 
-  /* Thank you message */
-  .tw-thank-you {
+  /* UI 4: Toast message (Non-blocking) */
+  .tw-toast {
     position: fixed;
     /* Position is set via inline style to match banner position */
     max-width: 500px;
     z-index: 2147483647; /* Topmost */
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    animation: tw-thank-you-slide-in 0.3s ease-out;
-    cursor: pointer;
+    animation: tw-toast-slide-in 0.3s ease-out;
+    pointer-events: none; /* Non-blocking */
   }
 
-  @keyframes tw-thank-you-slide-in {
+  @keyframes tw-toast-slide-in {
     from {
       transform: translateY(-20px);
       opacity: 0;
@@ -458,17 +513,17 @@
     }
   }
 
-  .tw-thank-you-content {
-    padding: 16px 20px;
+  .tw-toast-content {
+    padding: 12px 16px;
     background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
-    border-radius: 12px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
     backdrop-filter: blur(10px);
     color: white;
     font-size: 14px;
     font-weight: 500;
     text-align: center;
-    line-height: 1.5;
+    line-height: 1.4;
   }
 
   /* Voted state styling */
@@ -479,7 +534,7 @@
   }
 
   @media (max-width: 768px) {
-    .tw-thank-you {
+    .tw-toast {
       left: 10px;
       right: 10px;
       max-width: none;

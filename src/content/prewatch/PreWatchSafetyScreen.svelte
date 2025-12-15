@@ -35,6 +35,9 @@
   let interval: ReturnType<typeof setInterval> | null = null;
   let triggerLoadInterval: ReturnType<typeof setInterval> | null = null;
 
+  // UI 9: Loading State
+  let isLoadingData = true;
+
   // Computed
   $: relevantTriggers = getRelevantTriggers();
   $: hasMultipleTriggers = relevantTriggers.length > 1;
@@ -142,6 +145,7 @@
   function loadTriggersSequentially() {
     if (relevantTriggers.length === 0) {
       // No triggers to load, start progress immediately
+      isLoadingData = false;
       startProgressAnimation();
       return;
     }
@@ -154,6 +158,7 @@
       } else {
         // All triggers loaded, start progress bar
         if (triggerLoadInterval) clearInterval(triggerLoadInterval);
+        isLoadingData = false;
         startProgressAnimation();
       }
     }, 800); // 800ms per trigger for readable animation
@@ -270,11 +275,17 @@
             {/if}
           {/each}
 
-          <!-- Loading indicator for remaining triggers -->
-          {#if currentTriggerIndex < relevantTriggers.length}
+          <!-- Loading indicator for remaining triggers or initial data fetch -->
+          {#if isLoadingData || currentTriggerIndex < relevantTriggers.length}
             <div class="loading-trigger" in:fade>
               <div class="loading-spinner"></div>
-              <span>Loading triggers...</span>
+              <span>
+                {#if currentTriggerIndex < relevantTriggers.length && relevantTriggers.length > 0}
+                   Loading triggers...
+                {:else}
+                   Analyzing content...
+                {/if}
+              </span>
             </div>
           {/if}
         </div>
