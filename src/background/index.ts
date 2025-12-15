@@ -67,6 +67,12 @@ async function handleMessage(
         return { success, data: undefined } as VoidResponse;
       }
 
+      case 'SUBMIT_TRIGGER': {
+        // Alias for SUBMIT_WARNING to match content script usage
+        const success = await SupabaseClient.submitTrigger(message.data);
+        return { success, data: undefined } as VoidResponse;
+      }
+
       case 'VOTE_WARNING': {
         const success = await SupabaseClient.voteTrigger(message.triggerId, message.voteType);
         return { success, data: undefined } as VoidResponse;
