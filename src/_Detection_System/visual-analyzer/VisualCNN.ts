@@ -306,11 +306,58 @@ export class VisualCNN {
   /**
    * Resize image to target dimensions
    */
-  private resizeImage(imageData: ImageData, _targetWidth: number, _targetHeight: number): ImageData {
-    // Simplified resize (in production, use canvas or image library)
-    // For now, return original image data
-    // TODO: Implement proper image resizing
-    return imageData;
+  private resizeImage(imageData: ImageData, targetWidth: number, targetHeight: number): ImageData {
+    // Check if we need to resize
+    if (imageData.width === targetWidth && imageData.height === targetHeight) {
+      return imageData;
+    }
+
+    try {
+      let srcCanvas: OffscreenCanvas | HTMLCanvasElement;
+      let destCanvas: OffscreenCanvas | HTMLCanvasElement;
+      let srcCtx: OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D | null;
+      let destCtx: OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D | null;
+
+      // Determine available Canvas API (Worker vs Main Thread)
+      if (typeof OffscreenCanvas !== 'undefined') {
+        srcCanvas = new OffscreenCanvas(imageData.width, imageData.height);
+        destCanvas = new OffscreenCanvas(targetWidth, targetHeight);
+      } else if (typeof document !== 'undefined') {
+        srcCanvas = document.createElement('canvas');
+        srcCanvas.width = imageData.width;
+        srcCanvas.height = imageData.height;
+        destCanvas = document.createElement('canvas');
+        destCanvas.width = targetWidth;
+        destCanvas.height = targetHeight;
+      } else {
+        logger.error('[VisualCNN] Canvas API not available for resizing');
+        return imageData;
+      }
+
+      srcCtx = srcCanvas.getContext('2d') as any;
+      destCtx = destCanvas.getContext('2d') as any;
+
+      if (!srcCtx || !destCtx) {
+        throw new Error('Could not get 2D context');
+      }
+
+      // Draw original data to source canvas
+      srcCtx.putImageData(imageData, 0, 0);
+
+      // Draw source canvas to destination canvas with scaling
+      if ('imageSmoothingQuality' in destCtx) {
+        // @ts-ignore - Property exists on some context types
+        destCtx.imageSmoothingQuality = 'medium';
+      }
+
+      // Use standard drawImage which handles resizing
+      destCtx.drawImage(srcCanvas as any, 0, 0, targetWidth, targetHeight);
+
+      return destCtx.getImageData(0, 0, targetWidth, targetHeight);
+    } catch (error) {
+      logger.error('[VisualCNN] Resize failed:', error);
+      return imageData; // Fallback to original
+    }
   }
 
   /**
