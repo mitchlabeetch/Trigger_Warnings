@@ -33,6 +33,7 @@
  */
 
 import { Logger } from '@shared/utils/logger';
+import { FFT } from '@shared/utils/fft';
 
 const logger = new Logger('DeepAudioFeatureExtractor');
 
@@ -90,6 +91,7 @@ export class DeepAudioFeatureExtractor {
   private hopSize: number = 512;
   private numMelBands: number = 40;  // Mel filterbank bands
   private numMfccs: number = 13;
+  private fft: FFT;
 
   // Performance statistics
   private stats = {
@@ -103,6 +105,7 @@ export class DeepAudioFeatureExtractor {
   constructor(sampleRate: number = 44100, fftSize: number = 2048) {
     this.sampleRate = sampleRate;
     this.fftSize = fftSize;
+    this.fft = new FFT(fftSize);
 
     logger.info(
       `[DeepAudioFeatureExtractor] Initialized | ` +
@@ -465,16 +468,39 @@ export class DeepAudioFeatureExtractor {
     // Apply Hamming window
     const windowed = this.applyHammingWindow(audioData);
 
-    // Compute FFT (simplified - in practice use Web Audio API or FFT library)
-    const fftSize = Math.min(this.fftSize, windowed.length);
-    const powerSpectrum = new Array(fftSize / 2).fill(0);
+    // Compute FFT
+    // If input data is smaller than fftSize, we pad it with zeros (handled by typed array constructor if we copy)
+    // If it's larger or equal, we use up to fftSize.
+    // However, the windowed data should match what we want to process.
+    // Typically fftSize is fixed (e.g. 2048).
 
-    // Simplified power spectrum calculation
-    // In production, use Web Audio API's AnalyserNode.getFloatFrequencyData()
-    for (let i = 0; i < fftSize / 2; i++) {
-      // Placeholder: assume uniform distribution for demo
-      // Real implementation would use FFT library
-      powerSpectrum[i] = Math.random() * 0.1;  // TODO: Replace with actual FFT
+    // Ensure we have a buffer of size fftSize (pad if necessary)
+    const real = new Float32Array(this.fftSize);
+    const imag = new Float32Array(this.fftSize); // Zero-initialized by default
+
+    // Copy windowed data to real part
+    const copyLength = Math.min(windowed.length, this.fftSize);
+    for (let i = 0; i < copyLength; i++) {
+        real[i] = windowed[i];
+    }
+
+    // Perform FFT
+    this.fft.transform(real, imag);
+
+    // Compute power spectrum (magnitude)
+    // We only need the first half (Nyquist frequency)
+    const powerSpectrum = new Array(this.fftSize / 2).fill(0);
+
+    for (let i = 0; i < this.fftSize / 2; i++) {
+        // Magnitude = sqrt(real^2 + imag^2)
+        // Power = Magnitude^2 = real^2 + imag^2
+        // We might want just magnitude or power. The method is named computePowerSpectrum.
+        // Usually Power Spectrum is |X[k]|^2 / N or similar.
+        // Let's stick to magnitude for feature extraction typical use or squared magnitude?
+        // MFCC usually takes |X[k]|^2.
+
+        // Let's compute magnitude squared (Power)
+        powerSpectrum[i] = (real[i] * real[i] + imag[i] * imag[i]);
     }
 
     return powerSpectrum;
