@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trigger Warnings - Take Control of Your Streaming</title>
+    <meta name="description" content="Get 5-10 seconds advance warning before sensitive content appears. 28 categories, 96% accuracy, 100% private. Your safety. Your choice. Free forever.">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://lightmyfireadmin.github.io/triggerwarnings/">
+    <meta property="og:title" content="Trigger Warnings - Take Control of Your Streaming">
+    <meta property="og:description" content="Block what you don't want to see. Enjoy what you do. 5-10 seconds advance warning, 28 categories, 100% private.">
+    <meta property="og:image" content="https://lightmyfireadmin.github.io/triggerwarnings/images/social-preview.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://lightmyfireadmin.github.io/triggerwarnings/">
+    <meta property="twitter:title" content="Trigger Warnings - Take Control of Your Streaming">
+    <meta property="twitter:description" content="Block what you don't want to see. Enjoy what you do. 5-10 seconds advance warning, 28 categories, 100% private.">
+    <meta property="twitter:image" content="https://lightmyfireadmin.github.io/triggerwarnings/images/twitter-card.png">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* ═══════════════════════════════════════════════════════════════ */
+        /* RESET & VARIABLES */
+        /* ═══════════════════════════════════════════════════════════════ */
+        :root {
+            /* Palette */
+            --primary: #7c3aed;
+            --primary-light: #a78bfa;
+            --primary-dark: #6d28d9;
+            --secondary: #db2777;
+            --accent: #f59e0b;
+            --bg-dark: #0f172a;
+            --bg-darker: #020617;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+
+            /* Gradients */
+            --gradient-hero: linear-gradient(135deg, #4c1d95 0%, #7c3aed 50%, #db2777 100%);
+            --gradient-glass: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            --gradient-glow: radial-gradient(circle at center, rgba(124, 58, 237, 0.4) 0%, transparent 70%);
+
+            /* Shadows & Glass */
+            --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            --glass-backdrop: blur(12px);
+
+            /* Spacing */
+            --container-width: 1200px;
+            --header-height: 80px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 16px;
+        }
+
+        /* Responsive Smooth Scroll */
+        @media (prefers-reduced-motion: no-preference) {
+            html { scroll-behavior: smooth; }
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-darker);
+            color: var(--text-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════ */
+        /* UTILITIES */
+        /* ═══════════════════════════════════════════════════════════════ */
+        .container {
+            max-width: var(--container-width);
+            margin: 0 auto;
+            padding: 0 24px;
+            position: relative;
+        }
+
+        .section {
+            padding: 100px 0;
+            position: relative;
+        }
+
+        .text-gradient {
+            background: linear-gradient(to right, #a78bfa, #f472b6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .hidden { display: none !important; }
+        .visible { display: flex !important; }
+        .text-center { text-align: center; }
+        .mt-20 { margin-top: 20px; }
+        .mb-20 { margin-bottom: 20px; }
+
+        /* Focus States */
+        button:focus-visible, a:focus-visible, input:focus-visible {
+            outline: 2px solid var(--primary-light);
+            outline-offset: 2px;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            border: none;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(124, 58, 237, 0.6);
+        }
+
+        .btn-glass {
+            background: rgba(255, 255, 255, 0.1);
+            border: var(--glass-border);
+            color: white;
+            backdrop-filter: var(--glass-backdrop);
+        }
+
+        .btn-glass:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* Back to Top */
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s;
+            z-index: 999;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+            border: none;
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+
+        .back-to-top:hover {
+            transform: translateY(-5px);
+            background: var(--primary-dark);
+        }
+
+        /* Loading Overlay */
+        #loader-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-darker);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.5s ease-out;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ═══════════════════════════════════════════════════════════════ */
+        /* NAVIGATION */
+        /* ═══════════════════════════════════════════════════════════════ */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 20px 0;
+            transition: all 0.3s ease;
+        }
+
+        .navbar.scrolled {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding: 12px 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: white;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+            position: relative;
+            padding: 5px 0;
+        }
+
+        .nav-link:hover {
+            color: white;
+        }
+
+        /* Mode Toggles */
+        .mode-toggle {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.2);
+            color: var(--text-muted);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .mode-toggle:hover, .mode-toggle.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border-color: white;
+        }
+
+        .lang-select {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        /* Mobile Menu */
+        .mobile-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 10px; /* Larger target */
+        }
+
+        @media (max-width: 900px) {
+            .nav-links { display: none; }
+            .mobile-toggle { display: block; }
+        }
+
+        /* ═══════════════════════════════════════════════════════════════ */
+        /* HERO SECTION */
+        /* ═══════════════════════════════════════════════════════════════ */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding-top: 80px;
+            position: relative;
+            overflow: hidden;
+            background: var(--bg-darker);
+        }
+
+        .hero-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .hero-blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.5;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .blob-1 {
+            width: 500px;
+            height: 500px;
+            background: var(--primary);
+            top: -10%;
+            left: -10%;
+            animation-delay: 0s;
+        }
+
+        .blob-2 {
+            width: 400px;
+            height: 400px;
+            background: var(--secondary);
+            bottom: -10%;
+            right: -5%;
+            animation-delay: -5s;
+        }
+
+        .blob-3 {
+            width: 300px;
+            height: 300px;
+            background: var(--accent);
+            top: 40%;
+            left: 40%;
+            opacity: 0.3;
+            animation-delay: -2s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-title {
+            font-size: 4rem;
+            line-height: 1.1;
+            font-weight: 800;
+            margin-bottom: 24px;
+            letter-spacing: -0.02em;
+            min-height: 1.1em; /* Prevent layout shift on type */
+        }
+
+        /* Typed Cursor */
+        .cursor {
+            display: inline-block;
+            width: 4px;
+            height: 1em;
+            background: var(--accent);
+            margin-left: 4px;
+            animation: blink 1s infinite;
+            vertical-align: middle;
+        }
+
+        @keyframes blink { 50% { opacity: 0; } }
+
+        .hero-visual {
+            position: relative;
+            perspective: 1200px;
+            transform-style: preserve-3d;
+        }
+
+        .browser-mockup {
+            background: rgba(22, 27, 34, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            box-shadow:
+                0 30px 60px rgba(0,0,0,0.5),
+                0 0 0 1px rgba(255,255,255,0.1);
+            overflow: hidden;
+            transform: rotateY(-10deg) rotateX(5deg);
+            transition: transform 0.1s ease-out; /* Smooth follow */
+            backdrop-filter: blur(20px);
+        }
+
+        /* ═══════════════════════════════════════════════════════════════ */
+        /* STATS & CARDS */
+        /* ═══════════════════════════════════════════════════════════════ */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            padding: 40px;
+            background: rgba(124, 58, 237, 0.05); /* Lighter bg */
+            border-radius: 24px;
+            border: 1px solid rgba(124, 58, 237, 0.15);
+            text-align: center;
+            margin-top: -60px;
+            position: relative;
+            z-index: 2;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .stat-val {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(180deg, #fff, #a78bfa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 4px;
+        }
+
+        .glass-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .card {
+            background: rgba(30, 41, 59, 0.4);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 32px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Noise Texture */
+        .card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            background: rgba(30, 41, 59, 0.6);
+            border-color: rgba(124, 58, 237, 0.3);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        /* ═══════════════════════════════════════════════════════════════ */
+        /* TESTIMONIALS & FAQ */
+        /* ═══════════════════════════════════════════════════════════════ */
+        .testimonial-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-top: 40px;
+        }
+
+        .testimonial-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 24px;
+            border-radius: 16px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        /* FAQ */
+        .faq-item {
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 10px;
+        }
+
+        .faq-question {
+            width: 100%;
+            text-align: left;
+            padding: 20px 0;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            color: var(--text-muted);
+            padding-right: 20px;
+        }
+
+        .faq-answer.open {
+            max-height: 300px;
+            padding-bottom: 20px;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════ */
+        /* FOOTER */
+        /* ═══════════════════════════════════════════════════════════════ */
+        footer {
+            border-top: 1px solid rgba(255,255,255,0.05);
+            padding: 60px 0;
+            background: #020617;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════ */
+        /* RESPONSIVE UTILS */
+        /* ═══════════════════════════════════════════════════════════════ */
+        @media (max-width: 768px) {
+            .hero-grid { grid-template-columns: 1fr; text-align: center; gap: 40px; }
+            .hero-title { font-size: 2.8rem; }
+            .hero-visual { display: none; } /* Hide 3D on mobile for perf */
+            .stats-container { grid-template-columns: 1fr 1fr; }
+            .nav-content { padding: 0 10px; }
+        }
+
+        /* Low Stim Mode */
+        body.low-stim {
+            --primary: #5b21b6;
+            filter: sepia(30%) saturate(70%);
+        }
+        body.low-stim * {
+            animation: none !important;
+            transition: none !important;
+        }
+        body.low-stim .hero-blob { opacity: 0; }
+
+        /* Static Mode */
+        body.static-view .hero-visual,
+        body.static-view .demo-container {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Loading Overlay -->
+    <div id="loader-overlay">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Back to Top -->
+    <button class="back-to-top" id="backToTop" aria-label="Back to Top">↑</button>
+
+    <!-- Nav -->
+    <nav class="navbar" id="navbar">
+        <div class="container nav-content">
+            <a href="#" class="logo">
+                <img src="icon128.png" width="32" height="32" alt="" style="border-radius: 6px;">
+                Trigger Warnings
+            </a>
+            <div class="nav-links">
+                <a href="#demo" class="nav-link">Demo</a>
+                <a href="#features" class="nav-link">Features</a>
+                <a href="#testimonials" class="nav-link">Reviews</a>
+                <a href="#faq" class="nav-link">FAQ</a>
+
+                <!-- Utilities -->
+                <button class="mode-toggle" id="btn-low-stim" title="Low Stimulation Mode">Low Stim</button>
+                <button class="mode-toggle" id="btn-static" title="Static Mode">Static</button>
+                <button class="lang-select" title="Coming soon">EN ▾</button>
+
+                <a href="#install" class="btn btn-primary" style="padding: 8px 16px; font-size: 0.9rem;">Install Free</a>
+            </div>
+            <button class="mobile-toggle" aria-label="Menu">☰</button>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <header class="hero">
+        <div class="hero-bg">
+            <div class="hero-blob blob-1"></div>
+            <div class="hero-blob blob-2"></div>
+            <div class="hero-blob blob-3"></div>
+        </div>
+
+        <div class="container hero-grid">
+            <div class="hero-text-content">
+                <div style="display:inline-block; padding:6px 14px; background:rgba(124,58,237,0.2); border-radius:50px; font-size:0.8rem; font-weight:600; color:#c4b5fd; margin-bottom:20px; border:1px solid rgba(124,58,237,0.3);">
+                    ✨ New: Algorithm 3.0 Live
+                </div>
+                <h1 class="hero-title">
+                    Streaming safety,<br>
+                    <span class="text-gradient" id="typed-text"></span><span class="cursor"></span>
+                </h1>
+                <p style="font-size:1.2rem; color:var(--text-muted); margin-bottom:40px; max-width:540px;">
+                    The invisible guardian for your streaming experience. Get accurate, real-time warnings for sensitive content on Netflix, Disney+, and more.
+                </p>
+
+                <div style="display:flex; gap:16px; flex-wrap:wrap;">
+                    <a href="#install" class="btn btn-primary">Add to Browser - Free</a>
+                    <a href="#demo" class="btn btn-glass">See the Demo</a>
+                </div>
+            </div>
+
+            <!-- 3D Mockup -->
+            <div class="hero-visual" id="heroVisual">
+                <div class="browser-mockup">
+                    <div style="padding:12px 16px; background:rgba(255,255,255,0.05); display:flex; align-items:center; gap:8px;">
+                        <div style="width:10px; height:10px; background:#ef4444; border-radius:50%;"></div>
+                        <div style="width:10px; height:10px; background:#f59e0b; border-radius:50%;"></div>
+                        <div style="width:10px; height:10px; background:#10b981; border-radius:50%;"></div>
+                        <div style="flex:1; height:24px; background:rgba(0,0,0,0.2); border-radius:4px; margin-left:12px;"></div>
+                    </div>
+                    <div style="height:340px; background:#111; position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center;">
+                        <!-- Simulated Video Content -->
+                        <div style="position:absolute; inset:0; background:linear-gradient(45deg, #111, #222);">
+                            <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:100px; height:100px; border-radius:50%; background:radial-gradient(circle, #333, transparent); animation:pulse 3s infinite;"></div>
+                        </div>
+
+                        <!-- Overlay UI -->
+                        <div style="position:absolute; bottom:20px; background:rgba(15,23,42,0.9); padding:12px 20px; border-radius:12px; border:1px solid rgba(124,58,237,0.5); display:flex; align-items:center; gap:12px; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+                            <span style="font-size:1.5rem;">⚠️</span>
+                            <div>
+                                <div style="font-weight:700; font-size:0.9rem;">Spiders Detected</div>
+                                <div style="font-size:0.75rem; color:#aaa;">In 5 seconds...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Stats -->
+    <div class="container">
+        <div class="stats-container">
+            <div class="stat-item">
+                <div class="stat-val" data-target="28">0</div>
+                <div class="stat-label">Categories</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-val" data-target="96">0</div>
+                <div class="stat-label">% Accuracy</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-val" data-target="5">0</div>
+                <div class="stat-label">Platforms</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-val" data-target="100">0</div>
+                <div class="stat-label">% Private</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features -->
+    <section class="section" id="features">
+        <div class="container">
+            <div class="text-center" style="margin-bottom:60px;">
+                <h2 style="font-size:2.5rem; font-weight:800; margin-bottom:16px;">Why choose Trigger Warnings?</h2>
+                <p style="color:var(--text-muted); font-size:1.1rem;">Built with advanced local processing to protect your peace of mind.</p>
+            </div>
+
+            <div class="glass-grid">
+                <div class="card">
+                    <span style="font-size:2.5rem; display:block; margin-bottom:20px;">🔒</span>
+                    <h3 style="font-size:1.25rem; font-weight:600; margin-bottom:12px;">100% Private</h3>
+                    <p style="color:var(--text-muted);">Processing happens entirely on your device. We never see what you watch. No data leaves your browser.</p>
+                </div>
+                <div class="card">
+                    <span style="font-size:2.5rem; display:block; margin-bottom:20px;">⚡</span>
+                    <h3 style="font-size:1.25rem; font-weight:600; margin-bottom:12px;">Smart Detection</h3>
+                    <p style="color:var(--text-muted);">Our optimized local algorithm scans content at 60fps, detecting audio and visual triggers instantly.</p>
+                </div>
+                <div class="card">
+                    <span style="font-size:2.5rem; display:block; margin-bottom:20px;">🎚️</span>
+                    <h3 style="font-size:1.25rem; font-weight:600; margin-bottom:12px;">You're in Control</h3>
+                    <p style="color:var(--text-muted);">Customize sensitivity for each of the 28 categories. Skip, blur, or mute based on your preferences.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Demo Section -->
+    <section class="section" id="demo" style="background:rgba(255,255,255,0.02);">
+        <div class="container">
+            <div class="text-center" style="margin-bottom:40px;">
+                <h2 style="font-size:2.5rem; font-weight:800;">See it in action</h2>
+            </div>
+
+            <div class="demo-container" style="max-width:900px; margin:0 auto; aspect-ratio:16/9; background:#000; border-radius:16px; position:relative; overflow:hidden; border:1px solid rgba(255,255,255,0.1);">
+                <div id="demo-screen" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle, #222, #000); transition:filter 0.5s;">
+                    <span style="font-size:2rem; color:rgba(255,255,255,0.1); font-weight:700;">VIDEO PLAYING</span>
+                </div>
+
+                <!-- Banner -->
+                <div id="demo-banner" style="position:absolute; top:20px; left:20px; right:20px; background:rgba(124,58,237,0.95); padding:16px; border-radius:8px; transform:translateY(-150%); transition:transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); display:flex; align-items:center; justify-content:space-between; backdrop-filter:blur(10px);">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <span style="font-size:1.5rem;">⚠️</span>
+                        <div>
+                            <div style="font-weight:700; color:white;">Spiders / Snakes Detected</div>
+                            <div style="font-size:0.8rem; opacity:0.9; color:white;">Starting in 5 seconds</div>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <button onclick="runDemoAction('skip')" style="padding:6px 12px; background:white; color:var(--primary); border:none; border-radius:4px; font-weight:600; cursor:pointer;">Skip</button>
+                        <button onclick="runDemoAction('blur')" style="padding:6px 12px; background:rgba(255,255,255,0.2); color:white; border:none; border-radius:4px; font-weight:600; cursor:pointer;">Blur</button>
+                    </div>
+                </div>
+
+                <div style="position:absolute; bottom:20px; width:100%; text-align:center;">
+                    <button id="play-demo" onclick="playDemo()" class="btn btn-primary">▶ Play Simulation</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="section" id="testimonials">
+        <div class="container">
+            <h2 class="text-center" style="font-size:2.5rem; font-weight:800; margin-bottom:40px;">Community Love</h2>
+            <div class="testimonial-grid">
+                <div class="testimonial-card">
+                    <div class="user-info">
+                        <div class="avatar">S</div>
+                        <div>
+                            <div style="font-weight:600;">Sarah M.</div>
+                            <div style="font-size:0.8rem; color:var(--text-muted);">Verified User</div>
+                        </div>
+                    </div>
+                    <p style="color:var(--text-muted);">"I can finally watch horror movies with my friends again without worrying about unexpected triggers. The accuracy is insane."</p>
+                </div>
+                <div class="testimonial-card">
+                    <div class="user-info">
+                        <div class="avatar">J</div>
+                        <div>
+                            <div style="font-weight:600;">James K.</div>
+                            <div style="font-size:0.8rem; color:var(--text-muted);">Verified User</div>
+                        </div>
+                    </div>
+                    <p style="color:var(--text-muted);">"The 'skip' feature is a game changer. It feels so seamless, like the scene was never there."</p>
+                </div>
+                <div class="testimonial-card">
+                    <div class="user-info">
+                        <div class="avatar">E</div>
+                        <div>
+                            <div style="font-weight:600;">Elena R.</div>
+                            <div style="font-size:0.8rem; color:var(--text-muted);">Verified User</div>
+                        </div>
+                    </div>
+                    <p style="color:var(--text-muted);">"Love that it's private. I don't want my viewing habits tracked. This extension respects that."</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="section" id="faq" style="background:rgba(255,255,255,0.02);">
+        <div class="container" style="max-width:800px;">
+            <h2 class="text-center" style="font-size:2.5rem; font-weight:800; margin-bottom:40px;">Frequently Asked Questions</h2>
+
+            <div class="faq-item">
+                <button class="faq-question">Does it work on all websites? <span>+</span></button>
+                <div class="faq-answer">Currently optimized for major streaming platforms like Netflix, Disney+, Amazon Prime Video, and YouTube. We are constantly adding support for more sites.</div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question">Is my viewing data recorded? <span>+</span></button>
+                <div class="faq-answer">Absolutely not. All analysis happens locally on your machine. We do not collect or store any information about what you watch.</div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question">Does it slow down my browser? <span>+</span></button>
+                <div class="faq-answer">We've optimized the algorithm to be extremely lightweight. It pauses when not in use and utilizes hardware acceleration where available.</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Install CTA -->
+    <section class="section" id="install">
+        <div class="container text-center">
+            <div style="background:var(--gradient-hero); padding:80px 40px; border-radius:30px; position:relative; overflow:hidden;">
+                <div style="position:relative; z-index:2;">
+                    <h2 style="font-size:2.5rem; font-weight:800; margin-bottom:20px;">Ready to reclaim your streaming?</h2>
+                    <p style="margin-bottom:40px; font-size:1.2rem; opacity:0.9;">Join thousands of users watching with confidence.</p>
+                    <a href="https://chrome.google.com/webstore/detail/trigger-warnings" class="btn" style="background:white; color:var(--primary); padding:16px 40px; font-size:1.1rem;">Add to Chrome - It's Free</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:20px;">
+            <div class="logo">
+                <img src="icon128.png" width="24" height="24" alt="">
+                Trigger Warnings
+            </div>
+            <div style="display:flex; gap:20px;">
+                <a href="#" style="color:var(--text-muted); text-decoration:none;">Privacy</a>
+                <a href="#" style="color:var(--text-muted); text-decoration:none;">Support</a>
+                <a href="#" style="color:var(--text-muted); text-decoration:none;">GitHub</a>
+            </div>
+            <div style="width:100%; text-align:center; margin-top:40px; color:var(--text-muted); font-size:0.85rem;">
+                &copy; <span id="year">2026</span> Trigger Warnings. Open Source & Free Forever.
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Loader
+        window.addEventListener('load', () => {
+            const loader = document.getElementById('loader-overlay');
+            loader.style.opacity = '0';
+            setTimeout(() => { loader.style.display = 'none'; }, 500);
+
+            // Start typed text
+            typeWriter();
+
+            // Animate stats
+            animateStats();
+        });
+
+        // Dynamic Year
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // Typed Text Effect
+        const textToType = "reimagined.";
+        const typeEl = document.getElementById('typed-text');
+        let typeIdx = 0;
+
+        function typeWriter() {
+            if (typeIdx < textToType.length) {
+                typeEl.innerHTML += textToType.charAt(typeIdx);
+                typeIdx++;
+                setTimeout(typeWriter, 150);
+            }
+        }
+
+        // Navbar Scroll
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            if (window.scrollY > 50) nav.classList.add('scrolled');
+            else nav.classList.remove('scrolled');
+
+            // Back to Top visibility
+            const btn = document.getElementById('backToTop');
+            if (window.scrollY > 500) btn.classList.add('visible');
+            else btn.classList.remove('visible');
+        });
+
+        document.getElementById('backToTop').addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // Mobile Menu
+        document.querySelector('.mobile-toggle').addEventListener('click', () => {
+            const links = document.querySelector('.nav-links');
+            const isFlex = getComputedStyle(links).display === 'flex';
+
+            if (links.style.display === 'flex') {
+                links.style.display = 'none';
+            } else {
+                links.style.display = 'flex';
+                links.style.flexDirection = 'column';
+                links.style.position = 'absolute';
+                links.style.top = '100%';
+                links.style.left = '0';
+                links.style.width = '100%';
+                links.style.background = '#0f172a';
+                links.style.padding = '20px';
+                links.style.borderBottom = '1px solid rgba(255,255,255,0.1)';
+            }
+        });
+
+        // Mode Toggles
+        document.getElementById('btn-low-stim').addEventListener('click', function() {
+            document.body.classList.toggle('low-stim');
+            this.classList.toggle('active');
+        });
+
+        document.getElementById('btn-static').addEventListener('click', function() {
+            document.body.classList.toggle('static-view');
+            this.classList.toggle('active');
+        });
+
+        // FAQ Toggle
+        document.querySelectorAll('.faq-question').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const answer = btn.nextElementSibling;
+                answer.classList.toggle('open');
+                btn.querySelector('span').textContent = answer.classList.contains('open') ? '-' : '+';
+            });
+        });
+
+        // Stats Animation
+        function animateStats() {
+            const stats = document.querySelectorAll('.stat-val');
+            stats.forEach(stat => {
+                const target = +stat.getAttribute('data-target');
+                const duration = 2000;
+                const step = target / (duration / 16);
+                let current = 0;
+
+                const update = () => {
+                    current += step;
+                    if (current < target) {
+                        stat.textContent = Math.ceil(current) + (stat.nextElementSibling.textContent.includes('%') ? '%' : '+');
+                        requestAnimationFrame(update);
+                    } else {
+                        stat.textContent = target + (stat.nextElementSibling.textContent.includes('%') ? '%' : '+');
+                    }
+                };
+
+                // Intersection Observer to trigger only when visible
+                const observer = new IntersectionObserver((entries) => {
+                    if(entries[0].isIntersecting) {
+                        update();
+                        observer.disconnect();
+                    }
+                });
+                observer.observe(stat);
+            });
+        }
+
+        // Demo Logic
+        function playDemo() {
+            const btn = document.getElementById('play-demo');
+            const banner = document.getElementById('demo-banner');
+            const screen = document.getElementById('demo-screen');
+
+            btn.disabled = true;
+            btn.textContent = "Simulating...";
+
+            // Reset
+            screen.style.filter = 'none';
+            screen.innerHTML = '<span style="font-size:2rem; color:rgba(255,255,255,0.1); font-weight:700;">VIDEO PLAYING</span>';
+
+            setTimeout(() => {
+                banner.style.transform = "translateY(0)";
+            }, 1000);
+        }
+
+        function runDemoAction(action) {
+            const banner = document.getElementById('demo-banner');
+            const screen = document.getElementById('demo-screen');
+            const btn = document.getElementById('play-demo');
+
+            banner.style.transform = "translateY(-150%)";
+
+            if (action === 'blur') {
+                screen.style.filter = "blur(20px)";
+                screen.innerHTML = '<span style="font-size:2rem; color:white; font-weight:700;">BLURRED</span>';
+            } else {
+                screen.style.filter = "grayscale(100%)";
+                screen.innerHTML = '<span style="font-size:2rem; color:white; font-weight:700;">SKIPPED</span>';
+            }
+
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.textContent = "▶ Play Simulation";
+            }, 1500);
+        }
+
+        // 3D Parallax Mouse Move
+        document.addEventListener('mousemove', (e) => {
+            if (window.innerWidth < 768) return;
+            const x = (e.clientX / window.innerWidth - 0.5) * 20;
+            const y = (e.clientY / window.innerHeight - 0.5) * 20;
+
+            const visual = document.getElementById('heroVisual');
+            if(visual) {
+                visual.style.transform = `rotateY(${x}deg) rotateX(${-y}deg)`;
+            }
+        });
+
+    </script>
+</body>
+</html>
